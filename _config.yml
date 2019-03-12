@@ -1,0 +1,72 @@
+# Server
+url: chiehting.github.io
+encoding: UTF-8
+
+# Site
+baseurl: ""
+
+title: Chiehting Lee
+email: ting911111@gmail.com
+description: >- # this means to ignore newlines until "baseurl:"
+  Write an awesome description for your new site here. You can edit this
+  line in _config.yml. It will appear in your document head meta (for
+  Google search results) and in your feed.xml site description.
+
+# Permalinks
+permalink: /:categories/:short_year/:month/:day/:title
+
+# Collections
+collections:
+  pages:
+    output: true
+    permalink: /:title/
+
+# Social
+minima:
+  date_format: "%b %-d, %Y"
+
+  # generate social links in footer
+  social_links:
+    # twitter:
+    github: chiehting
+    rss: rss
+    # dribbble:
+    # facebook:
+    # flickr:
+    # instagram:
+    linkedin: chiehting-lee-787130126
+    stackoverflow:
+      id: '11036641'
+      username: chiehting
+    # pinterest:
+    # youtube:
+    # youtube_channel: UC8CXR0-3I70i1tfPg1PAE1g
+    # youtube_channel_name: CloudCannon
+    telegram: chiehting
+    # googleplus:
+    # microdotblog:
+
+    # Mastodon instances
+    # mastodon:
+    # - username: 
+    #   instance: example.com
+    # - username: 2
+    #   instance: example.com
+
+# this and add the path to the pages in order as they should show up
+#header_pages:
+# - about.md
+
+# Google Analytics
+google_analytics: UA-108139989-3
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Exclude from processing.
+exclude:
+  - Gemfile
+  - Gemfile.lock
