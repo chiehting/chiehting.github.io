@@ -1,0 +1,14 @@
+defaule:
+    parameter:
+        - date
+        - title
+        - categories
+        - tags
+pages:
+    parameter:
+        - layout: page
+        - permalink
+article:
+    parameter:
+        - layout: post
+
