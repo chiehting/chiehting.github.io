@@ -4,11 +4,11 @@ defaule:
         - title
         - categories
         - tags
-pages:
+page:
     parameter:
         - layout: page
         - permalink
-article:
+post:
     parameter:
         - layout: post
 
