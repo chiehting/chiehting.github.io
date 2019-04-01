@@ -58,7 +58,7 @@ header_pages:
  - _pages/about.html
 
 # Google Analytics
-#google_analytics: UA-108139989-3
+google_analytics: UA-108139989-3
 
 # Build settings
 markdown: kramdown
