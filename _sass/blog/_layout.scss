@@ -6,9 +6,12 @@
   border-bottom: 1px solid $grey-color-light;
   min-height: $spacing-unit * 1.865;
   line-height: $base-line-height * $base-font-size * 2.25;
+  background:#FFF;
+  width:100%;
 
   // Positioning context for the mobile navigation icon
-  position: relative;
+  position: fixed; /* Set the navbar to fixed position */
+  top: 0; /* Position the navbar at the top of the page */
 }
 
 .site-title {
@@ -190,6 +193,7 @@
  */
 .page-content {
   padding: $spacing-unit 0;
+  margin-top: 60px;
   flex: 1 0 auto;
 }
 
