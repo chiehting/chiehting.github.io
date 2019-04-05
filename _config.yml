@@ -9,6 +9,9 @@ author: Chiehting Lee
 email: ting911111@gmail.com
 description:
 
+paginate: 7
+paginate_path: "page:num"
+
 # Permalinks
 permalink: /:short_year/:month/:day/:title
 
@@ -42,10 +45,9 @@ minima:
     telegram: chiehting
     # googleplus:
     # microdotblog:
-
     # Mastodon instances
     # mastodon:
-    # - username: 
+    # - username:
     #   instance: example.com
     # - username: 2
     #   instance: example.com
@@ -62,8 +64,10 @@ markdown: kramdown
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+  - jekyll-paginate
 
 # Exclude from processing.
 exclude:
   - Gemfile
   - Gemfile.lock
+  - scripts
