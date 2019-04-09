@@ -101,6 +101,7 @@ brew install sass/sass/sass
 brew install node
 ```
 
+* [Yarn](https://yarnpkg.com/lang/en/docs/install/#mac-stable)
 ```bash
 brew install yarn
 ```
@@ -206,14 +207,20 @@ brew install tree
 brew cask install telegram
 ```
 
+* [Slack](https://slack.com/)
+```bash
+brew cask install slack
+```
+
 * [Discord](https://discordapp.com/)
 ```bash
 brew cask install discord
 ```
 
 * [Skype](https://www.skype.com/en/)
-
-  install via [dmg](https://www.skype.com/en/get-skype/)
+```bash
+brew cask install skype
+```
 
 * [QQ](https://im.qq.com/)
 ```bash
@@ -239,6 +246,9 @@ brew cask install java
 ```
 
 * [Sublime Text 3](https://www.sublimetext.com/)
+```bash
+brew cask install sublime-text
+```
 
 * [VirtualBox](https://www.virtualbox.org/)
 ```bash

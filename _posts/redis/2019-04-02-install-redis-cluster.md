@@ -4,9 +4,8 @@ title: Install redis cluster
 categories: redis
 tags: cluster
 layout: post
+
 ---
-
-
 
 ### setting ubuntu
 
@@ -17,7 +16,59 @@ sudo apt-get update
 sudo dpkg-reconfigure tzdata
 ```
 
-install redis,安裝方法擇一
+ulimit設置
+
+```bash
+# 解除Linux系統的最大進程數和最大文件打開數限制, *代表針對所有用戶，noproc是代表最大進程數，nofile是代表最大文件打開數
+sudo vim /etc/security/limits.conf
+
+* soft noproc 65535
+* hard noproc 65535
+* soft nofile 65535
+* hard nofile 65535
+```
+
+```bash
+# required pam_limits.so at commin-session file
+sudo vim /etc/pam.d/common-session
+
+session required pam_limits.so
+```
+
+```bash
+# required pam_limits.so at common-session-noninteractive file
+sudo vim /etc/pam.d/common-session-noninteractive
+
+session required pam_limits.so
+```
+
+開啟防火牆
+
+```bash
+# redis集群不僅需要開通redis客戶端連接的端口，而且需要開通集群總線端口
+# 集群總線端口為redis客戶端連接的端口+ 10000
+# 如redis端口為6379
+# 則集群總線端口為16379,故，所有服務器的點需要開通redis的客戶端連接端口和集群總線端口
+
+sudo ufw allow 6379
+sudo ufw allow 16379
+sudo ufw allow 6380
+sudo ufw allow 16380
+
+# 啟動防火牆
+sudo ufw enable
+
+# 刪除防火牆用
+# sudo ufw delete allow 6379,6380/tcp
+```
+
+重啟
+
+```bash
+sudo reboot
+```
+
+### install redis,下列安裝方法則一
 
 ```bash
 # 安裝套件
@@ -43,54 +94,6 @@ sudo make && make install
 
 cd utils
 sudo ./install_server.sh
-```
-
-ulimit設置
-
-```bash
-# append content
-sudo vim /etc/security/limits.conf
-soft noproc 65535
-hard noproc 65535
-soft nofile 65535
-hard nofile 65535
-```
-
-```bash
-# append content
-sudo vim /etc/pam.d/common-session
-session required pam_limits.so
-```
-
-```bash
-# append content
-sudo vim /etc/pam.d/common-session-noninteractive
-session required pam_limits.so
-```
-
-```bash
-# reboot
-sudo reboot
-```
-
-開啟防火牆
-
-```bash
-# redis集群不僅需要開通redis客戶端連接的端口，而且需要開通集群總線端口
-# 集群總線端口為redis客戶端連接的端口+ 10000
-# 如redis端口為6379
-# 則集群總線端口為16379,故，所有服務器的點需要開通redis的客戶端連接端口和集群總線端口
-
-sudo ufw allow 6379
-sudo ufw allow 16379
-sudo ufw allow 6380
-sudo ufw allow 16380
-
-# 啟動防火牆
-sudo ufw enable
-
-# 刪除防火牆用
-# sudo ufw delete allow 6379,6380/tcp
 ```
 
 ### setting redis configuration
