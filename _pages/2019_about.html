@@ -1,8 +1,8 @@
 ---
-title: About
+title: About Me
 name: Chiehting Lee
 job-title: DevOps Engineer
-permalink: /about
+permalink: /
 ---
 
 <!DOCTYPE html>
@@ -15,13 +15,12 @@ permalink: /about
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
 
-  <link rel='stylesheet' href='{{ '/assets/css/about.css' | relative_url }}'>
+  <link rel='stylesheet' href='{{ '../assets/css/about.css'  }}'>
   {%- seo -%}
 
   {%- if site.google_analytics -%}
     {%- include google-analytics.html -%}
   {%- endif -%}
-
 </head>
 
 <body>
@@ -56,24 +55,24 @@ permalink: /about
       <div class='content'>
         <p class='title fs-large shadow'>ABOUT</p>
         <div id='profile' class='lfloat'>
-          <img class='avatar' src='/assets/images/avatar.png'>
+          <img class='avatar' src='../assets/images/avatar.png'>
           <div class='row'>
-            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '/assets/svg/icons.svg#name' | relative_url }}'></use></svg></span>Name</strong></div>
+            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '../assets/svg/icons.svg#name'  }}'></use></svg></span>Name</strong></div>
             <div class='rfloat'><p>李玠廷</p></div>
           </div>
           <hr>
           <div class='row'>
-            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '/assets/svg/icons.svg#birth' | relative_url }}'></use></svg></span>Birth</strong></div>
+            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '../assets/svg/icons.svg#birth'  }}'></use></svg></span>Birth</strong></div>
             <div class='rfloat'><p>Sep, 1986</p></div>
           </div>
           <hr>
           <div class='row'>
-            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '/assets/svg/icons.svg#location' | relative_url }}'></use></svg></span>Location</strong></div>
+            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '../assets/svg/icons.svg#location'  }}'></use></svg></span>Location</strong></div>
             <div class='rfloat'><p>Taipei</p></div>
           </div>
           <hr>
           <div class='row'>
-            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '/assets/svg/icons.svg#global' | relative_url }}'></use></svg></span>Citizenship</strong></div>
+            <div class='lfloat'><strong><span><svg class='blue'><use xlink:href='{{ '../assets/svg/icons.svg#global'  }}'></use></svg></span>Citizenship</strong></div>
             <div class='rfloat'><p>Taiwan</p></div>
           </div>
        </div>
@@ -81,7 +80,7 @@ permalink: /about
           <div>
             <div class='fs-medium'><strong>INTRODUCTION</strong></div>
             <div class='subcontent'>
-              <p>I'm an experienced DevOps engineer and developer engineering, have been software industry for more than five years.
+              <p>I'm an experienced SRE(DevOps) engineer and Back-End developer, have been software industry for more than five years.
               I have huge passion to touch new technologies and overcome challenges from work.
               I seek to contribute my extensive skills set to an innovative and passionate team building our future.</p>
             </div>
@@ -90,14 +89,14 @@ permalink: /about
             <div class='fs-medium'><strong>SCOPES</strong></div>
             <div class='subcontent clearfix'>
               <div class='lfloat width-half'>
-                <p>Software development</p>
-                <p>Web development</p>
-              </div>
-              <div class='lfloat width-half'>
                 <p>Cloud platform administration</p>
                 <p>System administration</p>
                 <p>DB administration</p>
-                <p>DNS Management</p>
+                <p>DNS / CDN Management</p>
+              </div>
+              <div class='lfloat width-half'>
+                <p>Software development</p>
+                <p>Web development</p>
               </div>
             </div>
           </div>
@@ -121,86 +120,92 @@ permalink: /about
         <div class="subcontent">
           <div class="lfloat width-one-third">
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#windows' | relative_url }}'></use></svg></span>Windows Server 2016</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#windows'  }}'></use></svg></span>Windows Server 2016</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#windows' | relative_url }}'></use></svg></span>Windows 10</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#windows'  }}'></use></svg></span>Windows 10</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#macos' | relative_url }}'></use></svg></span>macOS</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#macos'  }}'></use></svg></span>macOS</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#linux' | relative_url }}'></use></svg></span>CentOS 7</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#linux'  }}'></use></svg></span>CentOS 7</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#ubuntu' | relative_url }}'></use></svg></span>Ubuntu 18.04</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#ubuntu'  }}'></use></svg></span>Ubuntu 18.04</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#azure' | relative_url }}'></use></svg></span>Microsoft Azure</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#azure'  }}'></use></svg></span>Microsoft Azure</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#docker' | relative_url }}'></use></svg></span>Docker</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#aliyun'  }}'></use></svg></span>Alibaba Cloud</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#kubernetes' | relative_url }}'></use></svg></span>Kubernetes</p>
-            </div>
-          </div>
-          <div class="lfloat width-one-third">
-            <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#jquery' | relative_url }}'></use></svg></span>jQuery</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#docker'  }}'></use></svg></span>Docker</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#bootstarp' | relative_url }}'></use></svg></span>Bootstrap</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#kubernetes'  }}'></use></svg></span>Kubernetes</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#vue' | relative_url }}'></use></svg></span>vue</p>
-            </div>
-            <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#prometheus' | relative_url }}'></use></svg></span>Prometheus</p>
-            </div>
-            <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#php' | relative_url }}'></use></svg></span>PHP</p>
-            </div>
-            <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#python' | relative_url }}'></use></svg></span>Python</p>
-            </div>
-            <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#shell' | relative_url }}'></use></svg></span>Shell Script</p>
-            </div>
-            <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#javascript' | relative_url }}'></use></svg></span>JavaScript</p>
-            </div>
-            <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#nodejs' | relative_url }}'></use></svg></span>Nodejs</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#terraform'  }}'></use></svg></span>Kubernetes</p>
             </div>
           </div>
           <div class="lfloat width-one-third">
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#ansible' | relative_url }}'></use></svg></span>Ansible<p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#jquery'  }}'></use></svg></span>jQuery</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#circleci' | relative_url }}'></use></svg></span>Circleci</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#bootstarp'  }}'></use></svg></span>Bootstrap</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#mysql' | relative_url }}'></use></svg></span>MySQL</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#vue'  }}'></use></svg></span>vue</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#mariadb' | relative_url }}'></use></svg></span>Mariadb</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#prometheus'  }}'></use></svg></span>Prometheus</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#redis' | relative_url }}'></use></svg></span>Redis</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#php'  }}'></use></svg></span>PHP</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#memcached' | relative_url }}'></use></svg></span>Memcached</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#python'  }}'></use></svg></span>Python</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#info' | relative_url }}'></use></svg></span>FreeIPA</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#shell'  }}'></use></svg></span>Shell Script</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#haproxy' | relative_url }}'></use></svg></span>HAProxy</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#javascript'  }}'></use></svg></span>JavaScript</p>
             </div>
             <div class="row">
-              <p><span><svg class='blue'><use xlink:href='{{ '/assets/svg/skills.svg#ga' | relative_url }}'></use></svg></span>Google Analytics</p>
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#nodejs'  }}'></use></svg></span>Nodejs</p>
+            </div>
+          </div>
+          <div class="lfloat width-one-third">
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#ansible'  }}'></use></svg></span>Ansible<p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#circleci'  }}'></use></svg></span>Circleci</p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#mysql'  }}'></use></svg></span>MySQL</p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#mariadb'  }}'></use></svg></span>Mariadb</p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#redis'  }}'></use></svg></span>Redis</p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#memcached'  }}'></use></svg></span>Memcached</p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#info'  }}'></use></svg></span>FreeIPA</p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#haproxy'  }}'></use></svg></span>HAProxy</p>
+            </div>
+            <div class="row">
+              <p><span><svg class='blue'><use xlink:href='{{ '../assets/svg/skills.svg#ga'  }}'></use></svg></span>Google Analytics</p>
             </div>
           </div>
         </div>
@@ -216,7 +221,21 @@ permalink: /about
               <strong>EMPLOYMENT HISTORY</strong>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
+              <div class="bullet-content lfloat">
+                <p class="blue fs-small"><strong>Funpodium 奕兆</strong></p>
+                <p><strong>Apr. 2019 - Jul. 2019</strong></p>
+                <p class='red'>DevOps engineer</p>
+                <br>
+                <ul>
+                  <li>Alibaba cloud administrator.</li>
+                  <li>Implemented Kubernetes to management of containerized applications.</li>
+                  <li>Improvement CI/CD pipeline.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="row">
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>Larvata 果子云</strong></p>
                 <p><strong>Nov. 2017 - Mar. 2019</strong></p>
@@ -232,9 +251,9 @@ permalink: /about
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
-                <p class="blue fs-small"><strong>SYSTEX Corporatio 精誠資訊</strong></p>
+                <p class="blue fs-small"><strong>SYSTEX 精誠資訊</strong></p>
                 <p><strong>Mar. 2014 - Aug. 2017</strong></p>
                 <p class='red'>Senior program analyst</p>
                 <br>
@@ -247,7 +266,7 @@ permalink: /about
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>National Formosa University</strong></p>
                 <p><strong>Sep. 2010 - Feb. 2013</strong></p>
@@ -265,7 +284,31 @@ permalink: /about
               <strong>WORKSHOP</strong>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
+              <div class="bullet-content lfloat">
+                <p class="blue fs-small"><a href="https://aws.amazon.com/tw/summits/taipei"><strong>AWS 台北高峰會 2019</strong></a></p>
+                <p><strong>Jun. 2019</strong></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="bullet"></div>
+              <div class="bullet-content lfloat">
+                  <p class="blue fs-small"><a href="https://www.meetup.com/CloudNative-Taiwan/events/261995883"><strong>SDN x Cloud Native x openSUSE Meetup #18</strong></a></p>
+                <p><strong>Jun. 2019</strong></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="bullet"></div>
+              <div class="bullet-content lfloat">
+                <p class="blue fs-small"><a href="https://community.laravel-dojo.com/phptheday/2019-04-16"><strong>PHP 也有 Day #44</strong></a></p>
+                <p><strong>Apr. 2019</strong></p>
+                <ul>
+                  <li>先別提測試了 你聽過 TDD 已死了嗎？</li>
+                </ul>
+              </div>
+            </div>
+            <div class="row">
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>DevOps Taiwan Meetup #21</strong></p>
                 <p><strong>Feb. 2019</strong></p>
@@ -275,7 +318,7 @@ permalink: /about
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>智慧家庭開發技術實務</strong></p>
                 <p><strong>Sep. 2017</strong></p>
@@ -285,35 +328,35 @@ permalink: /about
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>台灣資料科學年會</strong></p>
                 <p><strong>Apr. 2017</strong></p>
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>成長駭客行銷</strong></p>
                 <p><strong>Nov. 2016</strong></p>
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>Analysis Services分析服務設計</strong></p>
                 <p><strong>Oct. 2016</strong></p>
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>Container Summit 2016</strong></p>
                 <p><strong>Spe. 2016</strong></p>
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>創客 Night</strong></p>
                 <p><strong>Apr. 2016</strong></p>
@@ -324,14 +367,14 @@ permalink: /about
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>AndJava Google Android 應用程式開發範例實務課程</strong></p>
                 <p><strong>Jul. 2014</strong></p>
               </div>
             </div>
             <div class="row">
-              <div class="bullet lfloat"></div>
+              <div class="bullet"></div>
               <div class="bullet-content lfloat">
                 <p class="blue fs-small"><strong>第29屆機械工程研討會</strong></p>
                 <p><strong>Dec. 2012</strong></p>
@@ -344,13 +387,5 @@ permalink: /about
     </div>
   </section>
 </body>
-
-<!--
-<script>
-document.addEventListener('DOMContentLoaded', ready);
-function ready(){
-}
-</script>
--->
 </html>
 
