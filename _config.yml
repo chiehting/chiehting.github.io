@@ -1,5 +1,5 @@
 # Server
-url: chiehting.github.io
+url: chiehting.com
 encoding: UTF-8
 
 # Site
@@ -7,7 +7,7 @@ baseurl:
 title: Blog
 author: Chiehting Lee
 email:
-description:
+description: Chiehting website
 
 # Pagination
 paginate: 7
@@ -22,36 +22,35 @@ collections:
     output: true
     permalink: /:title/
 
-# Social
 minima:
   date_format: "%b %-d, %Y"
 
-  # generate social links in footer
-  social_links:
-    # twitter:
-    github: chiehting
-    rss: rss
-    # dribbble:
-    # facebook:
-    # flickr:
-    # instagram:
-    linkedin: chiehting-lee-787130126
-    stackoverflow:
-      id: '11036641'
-      username: chiehting
-    # pinterest:
-    # youtube:
-    # youtube_channel: UC8CXR0-3I70i1tfPg1PAE1g
-    # youtube_channel_name: CloudCannon
-    telegram: chiehting
-    # googleplus:
-    # microdotblog:
-    # Mastodon instances
-    # mastodon:
-    # - username:
-    #   instance: example.com
-    # - username: 2
-    #   instance: example.com
+# generate social links in footer
+social_links:
+  # twitter:
+  github: chiehting
+  rss: rss
+  # dribbble:
+  # facebook:
+  # flickr:
+  # instagram:
+  linkedin: chiehting-lee-787130126
+  stackoverflow:
+    id: '11036641'
+    username: chiehting
+  # pinterest:
+  # youtube:
+  # youtube_channel: UC8CXR0-3I70i1tfPg1PAE1g
+  # youtube_channel_name: CloudCannon
+  telegram: chiehting
+  # googleplus:
+  # microdotblog:
+  # Mastodon instances
+  # mastodon:
+  # - username:
+  #   instance: example.com
+  # - username: 2
+  #   instance: example.com
 
 # this and add the path to the pages in order as they should show up
 header_pages:
@@ -70,4 +69,4 @@ plugins:
 exclude:
   - Gemfile
   - Gemfile.lock
-  - scripts
+
