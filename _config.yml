@@ -1,5 +1,5 @@
 # Server
-url: chiehting.github.io
+url: chiehting.com
 encoding: UTF-8
 
 # Site
@@ -7,7 +7,7 @@ baseurl:
 title: Blog
 author: Chiehting Lee
 email:
-description:
+description: chiehting lee website
 
 # Pagination
 paginate: 7
