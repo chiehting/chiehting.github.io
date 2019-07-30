@@ -9,6 +9,10 @@ author: Chiehting Lee
 email:
 description: Chiehting website
 
+webrick:
+  headers:
+    Cache-Control: max-age=3600
+
 # Pagination
 paginate: 7
 paginate_path: "/blog/page:num"
