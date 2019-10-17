@@ -10,6 +10,8 @@ layout: post
 
 ### 使用docker建立測試環境
 
+先啟動Redmine在啟動Gitlab
+
 * [Redmine](https://github.com/chiehting/docker-redmine)
 * [Gitlab](https://github.com/chiehting/docker-gitlab)
 
@@ -91,6 +93,11 @@ sudo echo '172.30.0.3 redmine.example.com' >> /etc/hosts
 |New issue url|http://redmine.example.com/projects/devops/issues/new|
 
 建立一個`webhook`來觸發redmine_gitlba_hook,設定專案下的`integrations`.
-範例如下:
 
-`http://redmine.example.com/gitlab_hook?key=rYtIYdc2zR9ZvZ8M24L8&project_id=devops&repository_name=devops&repository_namespace=root&repository_git_url=http://gitlab.example.com/root/devops`
+URL如下:
+
+* `http://redmine.example.com/gitlab_hook?key=rYtIYdc2zR9ZvZ8M24L8&project_id=devops&repository_name=devops&repository_namespace=root&repository_git_url=http://gitlab.example.com/root/devops`
+
+or
+
+* `http://redmine.example.com/gitlab_hook?key=rYtIYdc2zR9ZvZ8M24L8&project_id=devops&repository_name=devops&repository_namespace=root&repository_git_url=git@gitlab.example.com:root/devops.git`
