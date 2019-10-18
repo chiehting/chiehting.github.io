@@ -1,6 +1,6 @@
 ---
 date: 2019-10-17 18:05:00 +0800
-title: active-directory-authentication.md
+title: active directory authentication
 categories: linux
 tags: centos,ldap
 layout: post
@@ -20,12 +20,12 @@ CentOS Linux release 7.7.1908 (Core)
 
 ```bash
 ## install package
-yum install -y krb5-workstation realmd sssd samba-common adcli
+yum install -y krb5-workstation realmd sssd samba-common-tools adcli oddjob oddjob-mkhomedir
 
 # 加入域名
 
-[root@localhost ~]# realm join --user=itadmin solartninc.com
-Password for itadmin: [跟Justin拿]
+[root@localhost ~]# realm join --user=itadmin --client-software=sssd solartninc.com
+Password for itadmin:
 
 # 查看域名
 
