@@ -1,10 +1,16 @@
 ---
 date: 2019-10-17 18:05:00 +0800
-title: active directory authentication
+title: Active Directory authentication on centos 7
 categories: linux
-tags: centos,ldap
+tags: linux centos ap
 layout: post
 ---
+
+這篇主要在記錄如何再Centos 7上執行AD認證.
+最近在建設develop的環境,由於是develop環境,所以權限方面會允許RD可以登入主機.期望可以透過Active Directory(下面簡稱AD)統一管理員工帳戶都~~(都託給MIS管理吧)~~.
+
+目前註冊帳戶的方式有兩種,一種是執行Ansible腳本,建立使用者帳戶與配置權限以及放入ssh key,適合特殊權限的人;另一種是透過AD,一般開發者權限.
+
 
 ## 環境
 

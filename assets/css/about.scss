@@ -1,5 +1,9 @@
----
-# Only the main Sass file needs front matter (the dashes are enough)
----
+//---
+//---
+// Resume Layer
+// --------------------------------------------------
+@import "_about/variables";
+@import "_about/base";
+@import "_about/resume";
+@import "_about/scroll_down_button_type";
 
-@import "about";

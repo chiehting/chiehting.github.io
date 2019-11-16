@@ -1,12 +1,16 @@
 ---
 date: 2019-10-01 11:00:00 +0800
-title: Redmine,Gitlab integrate
+title: Integrate Redmine with GitLab
 categories: redmine
-tags: redmine,gitlab
+tags: redmine gitlab
 layout: post
 ---
 
-## 測試環境 
+部門選用了Redmine當作我們的專案管理系統.想要規範git commit的訊息,並將這些訊息自動發佈到Gitlab上,來節省開發人員的時間.
+這篇就來記錄我實作的過程.
+
+
+## 測試環境
 
 ### 使用docker建立測試環境
 

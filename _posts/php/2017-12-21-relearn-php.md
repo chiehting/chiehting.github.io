@@ -6,13 +6,14 @@ tags: php
 layout: post
 ---
 
+PHP7 release也一段時間了,最近在開發常會看到相關的文章,最近抽個空好好來重新學習PHP.
+
 ## Preface
 
 "PHP: Hypertext Preprocessor",官方網站表明PHP很適合做web development,但是並不局限於此,亦可做Process Control,但是依據個人經驗,PHP5.3以下的版本做浮點數的運算不是很精準.
 
 另外在2015年PHP7問世,效率更是翻倍,但是有著相容性問題,系統升級前需要做好測試.
 
----
 
 ## 環境建置
 
