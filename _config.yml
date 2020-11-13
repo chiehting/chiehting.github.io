@@ -7,7 +7,7 @@
 title: Chiehting
 subtitle: Workspace
 description: This website is preview about Chiehting. irregular update.
-author: Chiehting Lee
+luthor: Chiehting Lee
 # Support language: de, en, fr-FR, id, ja, ko, pt-BR, pt, ru, zh-Hans, zh-hk, zh-tw
 language: en
 date_format: '%Y-%m-%d'
@@ -17,7 +17,8 @@ encoding: UTF-8
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com' and baseurl as '/child'
 url: chiehting.com
 baseurl:
-permalink: pretty
+#permalink: pretty
+permalink: /:year-:month-:day-:title
 
 # Pagination
 paginate: 10
@@ -49,6 +50,7 @@ highlight:
 markdown: kramdown
 kramdown:
     input: GFM
+    hard_wrap: true
 
 # Default Attributes
 ## Docs: https://jekyllrb.com/docs/configuration/#front-matter-defaults

@@ -6,7 +6,6 @@ tags: linux ulimit performance
 layout: post
 ---
 
-
 有時候為了榨出主機上的效能,需要去調整linux的配置,ulimit就是其中一項可控配置.
 
 > 參考 `https://man.linuxde.net/ulimit`
@@ -18,9 +17,7 @@ layout: post
 這邊使用配置/etc/security/limits.conf檔案,透過PAM來加載用戶的資源限制.
 但在Centos 7使用Systemd替代了之前的SysV,所以配置會對Systemd的service不生效.
 
-
 ## 確認環境
-
 
 主機資訊.
 
@@ -65,7 +62,6 @@ Swap:          2.0G          0B        2.0G
 
 預設的配置.預設linux系統的檔案描述符是1024,負載變大時有可能會造成錯誤`open too many files`.
 
-
 ```bash
 [Justin.Lee@dev-db2 ~]$ ulimit -a
 core file size          (blocks, -c) 0
@@ -88,10 +84,8 @@ file locks                      (-x) unlimited
 
 ## 調整配置
 
-
 * `ulimit`有分軟限制和硬限制.而`noproc`是代表最大程序數; `nofile`是代表最大檔案開啟數.
 * 而ulimit -n的最大值限制是1048576 (2^20).
-
 * 網路上很多都配置為65535,這邊我還沒搞懂為什麼是這個數字.
 
 ```bash

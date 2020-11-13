@@ -2,7 +2,7 @@
 date: 2020-04-27 12:21:00 +0800
 title: 設定macOS的open files上限
 categories: macos
-tags: macos ulimit
+tags: ulimit
 layout: post
 ---
 
@@ -10,13 +10,13 @@ layout: post
 今天在做壓力測試,使用 command line 做 websocket client connection.
 大約到250左右的連線數後回應錯誤 too many open files.
 
-# 環境
+## 環境
 
 macOS Catalina 10.15.4
 
-# 查看
+## 查看
 
-看起來被 launchd 給限制住了
+可以看到被  [LaunchDaemons](../2020-11-12-what-is-launchd) 給限制住了 maxfiles
 
 ```bash
 [ 12:30:01 ] ./
@@ -36,9 +36,9 @@ maxfiles 256 unlimited
 65536
 ```
 
-# 解決方法
+## 解決方法
 
-## 新增文件
+### 新增文件
 
 ```bash
 [ 12:35:49 ] ./
@@ -69,7 +69,7 @@ maxfiles 256 unlimited
 
 ```
 
-## 修改權限
+### 修改權限
 
 ```bash
 [ 12:36:34 ] ./
@@ -79,7 +79,7 @@ maxfiles 256 unlimited
 ➜ sudo chmod 644 /Library/LaunchDaemons/limit.maxfiles.plist
 ```
 
-## 重啟系統
+### 重啟系統
 
 重啟完成後再次執行程序,問題排除
 
