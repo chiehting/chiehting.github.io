@@ -1,9 +1,16 @@
-# files
-.DS_Store
-Gemfile.lock
+_site/*
+_theme_packages/*
 
-# directories
+Thumbs.db
+.DS_Store
+
+!.gitkeep
+
+.rbenv-version
+.rvmrc
+/vendor
 .sass-cache
 .obsidian
 _site
 _posts/work
+
