@@ -215,18 +215,18 @@ font:
 # Value is the target link (E.g. GitHub: https://github.com/iissnan)
 social:
   # twitter:
-  Github: https://github.com/chiehting
+  github: https://github.com/chiehting
   # dribbble:
   # facebook:
   # flickr:
   # instagram:
-  Linkedin: https://www.linkedin.com/in/chiehting-lee-787130126/
-  StackOverFlow: https://stackoverflow.com/users/11036641/chiehting
+  linkedin: https://www.linkedin.com/in/chiehting-lee-787130126/
+  stackoverflow: https://stackoverflow.com/users/11036641/chiehting
   # pinterest:
   # youtube:
   # youtube_channel: UC8CXR0-3I70i1tfPg1PAE1g
   # youtube_channel_name: CloudCannon
-  Telegram: https://t.me/chiehting
+  telegram: https://t.me/chiehting
   # googleplus:
   # microdotblog:
   # Mastodon instances

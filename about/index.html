@@ -22,7 +22,7 @@ permalink: /about/
 
   <link href="{{ site.css | relative_url }}/about.css?v={{ site.version }}" rel="stylesheet" type="text/css" />
   <link rel="shortcut icon" href="{{ site.favicon | relative_url }}">
-  {%- seo -%}
+  {% seo %}
   {% include _third-party/analytics/index.html %}
 </head>
 
@@ -43,7 +43,7 @@ permalink: /about/
         </span>
       </div>
     </div>
-    {%- include social.html -%}
+    {% include social.html %}
   </section>
   <section>
     <nav>
