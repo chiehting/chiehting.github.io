@@ -51,18 +51,11 @@ solartninc.com
   login-formats: %U@solartninc.com
   login-policy: allow-realm-logins
 
-
 # 測試登入
 [root@localhost ~]# id justin.lee@solartninc.com
 
-
 # 修改設定. 拿掉完全匹配方便登入,登入時只需要打帳號不用帶上域名
 [root@localhost ~]# vi /etc/sssd/sssd.conf
-
-use_fully_qualified_names = True
-fallback_homedir = /home/%u@%d
-
-to
 
 use_fully_qualified_names = False
 fallback_homedir = /home/%u
