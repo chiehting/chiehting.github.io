@@ -21,10 +21,11 @@ kubectl config view --flatten --minify
 
 ```bash
 # 更新版本
-set n service
+set n game-risk-control
 set e prod
-set v (kubectl get deployment (kubectl get deployment -n $e|grep $n|head -n 1|cut -d' ' -f1) -n $e -o yaml|grep 'image:'|cut -d: -f3)
+set v (kubectl get deployment (kubectl get deployment -n $e|grep $n|head -n 1|cut -d' ' -f1) -n $e -o yaml|grep '\- image:'|cut -d: -f3)
 echo $v
+helm del -n $e $n
 helm upgrade --install -n $e --set timestamp=(date +"%Y%m%d%H%M%S") --set image.tag=$v --set image.appendingdenoted= $n ./$n
 ```
 

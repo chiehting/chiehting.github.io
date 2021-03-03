@@ -14,9 +14,9 @@ aws --version
 aws eks --region <region_code> update-kubeconfig --name <cluster_name>
 
 # example
-export cn=prod
-export ro=ap-southeast-1
-aws eks --region $ro update-kubeconfig --name $cn
+export name=prod
+export region=ap-southeast-1
+aws eks --region $region update-kubeconfig --name $name
 ```
 
 ### elastic container registry
@@ -35,8 +35,34 @@ aws ecr get-login-password --region $rg | docker login -u AWS --password-stdin $
 
 ```bash
 # 確認sg是否有被引用
-export sg=sg-123456789abcdefgh
 export rg=ap-southeast-1
+export sg=sg-xxxxxxxxxxx
 aws ec2 describe-network-interfaces --filters Name=group-id,Values=$sg --region $rg --output json
 ```
 
+### eks iam mapping
+> https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
+
+```bash
+kubectl describe configmap -n kube-system aws-auth
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapRoles: |
+    - rolearn: <ARN of instance role (not instance profile)>
+      username: system:node:{{EC2PrivateDNSName}}
+      groups:
+        - system:bootstrappers
+        - system:nodes
+  mapUsers: |
+    - userarn: <ARN of user role>
+      username: admin
+      groups:
+        - system:masters
+---
+```
