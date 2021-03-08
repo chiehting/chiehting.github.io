@@ -45,19 +45,6 @@ curl --silent -H "PRIVATE-TOKEN:tokenString" "https://gitlab.example.com/api/v4/
 curl --silent -H "PRIVATE-TOKEN:tokenString" "https://gitlab.example.com/api/v4/application/settings/"
 ```
 
-### ssh
-
-```basg
-# openssh ras 格式改為 pem
-ssh-keygen -p -m PEM -f ./id_rsa
-```
-
-```bash
-# scan host key
-ssh-keyscan -t rsa,dsa github.com
-```
-
-
 
 ###  取得n層路徑下的user:group
 
