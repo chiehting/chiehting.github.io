@@ -1,6 +1,6 @@
 ---
 date: 2020-11-12 17:45:00 +0800
-title:  Launchd
+title: Launchd
 categories: macos
 tags: macos launchd
 layout: post
