@@ -12,7 +12,7 @@ GROUP BY table_schema;
 ### create user
 
 ```mysql
-CREATE USER 'maintainer'@'%' IDENTIFIED BY password';
+CREATE USER 'maintainer'@'%' IDENTIFIED BY 'password';
 ALTER USER 'maintainer'@'%' WITH MAX_USER_CONNECTIONS 10;
 GRANT all privileges ON *.* TO 'maintainer'@'%';
 FLUSH PRIVILEGES;
