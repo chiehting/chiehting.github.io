@@ -9,6 +9,12 @@ FROM information_schema.TABLES
 GROUP BY table_schema;
 ```
 
+### copy database
+
+```base
+mysqldump -uroot -p'password' -h ip -P 3306 bac | mysql -uroot -p'password' -h ip -P 3306 uat_bac
+```
+
 ### create user
 
 ```mysql

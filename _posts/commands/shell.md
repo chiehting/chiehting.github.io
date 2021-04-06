@@ -1,14 +1,24 @@
 # Shell commands
 
-
 ### bash
 
-```bash
-## 替換字串,當前目錄底下所有檔案
-find . -type f -exec sed -i '' 's/foo/bar/g' {} \;
+**替換字串,當前目錄底下所有檔案**
 
-## 確認output是stdout or stderr
+```bash
+# 可使用 regex
+find . -type f -exec sed -i '' 's/foo/bar/g' {} \;
+```
+
+**確認output是stdout or stderr**
+
+```bash
 {go run main.go 2>&3 | sed 's/^/STDOUT: /'; } 3>&1 1>&2 | sed 's/^/STDERR: /'
+```
+
+### generate password
+
+```bash
+openssl rand -base64 8 |md5 |head -c12;echo
 ```
 
 ### MTR 網路節點檢測工具
