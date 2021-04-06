@@ -88,10 +88,11 @@ insert into account values (1,'justin',500),(2,'tom',800),(3,'bill',1200)
 |---|---|---|
 |1|SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;|SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;|
 |2|BEGIN;|BEGIN;|
-|3|insert into account values (4,'set',500);||
-|4||select * from account;|
-|5|rollback;||
-|6||select * from account;|
+|3||select count(*) from account; -- 此時count=3|
+|4|insert into account values (4,'set',500);||
+|5||select count(*) from account; -- 此時count=4|
+|6|rollback;||
+|7||select count(*) from account; -- 此時count=3|
 |8||commit;|
 
 
@@ -101,10 +102,10 @@ insert into account values (1,'justin',500),(2,'tom',800),(3,'bill',1200)
 |---|---|---|
 |1|SET TRANSACTION ISOLATION LEVEL READ COMMITTED;|SET TRANSACTION ISOLATION LEVEL READ COMMITTED;|
 |2|BEGIN;|BEGIN;|
-|3||select * from account where id=1;|
+|3||select money from account where id=1; -- 此時money=500|
 |4|update account set money=100 where id=1;||
 |5|commit;||
-|6||select * from account where id=1;|
+|6||select money from account where id=1; -- 此時money=100|
 |7||commit;|
 
 #### Phantom Read 幻讀
@@ -113,11 +114,11 @@ insert into account values (1,'justin',500),(2,'tom',800),(3,'bill',1200)
 |---|---|---|
 |1|SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;|SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;|
 |2|BEGIN;|BEGIN;|
-|3||select * from account;|
+|3||select money from account where id=4; -- 此時not find|
 |4|insert into account values (4,'set',300);||
 |5|commit;||
 |6||update account set money=500 where id=4;|
-|7||select * from account;|
+|7||select money from account where id=4; -- 此時money=500|
 |8||commit;|
 
 
