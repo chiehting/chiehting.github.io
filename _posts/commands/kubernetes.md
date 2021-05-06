@@ -17,11 +17,17 @@ kubectl top pod
 kubectl config view --flatten --minify
 ```
 
+### 重新啟動
+
+```bash
+kubectl rollout restart deployment game-risk-control
+```
+
 ### 重上當前版本
 
 ```bash
 # 更新版本
-set n game-risk-control
+set n bitwin-server
 set e prod
 set v (kubectl get deployment (kubectl get deployment -n $e|grep $n|head -n 1|cut -d' ' -f1) -n $e -o yaml|grep '\- image:'|cut -d: -f3)
 echo $v

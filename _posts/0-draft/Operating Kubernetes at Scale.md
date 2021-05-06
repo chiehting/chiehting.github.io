@@ -1,0 +1,1 @@
+https://sumitnagal.medium.com/operating-kubernetes-at-scale-65a3e76d74ad
