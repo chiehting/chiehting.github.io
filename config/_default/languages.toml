@@ -1,0 +1,11 @@
+
+[en]
+  title = "Chiehting"
+  LanguageName = "English"
+  weight = 1
+
+# [tw]
+#   title = "Claridade" # just for the sake of showing this is possible
+#   LanguageName = "Traditional Chinese"
+#   weight = 2
+  
