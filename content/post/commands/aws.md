@@ -7,6 +7,12 @@ aws --version
 > aws-cli/2.0.11 Python/3.7.4 Darwin/19.5.0 botocore/2.0.0dev15
 ```
 
+### identity 
+
+```bash
+aws sts get-caller-identity
+```
+
 ### eks
 
 ```bash
@@ -65,4 +71,12 @@ data:
       groups:
         - system:masters
 ---
+```
+
+### s3
+
+```bash
+aws s3 rm s3://bucket-name --recursive
+aws s3 sync dist s3://bucket-name
+aws s3 cp s3://bucket-name ./  --recursive
 ```

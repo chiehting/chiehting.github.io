@@ -27,24 +27,47 @@ kubectl rollout restart deployment game-risk-control
 
 ```bash
 # 更新版本
-set n bitwin-server
-set e prod
+set n game
+set e dev
+set t game
 set v (kubectl get deployment (kubectl get deployment -n $e|grep $n|head -n 1|cut -d' ' -f1) -n $e -o yaml|grep '\- image:'|cut -d: -f3)
 echo $v
-helm del -n $e $n
-helm upgrade --install -n $e --set timestamp=(date +"%Y%m%d%H%M%S") --set image.tag=$v --set image.appendingdenoted= $n ./$n
+#helm del -n $e $n
+helm upgrade --install -n $e --set timestamp=(date +"%Y%m%d%H%M%S") --set image.tag=$v -f configuration/values/$n.yaml $n ./templates/$t
+
 ```
 
 ### install ingress
 
+Nginx
+
 ```bash
-# nginx
+# 加入 repo
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
+# 安裝 ingress-nginx
 helm install ingress-nginx ingress-nginx/ingress-nginx -n kube-system \
 --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-type"="nlb"
+```
 
-# traefik
+```bash
+# ingress-nginx 升級版本
+kubectl set image deployment/ingress-nginx-controller \
+controller=k8s.gcr.io/ingress-nginx/controller:v0.46.0@sha256:52f0058bed0a17ab0fb35628ba97e8d52b5d32299fbc03cc0f6c7b9ff036b61a \
+-n kube-system
+
+## 這邊做 patch, 變更 configmap/ingress-nginx-controller, get real ip from client.
+kubectl patch configmap/ingress-nginx-controller -n kube-system --type merge -p '{"data":{"enable-real-ip":"true"}}'
+
+## Nginx call webhook 認證異常, 移除 ValidatingWebhookConfiguration ingress-nginx-admission
+kubectl get validatingwebhookconfigurations
+kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+```
+
+Traefik
+
+```bash
+# 加入 repo
 helm repo add stable https://kubernetes-charts.storage.googleapis.com
 
 helm install ingress-traefik --namespace kube-system stable/traefik \
@@ -64,4 +87,10 @@ helm install prometheus stable/prometheus \
 
 ```bash
 kubectl port-forward svc/redis-master 7000:6379
+```
+
+### api resources
+
+```bash
+kubectl api-resources
 ```

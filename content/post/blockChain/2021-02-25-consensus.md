@@ -1,5 +1,5 @@
 ---
-date: 2021-02-23 16:12:00 +0800
+date: 2021-02-25 14:00:00 +0800
 title: 共識機制(consensus)
 categories: [blockChain]
 tags: [blockChain]

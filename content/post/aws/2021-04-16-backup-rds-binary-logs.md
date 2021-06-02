@@ -2,7 +2,7 @@
 date: 2021-04-16 14:48:00 +0800
 title: rds binlog 留存機制
 categories: [aws]
-tags: [rds,binlog]
+tags: [aws,rds,binlog]
 ---
 
 AWS RDS 備份 snapshot/day 間隔過長, 研究抓取 rds binlog 並留存在 EC2 上

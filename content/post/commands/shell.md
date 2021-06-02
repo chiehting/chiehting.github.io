@@ -2,11 +2,14 @@
 
 ### bash
 
-**替換字串,當前目錄底下所有檔案**
+**當前目錄底下所有檔案, 替換字串/刪除行**
 
 ```bash
-# 可使用 regex
-find . -type f -exec sed -i '' 's/github.com\/chiehting/github.com\/heartz2o2o/g' {} \;
+# 替換字串, 可使用 regex
+find . -type f -exec sed -i '' 's/foo/bar/g' {} \;
+
+# 刪除行, 可使用 regex
+find . -type f -exec sed -i '' '/foo/d' {} \;
 ```
 
 **確認output是stdout or stderr**
@@ -31,19 +34,6 @@ cp cp mtr-packet /usr/local/bin/
 
 # 執行
 sudo mtr --tcp --port 443 --report --report-cycles 5 adminapi.blockchain.hom
-```
-
-### elasticsearch
-
-```bash
-curl --user elastic:passwd localhost:9200/_cat/indices
-curl -X GET --user elastic:passwd localhost:9200/_cluster/health?pretty
-curl -X GET --user elastic:passwd localhost:9200/?pretty
-
-# 確認認證
-curl --user elastic:passwd localhost:9200/_security/_authenticate
-# 清除緩存
-curl -XPOST --user elastic:passwd localhost:9200/*/_cache/clear?fielddata=true
 ```
 
 ### gitlab
