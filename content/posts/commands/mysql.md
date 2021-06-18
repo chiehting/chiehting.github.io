@@ -1,6 +1,6 @@
 # MySQL commands
 
-### 查看 databases size
+## 查看 databases size
 
 ```mysql
 SELECT table_schema AS "Database", 
@@ -9,13 +9,13 @@ FROM information_schema.TABLES
 GROUP BY table_schema;
 ```
 
-### copy database
+## copy database
 
 ```base
 mysqldump -uroot -p'password' -h ip -P 3306 bac | mysql -uroot -p'password' -h ip -P 3306 uat_bac
 ```
 
-### create user
+## create user
 
 ```mysql
 CREATE USER 'maintainer'@'%' IDENTIFIED BY 'password';
@@ -24,13 +24,13 @@ GRANT all privileges ON *.* TO 'maintainer'@'%';
 FLUSH PRIVILEGES;
 ```
 
-### show grant
+## show grant
 
 ```mysql
 SHOW GRANTS FOR 'maintainer'@'%';
 ```
 
-### remove user
+## remove user
 
 ```mysql
 DROP USER 'maintainer'@'10.1.%.%'

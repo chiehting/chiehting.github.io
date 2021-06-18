@@ -1,30 +1,30 @@
 # Shell commands
 
-### bash
+## bash
 
-**當前目錄底下所有檔案, 替換字串/刪除行**
+當前目錄底下所有檔案，替換字串/刪除行
 
 ```bash
-# 替換字串, 可使用 regex
+# 替換字串，可使用 regex
 find . -type f -exec sed -i '' 's/foo/bar/g' {} \;
 
-# 刪除行, 可使用 regex
+# 刪除行，可使用 regex
 find . -type f -exec sed -i '' '/foo/d' {} \;
 ```
 
-**確認output是stdout or stderr**
+確認 output 是 stdout or stderr
 
 ```bash
 {go run main.go 2>&3 | sed 's/^/STDOUT: /'; } 3>&1 1>&2 | sed 's/^/STDERR: /'
 ```
 
-### generate password
+## generate password
 
 ```bash
 openssl rand -base64 8 |md5 |head -c12;echo
 ```
 
-### MTR 網路節點檢測工具
+## MTR 網路節點檢測工具
 
 ```bash
 # 安裝mtr
@@ -36,7 +36,7 @@ cp cp mtr-packet /usr/local/bin/
 sudo mtr --tcp --port 443 --report --report-cycles 5 adminapi.blockchain.hom
 ```
 
-### gitlab
+## gitlab
 
 ```bash
 # 取所有專案
@@ -45,14 +45,13 @@ curl --silent -H "PRIVATE-TOKEN:tokenString" "https://gitlab.example.com/api/v4/
 curl --silent -H "PRIVATE-TOKEN:tokenString" "https://gitlab.example.com/api/v4/application/settings/"
 ```
 
-
-###  取得n層路徑下的user:group
+## 取得n層路徑下的user:group
 
 ```bash
 find -maxdepth 2 -type d -ls|grep  -v -e '\.$'|awk '{print "sudo chown -R "  $5 "':'" $6 " " $11}'
 ```
 
-### iptable
+## iptable
 
 ```bash
 # 查看 nat 狀況

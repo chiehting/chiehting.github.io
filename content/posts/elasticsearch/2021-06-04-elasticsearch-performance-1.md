@@ -6,6 +6,7 @@ tags: [elasticsearch]
 ---
 
 現在使用 Kubernetes 容器架構，搭配了 elk 做為我們的 logging solution。但是目前使用預設的配置，在搜尋 log 時效率很慢。
+這邊紀錄排查 index 的狀況，並且嘗試做改善。
 
 <!--more-->
 
@@ -21,12 +22,12 @@ tags: [elasticsearch]
 Index 的設定：可以看到第 9、13、27 行被折疊了大量的行數，也就是說我們使用了很多不必要的欄位。
 
 ```bash
-GET /kubernetes-prod-7.9.1
+GET /kubernetes-prod
 ```
 
 ```json
   0 {
-  1   "kubernetes-prod-7.9.1" : {
+  1   "kubernetes-prod" : {
   2     "aliases" : { },
   3     "mappings" : {
   4       "_meta" : {
@@ -49,7 +50,7 @@ GET /kubernetes-prod-7.9.1
  21           }
  22         },
  23         "refresh_interval" : "5s",
- 24         "provided_name" : "kubernetes-prod-7.9.1",
+ 24         "provided_name" : "kubernetes-prod",
  25         "query" : {
  26           "default_field" : [
  27 +-------875 lines: "message",······················
@@ -117,14 +118,14 @@ GET _ilm/policy/kubernetes-prod
 ```
 
 這邊預計優化 index 的部分如下：
+
 1. 移除不必要的屬性。
-2. 不需要動態配置 index 結構，使用 `dynamic: strict`。
+2. 不需要動態配置 index 結構，使用 `dynamic: false`。
 3. 配置正確的欄位資料型態。
 4. Index 改為一個環境一個，並配置 ilm 的 rollover 配置。
 5. Kibana 的 index patterns 使用 filter 處理。
 
-
-###  新建兩個 index，分別為 test-old、test-new
+### 新建兩個 index，分別為 test-old、test-new
 
 test-old 的 json 檔案又臭又長，這邊就不記錄了。
 
@@ -203,6 +204,7 @@ green  open   test-old iMNI2tWAQASzUCjYHrWB6Q   1   0       1000            0   
 |10|1479 ms|23.8 kB|889 ms|22.7 kB|
 
 這邊比較結果，效率提升約 183%。
+
 * 舊的 index 花費時間平均為 sum(old time) / 10 = 1588.2
 * 新的 index 花費時間平均為 sum(new time) / 10 = 867
 
@@ -213,13 +215,13 @@ green  open   test-old iMNI2tWAQASzUCjYHrWB6Q   1   0       1000            0   
 確認目前 index 的 setting 狀況，確認有沒有 `index.blocks.write` 為 `true` 的設定。
 
 ```bash
-GET /kubernetes-prod-7.9.1-2021.06.02/_settings
+GET /kubernetes-prod-2021.06.02/_settings
 ```
 
 若沒有就配置 `index.blocks.write` 為 `true`，如果要移除則設定為 `null`。
 
 ```bash
-PUT /kubernetes-prod-7.9.1-2021.06.02/_settings
+PUT /kubernetes-prod-2021.06.02/_settings
 {
   "settings": {
     "index.blocks.write": true # null
@@ -227,8 +229,8 @@ PUT /kubernetes-prod-7.9.1-2021.06.02/_settings
 }
 ```
 
-執行 clone index `kubernetes-prod-7.9.1-2021.06.02` 為 `old`
+執行 clone index `kubernetes-prod-2021.06.02` 為 `old`
 
 ```bash
-POST /kubernetes-prod-7.9.1-2021.06.02/_clone/old
+POST /kubernetes-prod-2021.06.02/_clone/old
 ```

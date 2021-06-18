@@ -1,5 +1,6 @@
 # Kubernetes commands
-### current verstion
+
+## current verstion
 
 ```bash
 kubectl version
@@ -7,7 +8,7 @@ kubectl version
 > Server Version: version.Info{Major:"1", Minor:"16+", GitVersion:"v1.16.8-eks-e16311", GitCommit:"e163110a04dcb2f39c3325af96d019b4925419eb", GitTreeState:"clean", BuildDate:"2020-03-27T22:37:12Z", GoVersion:"go1.13.8", Compiler:"gc", Platform:"linux/amd64"}
 ```
 
-### basic commands
+## basic commands
 
 ```bash
 # 查看pod資源狀態
@@ -17,13 +18,13 @@ kubectl top pod
 kubectl config view --flatten --minify
 ```
 
-### 重新啟動
+## 重新啟動
 
 ```bash
 kubectl rollout restart deployment game-risk-control
 ```
 
-### 重上當前版本
+## 重上當前版本
 
 ```bash
 # 更新版本
@@ -37,7 +38,7 @@ helm upgrade --install -n $e --set timestamp=(date +"%Y%m%d%H%M%S") --set image.
 
 ```
 
-### install ingress
+## install ingress
 
 Nginx
 

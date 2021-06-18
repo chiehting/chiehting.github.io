@@ -1,6 +1,13 @@
+---
+date: 2021-06-03 14:00:00 +0800
+title:
+categories: [elasticsearch]
+tags: [elasticsearch]
+---
+
 本來想使用 LDAP 管理登入帳號，但看到 log 顯示目前的 license (Basic license) 不支援 LDAP。
 
-https://discuss.elastic.co/t/ldap-needs-a-license-for-use/213536
+[LDAP needs a license for use](https://discuss.elastic.co/t/ldap-needs-a-license-for-use/213536)
 
 <!--more-->
 
@@ -61,4 +68,4 @@ xpack:
 ```bash
 /usr/share/elasticsearch/bin/elasticsearch-keystore add \
 xpack.security.authc.realms.ldap.ldap1.secure_bind_password
-``
+```

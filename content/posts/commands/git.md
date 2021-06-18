@@ -1,5 +1,6 @@
 # Git commands
-### 刪除所有分支提交的 node_modules 目錄
+
+## 刪除所有分支提交的 node_modules 目錄
 
 ```bash
 # 刪除所有分支提交的node_modules目錄
@@ -12,13 +13,13 @@ git filter-branch -f --prune-empty -- --all
 git push -f
 ```
 
-### 儲存 user & password
+## 儲存 user & password
 
 ```bash
 git config --global credential.helper store
 ```
 
-### 推指定的 commit id 覆蓋 remote repository
+## 推指定的 commit id 覆蓋 remote repository
 
 ```bash
 #本地commitid:遠端庫分支

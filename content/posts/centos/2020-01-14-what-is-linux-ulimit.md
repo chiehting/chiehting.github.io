@@ -9,8 +9,8 @@ tags: [linux,ulimit,performance]
 
 <!--more-->
 
-> 參考 `https://man.linuxde.net/ulimit`
-> 
+參考 [ulimit](https://man.linuxde.net/ulimit)
+
 > ulimit用於限制shell啟動進程所佔用的資源，支持以下各種類型的限制：所創建的內核文件的大小，進程數據塊的大小，Shell進程創建文件的大小，內存鎖住的大小，常駐內存 集的大小，打開文件大小的數量，分配大小的最大大小，CPU時間，單獨用戶的最大線程數，Shell進程所能使用的最大虛擬內存。同時，它支持硬資源和軟資源的限制。
 
 ## 注意

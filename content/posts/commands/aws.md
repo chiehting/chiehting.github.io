@@ -1,19 +1,19 @@
 # AWS commands
 
-### current verstion
+## current verstion
 
 ```bash
 aws --version
 > aws-cli/2.0.11 Python/3.7.4 Darwin/19.5.0 botocore/2.0.0dev15
 ```
 
-### identity 
+## identity
 
 ```bash
 aws sts get-caller-identity
 ```
 
-### eks
+## eks
 
 ```bash
 # 取得 kube config
@@ -25,7 +25,7 @@ export region=ap-southeast-1
 aws eks --region $region update-kubeconfig --name $name
 ```
 
-### elastic container registry
+## elastic container registry
 
 ```bash
 # 登入
@@ -37,7 +37,7 @@ export rg=ap-southeast-1
 aws ecr get-login-password --region $rg | docker login -u AWS --password-stdin $aId.dkr.ecr.$rg.amazonaws.com
 ```
 
-### aws security group dependent object
+## aws security group dependent object
 
 ```bash
 # 確認sg是否有被引用
@@ -46,8 +46,9 @@ export sg=sg-xxxxxxxxxxx
 aws ec2 describe-network-interfaces --filters Name=group-id,Values=$sg --region $rg --output json
 ```
 
-### eks iam mapping
-> https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html
+## eks iam mapping
+
+[Managing users or IAM roles for your cluster](https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html)
 
 ```bash
 kubectl describe configmap -n kube-system aws-auth
@@ -73,7 +74,7 @@ data:
 ---
 ```
 
-### s3
+## s3
 
 ```bash
 aws s3 rm s3://bucket-name --recursive

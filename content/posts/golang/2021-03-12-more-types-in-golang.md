@@ -49,7 +49,6 @@ func main() {
 }
 ```
 
-
 ### Array and Slices
 
 ```golang
@@ -176,8 +175,8 @@ func main() {
 
 ```
 
-
 ## References
+
 1. [More type](https://tour.golang.org/moretypes/1)
 2. [slice](https://hsinyu.gitbooks.io/golang_note/content/slice.html)
 

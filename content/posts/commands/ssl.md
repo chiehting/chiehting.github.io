@@ -1,24 +1,24 @@
 # SSH
 
-### detail of certificate
+## detail of certificate
 
 ```bash
 openssl x509 -in certificate.pem -text -noout
 ```
 
-### openssh ras 格式改為 pem
+## openssh ras 格式改為 pem
 
 ```bash
 ssh-keygen -p -m PEM -f ./id_rsa
 ```
 
-### scan host key
+## scan host key
 
 ```bash
 ssh-keyscan -t rsa,dsa github.com
 ```
 
-### 取得根憑證的 .cer 檔案
+## 取得根憑證的 .cer 檔案
 
 ```bash
 # Generate CARoot private key 
@@ -28,7 +28,7 @@ openssl genrsa -aes256 -out VPN.key 2048
 openssl req -x509 -sha256 -new -key VPN.key -out VPN.cer -days 3650 -subj /CN=VPN
 ```
 
-### 安裝用於 P2S 憑證驗證連線的用戶端憑證
+## 安裝用於 P2S 憑證驗證連線的用戶端憑證
 
 ```bash
 # Generate a certificate request
@@ -45,5 +45,3 @@ openssl x509 -req -sha256 -in client1Cert.req -out client1Cert.cer \
 openssl pkcs12 -export -out client1Cert.pfx -inkey client1Cert.key \
 -in client1Cert.cer -certfile VPN.cer
 ```
-
-

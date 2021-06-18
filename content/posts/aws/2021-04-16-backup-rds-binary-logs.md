@@ -30,7 +30,7 @@ call mysql.rds_show_configuration;
 call mysql.rds_set_configuration('binlog retention hours', 2);
 ```
 
-###  建立 EC2 主機, 並作初始化
+### 建立 EC2 主機, 並作初始化
 
 ### 建立資料夾
 

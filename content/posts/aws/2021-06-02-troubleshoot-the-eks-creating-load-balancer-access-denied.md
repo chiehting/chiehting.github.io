@@ -15,12 +15,12 @@ https://github.com/terraform-aws-modules/terraform-aws-eks/issues/183
 
 helm install ingress-nginx ingress-nginx 時發生錯誤, 盤查後發現下面錯誤
 
-```
+```text
 Warning  SyncLoadBalancerFailed  24m (x10 over 69m) service-controller  (combined from similar events): Error syncing load balancer: failed to ensure load balancer: error creating load balancer: "AccessDenied:
 is not authorized to perform: ec2:DescribeAccountAttributes\n\tstatus code: 403
 ```
 
-```
+```text
 Warning  SyncLoadBalancerFailed  25s  service-controller  Error syncing load balancer: failed to ensure load balancer: error creating load balancer: "AccessDenied: is not authorized to perform: ec2:D
 escribeInternetGateways\n\tstatus code: 403, request id: ba2ab5e2-9690-498a-aad3-3e46fb693588"
 ```
@@ -31,7 +31,7 @@ escribeInternetGateways\n\tstatus code: 403, request id: ba2ab5e2-9690-498a-aad3
 
 arn:aws:iam::xxxxxxxxxx:policy/eks-cluster-ingress-loadbalancer-creation
 
-```
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
