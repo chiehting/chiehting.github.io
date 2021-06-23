@@ -109,17 +109,19 @@ Chain OUTPUT (policy ACCEPT)
 * -X [chain]: 刪除使用者定義的 chain.
 * -E old-chain new-chain: 變更 chain 的名稱.
 
+其中 rulenum 是從上至下順序執行，直至匹配的的規則為止，否則執行預設政策。
+
 ### 狀況題
 
 測試主機有網路介面有 `lo` and `eth0`.
 
-####  查看 table filter 的規則
+#### 查看 table filter 的規則
 
 ```bash
 root@server:~ iptables -L -n -v --line-numbers -t filter
 ```
 
-####  修改 chain 的預設政策
+#### 修改 chain 的預設政策
 
 先將 22 port 打開, 以免被擋在家門外. INPUT 預設政策為 DROP.
 
@@ -147,7 +149,7 @@ root@server:~ iptables -D INPUT 1
 root@server:~ iptables -D OUTPUT 1
 ```
 
-####  封鎖 INPUT chain 指定的 port
+#### 封鎖 INPUT chain 指定的 port
 
 ```bash
 ＃ 拒絕由網卡 eth0 進來的 tcp port 80 所有封包
@@ -157,13 +159,13 @@ iptables -A INPUT -p tcp -dport 80 -i eth0 -j REJECT
 iptables -A INPUT -p tcp -sport 7000:7005 -i eth0 -j REJECT
 ```
 
-####  封鎖 INPUT chain 指定的 來源
+#### 封鎖 INPUT chain 指定的 來源
 
 ```bash
 iptables -I INPUT -p tcp --dport 80 -s 1.34.113.121/32 -m state --state ESTABLISHED -j REJECT
 ```
 
-####  刪除 INPUT chain 所有的規則
+#### 刪除 INPUT chain 所有的規則
 
 ```bash
 iptables -F INPUT

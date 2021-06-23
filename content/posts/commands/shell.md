@@ -18,6 +18,16 @@ find . -type f -exec sed -i '' '/foo/d' {} \;
 {go run main.go 2>&3 | sed 's/^/STDOUT: /'; } 3>&1 1>&2 | sed 's/^/STDERR: /'
 ```
 
+## ip
+
+```bash
+# 查看 ip route table list
+ip route show table all | grep "table" | sed 's/.*\(table.*\)/\1/g' | awk '{print $2}' | sort | uniq
+
+# 查看 ip route table
+ip route show table local 
+```
+
 ## generate password
 
 ```bash
@@ -34,15 +44,6 @@ cp cp mtr-packet /usr/local/bin/
 
 # 執行
 sudo mtr --tcp --port 443 --report --report-cycles 5 adminapi.blockchain.hom
-```
-
-## gitlab
-
-```bash
-# 取所有專案
-curl --silent -H "PRIVATE-TOKEN:tokenString" "https://gitlab.example.com/api/v4/projects/"
-# 查看api配置
-curl --silent -H "PRIVATE-TOKEN:tokenString" "https://gitlab.example.com/api/v4/application/settings/"
 ```
 
 ## 取得n層路徑下的user:group
@@ -62,5 +63,4 @@ iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 56
 
 # 刪除 chain
 iptables -t nat -D PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 5601
-
 ```

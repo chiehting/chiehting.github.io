@@ -28,7 +28,7 @@ kubectl rollout restart deployment game-risk-control
 
 ```bash
 # 更新版本
-set n game
+set n tequila-backstage-api
 set e dev
 set t game
 set v (kubectl get deployment (kubectl get deployment -n $e|grep $n|head -n 1|cut -d' ' -f1) -n $e -o yaml|grep '\- image:'|cut -d: -f3)
