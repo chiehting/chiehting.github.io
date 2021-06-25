@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>docker on Chiehting</title><link>https://chiehting.com/tags/docker/</link><description>Recent content in docker on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Mon, 21 Jun 2021 16:46:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/docker/index.xml" rel="self" type="application/rss+xml"/><item><title>Understanding Docker network through iptables</title><link>https://chiehting.com/posts/2021-06-21-understanding-docker-network-with-iptables/</link><pubDate>Mon, 21 Jun 2021 16:46:00 +0800</pubDate><guid>https://chiehting.com/posts/2021-06-21-understanding-docker-network-with-iptables/</guid><description>
+&lt;p>Docker 為主流的容器化技術之一，而 Docker 則是使用 iptables 做 provide network isolation。
+這篇來了解 Docker 預設的 iptables 規則是什麼。&lt;/p>
+&lt;p>之前有寫過 &lt;a href="../2021-05-06-iptables-guide">iptables guide&lt;/a>，知道 iptables 底層是使用 Netfilter 模組作封包的控制。&lt;/p>
+&lt;p>官方也有相關的資料可以參考 &lt;a href="https://docs.docker.com/network/iptables/">Docker and iptables&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;p>On Linux, Docker manipulates &lt;code>iptables&lt;/code> rules to provide network isolation. While this is an implementation detail and you should not modify the rules Docker inserts into your &lt;code>iptables&lt;/code> policies, it does have some implications on what you need to do if you want to have your own policies in addition to those managed by Docker.&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="思路">思路&lt;/h2>
+&lt;ol>
+&lt;li>建立虛擬機，確認初始 network interface 與 iptables&lt;/li>
+&lt;li>安裝 Docker 並確認 network interface 與 iptables&lt;/li>
+&lt;li>建置 nginx 容器，測試封包走向&lt;/li>
+&lt;/ol>
+&lt;h2 id="環境與版本">環境與版本&lt;/h2>
+&lt;p>OS：&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# cat /etc/os-release
+&lt;span class="ln">2&lt;/span>&lt;span class="nv">NAME&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;Ubuntu&amp;#34;&lt;/span>
+&lt;span class="ln">3&lt;/span>&lt;span class="nv">VERSION&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;20.04.2 LTS (Focal Fossa)&amp;#34;&lt;/span>
+&lt;span class="ln">4&lt;/span>・・・・・・
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>Docker：&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# docker version
+&lt;span class="ln"> 2&lt;/span>Client: Docker Engine - Community
+&lt;span class="ln"> 3&lt;/span> Version: 20.10.7
+&lt;span class="ln"> 4&lt;/span> API version: 1.41
+&lt;span class="ln"> 5&lt;/span>・・・・・・
+&lt;span class="ln"> 6&lt;/span>
+&lt;span class="ln"> 7&lt;/span>Server: Docker Engine - Community
+&lt;span class="ln"> 8&lt;/span> Engine:
+&lt;span class="ln"> 9&lt;/span> Version: 20.10.7
+&lt;span class="ln">10&lt;/span> API version: 1.41 &lt;span class="o">(&lt;/span>minimum version 1.12&lt;span class="o">)&lt;/span>
+&lt;span class="ln">11&lt;/span>・・・・・・
+&lt;span class="ln">12&lt;/span> containerd:
+&lt;span class="ln">13&lt;/span> Version: 1.4.6
+&lt;span class="ln">14&lt;/span> GitCommit: d71fcd7d8303cbf684402823e425e9dd2e99285d
+&lt;span class="ln">15&lt;/span> runc:
+&lt;span class="ln">16&lt;/span> Version: 1.0.0-rc95
+&lt;span class="ln">17&lt;/span> GitCommit: b9ee9c6314599f1b4a7f497e1f1f856fe433d3b7
+&lt;span class="ln">18&lt;/span> docker-init:
+&lt;span class="ln">19&lt;/span> Version: 0.19.0
+&lt;span class="ln">20&lt;/span> GitCommit: de40ad0
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="確認初始的-iptables-rules">確認初始的 iptables rules&lt;/h2>
+&lt;p>在一個新的虛擬機中，一開始的網路介面有 lo 跟 eth0。
+其中 lo 為這虛擬機的 LOOPBACK 使用; 而 eth0 則為可廣播的網路介面使用。&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# ip a
+&lt;span class="ln"> 2&lt;/span>1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">65536&lt;/span> qdisc noqueue state UNKNOWN group default qlen &lt;span class="m">1000&lt;/span>
+&lt;span class="ln"> 3&lt;/span> link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;span class="ln"> 4&lt;/span> inet 127.0.0.1/8 scope host lo
+&lt;span class="ln"> 5&lt;/span> valid_lft forever preferred_lft forever
+&lt;span class="ln"> 6&lt;/span> inet6 ::1/128 scope host
+&lt;span class="ln"> 7&lt;/span> valid_lft forever preferred_lft forever
+&lt;span class="ln"> 8&lt;/span>2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">9001&lt;/span> qdisc fq_codel state UP group default qlen &lt;span class="m">1000&lt;/span>
+&lt;span class="ln"> 9&lt;/span> link/ether 06:3d:47:e2:09:ba brd ff:ff:ff:ff:ff:ff
+&lt;span class="ln">10&lt;/span> inet 172.31.37.164/20 brd 172.31.47.255 scope global dynamic eth0
+&lt;span class="ln">11&lt;/span> valid_lft 3514sec preferred_lft 3514sec
+&lt;span class="ln">12&lt;/span> inet6 fe80::43d:47ff:fee2:9ba/64 scope link
+&lt;span class="ln">13&lt;/span> valid_lft forever preferred_lft forever
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>新的虛擬機中，一開始是沒有配置 Chain、Table 的。&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t nat
+&lt;span class="ln"> 2&lt;/span>Chain PREROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln"> 3&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln"> 4&lt;/span>
+&lt;span class="ln"> 5&lt;/span>Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln"> 6&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln"> 7&lt;/span>
+&lt;span class="ln"> 8&lt;/span>Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln"> 9&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">10&lt;/span>
+&lt;span class="ln">11&lt;/span>Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">12&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t filter
+&lt;span class="ln">2&lt;/span>Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">58&lt;/span> packets, &lt;span class="m">5352&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">3&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">4&lt;/span>
+&lt;span class="ln">5&lt;/span>Chain FORWARD &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">6&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">7&lt;/span>
+&lt;span class="ln">8&lt;/span>Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">48&lt;/span> packets, &lt;span class="m">6066&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">9&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="安裝-docker-並且確認-iptables-rules">安裝 Docker 並且確認 iptables rules&lt;/h2>
+&lt;h3 id="確認網路介面">確認網路介面&lt;/h3>
+&lt;p>Docker 安裝完成後，看到新增了一個網路介面 docker0。
+其 docker0 的網路介面 ip 位置可以看到被分配到 172.17.0.1/16 的 private ip。而 router 部分則看到 172.17.0.0/16 網段都 link src 172.17.0.1。&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>&lt;span class="c1"># ip address&lt;/span>
+&lt;span class="ln"> 2&lt;/span>root@ip-172-31-37-164:/home/ubuntu# ip a
+&lt;span class="ln"> 3&lt;/span>・・・・・・
+&lt;span class="ln"> 4&lt;/span>3: docker0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue state DOWN group default
+&lt;span class="ln"> 5&lt;/span> link/ether 02:42:d3:81:15:1c brd ff:ff:ff:ff:ff:ff
+&lt;span class="ln"> 6&lt;/span> inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+&lt;span class="ln"> 7&lt;/span> valid_lft forever preferred_lft forever
+&lt;span class="ln"> 8&lt;/span>
+&lt;span class="ln"> 9&lt;/span>&lt;span class="c1"># ip route&lt;/span>
+&lt;span class="ln">10&lt;/span>root@ip-172-31-37-164:/home/ubuntu# ip r
+&lt;span class="ln">11&lt;/span>default via 172.31.32.1 dev eth0 proto dhcp src 172.31.37.164 metric &lt;span class="m">100&lt;/span>
+&lt;span class="ln">12&lt;/span>172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;span class="ln">13&lt;/span>172.31.32.0/20 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;span class="ln">14&lt;/span>172.31.32.1 dev eth0 proto dhcp scope link src 172.31.37.164 metric &lt;span class="m">100&lt;/span>
+&lt;span class="ln">15&lt;/span>
+&lt;span class="ln">16&lt;/span>&lt;span class="c1"># ip route show table local&lt;/span>
+&lt;span class="ln">17&lt;/span>root@ip-172-31-37-164:/home/ubuntu# ip r show table &lt;span class="nb">local&lt;/span>
+&lt;span class="ln">18&lt;/span>broadcast 127.0.0.0 dev lo proto kernel scope link src 127.0.0.1
+&lt;span class="ln">19&lt;/span>&lt;span class="nb">local&lt;/span> 127.0.0.0/8 dev lo proto kernel scope host src 127.0.0.1
+&lt;span class="ln">20&lt;/span>&lt;span class="nb">local&lt;/span> 127.0.0.1 dev lo proto kernel scope host src 127.0.0.1
+&lt;span class="ln">21&lt;/span>broadcast 127.255.255.255 dev lo proto kernel scope link src 127.0.0.1
+&lt;span class="ln">22&lt;/span>broadcast 172.17.0.0 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;span class="ln">23&lt;/span>&lt;span class="nb">local&lt;/span> 172.17.0.1 dev docker0 proto kernel scope host src 172.17.0.1
+&lt;span class="ln">24&lt;/span>broadcast 172.17.255.255 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;span class="ln">25&lt;/span>broadcast 172.31.32.0 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;span class="ln">26&lt;/span>&lt;span class="nb">local&lt;/span> 172.31.37.164 dev eth0 proto kernel scope host src 172.31.37.164
+&lt;span class="ln">27&lt;/span>broadcast 172.31.47.255 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="確認-iptables-的-nat-table">確認 iptables 的 NAT Table&lt;/h3>
+&lt;p>下面列出了 nat table 的 Chain。看到新增了多個 Chain &lt;code>DOCKER&lt;/code>，而這 Chain 被 references 在 PREROUTING、OUTPUT 中。
+而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。&lt;/p>
+&lt;p>下面說明 nat table 的 Chain：&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>PREROUTING num 1&lt;/code> 是指如果進來的封包目的地址 match LOCAL 都跳到 Chain DOCKER，這邊要注意 LOCAL 並不是指本地，可以使用 &amp;quot;ip route show table local&amp;quot; 命令來確認哪些 ip 為 LOCAL
+&lt;ol>
+&lt;li>&lt;code>DOCKER num 1&lt;/code> 指如果封包是從 docker0 網路介面進來的，則結束 Chain DOCKER 然後返回原來的 Chain 繼續跑規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>OUTPUT num 1&lt;/code> 是指如果出去封包目的地址 match LOCAL 都跳到 Chain DOCKER，除了 127.0.0.0/8 網段
+&lt;ol>
+&lt;li>&lt;code>DOCKER num 1&lt;/code> 指如果封包是從 docker0 網路介面進來的，則結束 Chain DOCKER 然後返回原來的 Chain 繼續跑規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>POSTROUTING num 1&lt;/code> 是指如果出去封包不是 docker0 網路介面和 ip 來源是 172.17.0.0/16 時，不做修改&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t nat
+&lt;span class="ln"> 2&lt;/span>Chain PREROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln"> 3&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln"> 4&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">14138&lt;/span> 743K DOCKER all -- * * 0.0.0.0/0 0.0.0.0/0 ADDRTYPE match dst-type LOCAL
+&lt;span class="ln"> 5&lt;/span>
+&lt;span class="ln"> 6&lt;/span>Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln"> 7&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln"> 8&lt;/span>
+&lt;span class="ln"> 9&lt;/span>Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">10&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">11&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">4&lt;/span> &lt;span class="m">240&lt;/span> DOCKER all -- * * 0.0.0.0/0 !127.0.0.0/8 ADDRTYPE match dst-type LOCAL
+&lt;span class="ln">12&lt;/span>
+&lt;span class="ln">13&lt;/span>Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">14&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">15&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">34&lt;/span> &lt;span class="m">2073&lt;/span> MASQUERADE all -- * !docker0 172.17.0.0/16 0.0.0.0/0
+&lt;span class="ln">16&lt;/span>
+&lt;span class="ln">17&lt;/span>Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">2&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;span class="ln">18&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">19&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">19&lt;/span> &lt;span class="m">1140&lt;/span> RETURN all -- docker0 * 0.0.0.0/0 0.0.0.0/0
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="確認-iptables-的-filter-table">確認 iptables 的 Filter Table&lt;/h3>
+&lt;p>可以看到新增了多個 Chain &lt;code>DOCKER&lt;/code>、&lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code>、&lt;code>DOCKER-ISOLATION-STAGE-2&lt;/code>、&lt;code>DOCKER-USER&lt;/code>，而這些 Chain 都被 references 在 FORWARD 中。
+可以看到 Chain FORWARD 的預設 policy 已經被改為 DROP，而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。&lt;/p>
+&lt;p>看到 FORWARD 的規則：&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>FORWARD num 1&lt;/code> 規則是跳到 &lt;code>DOCKER-USER&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-USER num 1&lt;/code> 規則是 RETURN 封包，回 &lt;code>FORWARD&lt;/code> 中繼續直執行其他的規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 2&lt;/code> 規則是跳到 &lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-1 num 1&lt;/code> 封包又跳到 &lt;code>DOCKER-ISOLATION-STAGE-2&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-2 num 1&lt;/code> 丟棄所有 docker0 網路介面出去的封包&lt;/li>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-2 num 2&lt;/code> RETURN 所有封包繼續執封包繼續執行 &lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code> 的其他規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-1 num 2&lt;/code> RETURN 所有封包繼續執封包繼續執行 &lt;code>FORWARD&lt;/code> 的其他規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 3&lt;/code> 規則為允許由 docker0 網路介面出去的封包，但封包狀態是 RELATED,ESTABLISHED&lt;/li>
+&lt;li>&lt;code>FORWARD num 4&lt;/code> 規則為當封包是 docker0 網路介面出去的，則跳到 &lt;code>DOCKER&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER&lt;/code> 暫無規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 5&lt;/code>、&lt;code>FORWARD num 6&lt;/code> 為允許經由 docker0 網路介面近來的所有封包進出&lt;/li>
+&lt;li>不在上述規則中的封包全部都 drop&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t fillter
+&lt;span class="ln"> 2&lt;/span>Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">385&lt;/span> packets, &lt;span class="m">28200&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln"> 3&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln"> 4&lt;/span>
+&lt;span class="ln"> 5&lt;/span>Chain FORWARD &lt;span class="o">(&lt;/span>policy DROP &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln"> 6&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln"> 7&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-USER all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln"> 8&lt;/span>&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-ISOLATION-STAGE-1 all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln"> 9&lt;/span>&lt;span class="m">3&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- * docker0 0.0.0.0/0 0.0.0.0/0 ctstate RELATED,ESTABLISHED
+&lt;span class="ln">10&lt;/span>&lt;span class="m">4&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER all -- * docker0 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln">11&lt;/span>&lt;span class="m">5&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- docker0 !docker0 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln">12&lt;/span>&lt;span class="m">6&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- docker0 docker0 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln">13&lt;/span>
+&lt;span class="ln">14&lt;/span>Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">304&lt;/span> packets, &lt;span class="m">59638&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">15&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">16&lt;/span>
+&lt;span class="ln">17&lt;/span>Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;span class="ln">18&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">19&lt;/span>
+&lt;span class="ln">20&lt;/span>Chain DOCKER-ISOLATION-STAGE-1 &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;span class="ln">21&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">22&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-ISOLATION-STAGE-2 all -- docker0 !docker0 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln">23&lt;/span>&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln">24&lt;/span>
+&lt;span class="ln">25&lt;/span>Chain DOCKER-ISOLATION-STAGE-2 &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;span class="ln">26&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">27&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DROP all -- * docker0 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln">28&lt;/span>&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;span class="ln">29&lt;/span>
+&lt;span class="ln">30&lt;/span>Chain DOCKER-USER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;span class="ln">31&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">32&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="建置-nginx-容器測試封包走向">建置 nginx 容器，測試封包走向&lt;/h2>
+&lt;p>啟動 container nginx&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>docker run --name nginx -p 80:80 -d nginx
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="查看本機-listen-port">查看本機 listen port&lt;/h3>
+&lt;p>看到 port 80 被 docker-proxy 監聽著&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# netstat -tlnp
+&lt;span class="ln">2&lt;/span>Active Internet connections &lt;span class="o">(&lt;/span>only servers&lt;span class="o">)&lt;/span>
+&lt;span class="ln">3&lt;/span>Proto Recv-Q Send-Q Local Address Foreign Address State PID/Program name
+&lt;span class="ln">4&lt;/span>tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 0.0.0.0:80 0.0.0.0:* LISTEN 253681/docker-proxy
+&lt;span class="ln">5&lt;/span>tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 127.0.0.53:53 0.0.0.0:* LISTEN 370/systemd-resolve
+&lt;span class="ln">6&lt;/span>tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 0.0.0.0:22 0.0.0.0:* LISTEN 576/sshd: /usr/sbin
+&lt;span class="ln">7&lt;/span>tcp6 &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> :::80 :::* LISTEN 253686/docker-proxy
+&lt;span class="ln">8&lt;/span>tcp6 &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> :::22 :::* LISTEN 576/sshd: /usr/sbin
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="確認網路變化">確認網路變化&lt;/h3>
+&lt;p>網路介面新增了 &lt;code>veth3ce1bed&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>root@ip-172-31-37-164:~# ip link
+&lt;span class="ln">2&lt;/span>1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">65536&lt;/span> qdisc noqueue state UNKNOWN mode DEFAULT group default qlen &lt;span class="m">1000&lt;/span>
+&lt;span class="ln">3&lt;/span> link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;span class="ln">4&lt;/span>2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">9001&lt;/span> qdisc fq_codel state UP mode DEFAULT group default qlen &lt;span class="m">1000&lt;/span>
+&lt;span class="ln">5&lt;/span> link/ether 06:3d:47:e2:09:ba brd ff:ff:ff:ff:ff:ff
+&lt;span class="ln">6&lt;/span>18: docker0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue state UP mode DEFAULT group default
+&lt;span class="ln">7&lt;/span> link/ether 02:42:55:24:1f:ed brd ff:ff:ff:ff:ff:ff
+&lt;span class="ln">8&lt;/span>22: veth3ce1bed@if21: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue master docker0 state UP mode DEFAULT group default
+&lt;span class="ln">9&lt;/span> link/ether ea:ba:b9:7b:48:ea brd ff:ff:ff:ff:ff:ff link-netnsid &lt;span class="m">1&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>還有將新增的網路介面 &lt;code>veth3ce1bed&lt;/code> 橋接在 &lt;code>docker0&lt;/code> 上。&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>root@ip-172-31-37-164:~# brctl show
+&lt;span class="ln">2&lt;/span>bridge name bridge id STP enabled interfaces
+&lt;span class="ln">3&lt;/span>docker0 8000.024255241fed no veth3ce1bed
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>iptables NAT table 新增了兩條規則。&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>POSTROUTING&lt;/code> 封包來源為封包目的為 172.17.0.2 地址為裝封包內容 tcp dpt:80&lt;/li>
+&lt;li>&lt;code>DOCKER num 2&lt;/code> 規則為所有非 docker0 網路介面近來且 tcp dpt:80 的封包，改到 172.17.0.2:80&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>iptables -L -n -v --line-numbers -t nat
+&lt;span class="ln">2&lt;/span>
+&lt;span class="ln">3&lt;/span>Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">266&lt;/span> packets, &lt;span class="m">17090&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;span class="ln">4&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">5&lt;/span>&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> MASQUERADE tcp -- * * 172.17.0.2 172.17.0.2 tcp dpt:80
+&lt;span class="ln">6&lt;/span>
+&lt;span class="ln">7&lt;/span>Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">2&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;span class="ln">8&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">9&lt;/span>&lt;span class="m">2&lt;/span> &lt;span class="m">136&lt;/span> &lt;span class="m">7472&lt;/span> DNAT tcp -- !docker0 * 0.0.0.0/0 0.0.0.0/0 tcp dpt:80 to:172.17.0.2:80
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t filter
+&lt;span class="ln">2&lt;/span>
+&lt;span class="ln">3&lt;/span>Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;span class="ln">4&lt;/span>num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;span class="ln">5&lt;/span>&lt;span class="m">1&lt;/span> &lt;span class="m">123&lt;/span> &lt;span class="m">6692&lt;/span> ACCEPT tcp -- !docker0 docker0 0.0.0.0/0 172.17.0.2 tcp dpt:80
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="測試封包走向">測試封包走向&lt;/h3>
+&lt;p>在不同 client 端嘗試連上 nginx 服務，觀察封包所經過的網路規則。&lt;/p>
+&lt;p>監控 iptalbes 的 pkts 變化。&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>root@ip-172-31-37-164:/home/ubuntu# watch iptables -L -n -v --line-numbers -t nat
+&lt;span class="ln">2&lt;/span>root@ip-172-31-37-164:/home/ubuntu# watch iptables -L -n -v --line-numbers -t filter
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>監控 docker0 網路介面的封包裝況。&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>tcpdump -i docker0 -q -v tcp port &lt;span class="m">80&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

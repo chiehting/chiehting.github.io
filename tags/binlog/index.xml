@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>binlog on Chiehting</title><link>https://chiehting.com/tags/binlog/</link><description>Recent content in binlog on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 16 Apr 2021 14:48:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/binlog/index.xml" rel="self" type="application/rss+xml"/><item><title>rds binlog 留存機制</title><link>https://chiehting.com/posts/2021-04-16-backup-rds-binary-logs/</link><pubDate>Fri, 16 Apr 2021 14:48:00 +0800</pubDate><guid>https://chiehting.com/posts/2021-04-16-backup-rds-binary-logs/</guid><description>
+&lt;p>AWS RDS 備份 snapshot/day 間隔過長, 研究抓取 rds binlog 並留存在 EC2 上&lt;/p>
+&lt;p>參照這篇範例 &lt;a href="https://aws.amazon.com/cn/premiumsupport/knowledge-center/rds-mysql-schedule-binlog-uploads/">如何計劃 Amazon RDS MySQL 數據庫實例二進制日誌文件向 Amazon S3 的上傳?&lt;/a> 做調整.&lt;/p>
+&lt;h3 id="install-mysql-57">Install mysql 5.7&lt;/h3>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>apt update
+&lt;span class="ln">2&lt;/span>apt-cache policy mysql-server
+&lt;span class="ln">3&lt;/span>apt install -y mysql-server
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="登入-mysql-延長-rds-binlog-retention-hours-保留時間為-2h">登入 mysql, 延長 rds binlog retention hours, 保留時間為 2h&lt;/h3>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>show master status&lt;span class="p">;&lt;/span>
+&lt;span class="ln">2&lt;/span>show BINARY LOGS&lt;span class="p">;&lt;/span>
+&lt;span class="ln">3&lt;/span>show binlog events&lt;span class="p">;&lt;/span>
+&lt;span class="ln">4&lt;/span>
+&lt;span class="ln">5&lt;/span>call mysql.rds_show_configuration&lt;span class="p">;&lt;/span>
+&lt;span class="ln">6&lt;/span>call mysql.rds_set_configuration&lt;span class="o">(&lt;/span>&lt;span class="s1">&amp;#39;binlog retention hours&amp;#39;&lt;/span>, 2&lt;span class="o">)&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="建立-ec2-主機-並作初始化">建立 EC2 主機, 並作初始化&lt;/h3>
+&lt;h3 id="建立資料夾">建立資料夾&lt;/h3>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>mkdir -p /opt/mysql-binlog-backup/binlog/
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="建立-shell-secipt-注意編輯參數">建立 shell secipt, 注意編輯參數&lt;/h3>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>touch /opt/mysql-binlog-backup/rds-binlog-to-s3.sh
+&lt;span class="ln">2&lt;/span>chmod +x /opt/mysql-binlog-backup/rds-binlog-to-s3.sh
+&lt;span class="ln">3&lt;/span>vim /opt/mysql-binlog-backup/rds-binlog-to-s3.sh
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>貼上 rds-binlog-to-s3.sh 內容&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>&lt;span class="cp">#!/bin/bash
+&lt;/span>&lt;span class="ln"> 2&lt;/span>&lt;span class="cp">&lt;/span>&lt;span class="c1">#Script to download RDS MySQL binlog files using mysqlbinlog command and the AWS CLI tools to upload them to S3.&lt;/span>
+&lt;span class="ln"> 3&lt;/span>&lt;span class="c1">#Install AWS CLI tools see: &amp;#34;http://docs.aws.amazon.com/cli/latest/userguide/installing.html&amp;#34;&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="c1">#Config your AWS config File (aws configure)&lt;/span>
+&lt;span class="ln"> 5&lt;/span>&lt;span class="nv">AWS_PATH&lt;/span>&lt;span class="o">=&lt;/span>/opt/aws
+&lt;span class="ln"> 6&lt;/span>&lt;span class="nv">Binlog_dir&lt;/span>&lt;span class="o">=&lt;/span>/opt/mysql-binlog-backup/binlog
+&lt;span class="ln"> 7&lt;/span>&lt;span class="nv">Backup_dir&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nv">$Binlog_dir&lt;/span>/&lt;span class="k">$(&lt;/span>date &lt;span class="s2">&amp;#34;+%Y-%m-%d&amp;#34;&lt;/span>&lt;span class="k">)&lt;/span>
+&lt;span class="ln"> 8&lt;/span>&lt;span class="nv">Bucket&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;rds-binlogs&amp;#39;&lt;/span>
+&lt;span class="ln"> 9&lt;/span>&lt;span class="nv">RDS&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;host.rds.amazonaws.com&amp;#39;&lt;/span>
+&lt;span class="ln">10&lt;/span>&lt;span class="nv">master&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;admin&amp;#39;&lt;/span>
+&lt;span class="ln">11&lt;/span>&lt;span class="nb">export&lt;/span> &lt;span class="nv">MYSQL_PWD&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;password&amp;#39;&lt;/span>
+&lt;span class="ln">12&lt;/span>
+&lt;span class="ln">13&lt;/span>&lt;span class="nv">mysql_binlog_filename&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="k">$(&lt;/span>mysql -u &lt;span class="nv">$master&lt;/span> -h &lt;span class="nv">$RDS&lt;/span> -e &lt;span class="s2">&amp;#34;show master logs&amp;#34;&lt;/span>&lt;span class="p">|&lt;/span>grep &lt;span class="s2">&amp;#34;mysql-bin&amp;#34;&lt;/span>&lt;span class="p">|&lt;/span>awk &lt;span class="s1">&amp;#39;{print $1}&amp;#39;&lt;/span>&lt;span class="k">)&lt;/span>
+&lt;span class="ln">14&lt;/span>
+&lt;span class="ln">15&lt;/span>&lt;span class="k">for&lt;/span> file in &lt;span class="nv">$mysql_binlog_filename&lt;/span>
+&lt;span class="ln">16&lt;/span>&lt;span class="k">do&lt;/span>
+&lt;span class="ln">17&lt;/span> &lt;span class="k">if&lt;/span> ! &lt;span class="nb">test&lt;/span> -d &lt;span class="nv">$Backup_dir&lt;/span>
+&lt;span class="ln">18&lt;/span> &lt;span class="k">then&lt;/span>
+&lt;span class="ln">19&lt;/span> mkdir -p &lt;span class="nv">$Backup_dir&lt;/span>
+&lt;span class="ln">20&lt;/span> &lt;span class="k">fi&lt;/span>
+&lt;span class="ln">21&lt;/span> &lt;span class="c1">#remote read binlog&lt;/span>
+&lt;span class="ln">22&lt;/span> &lt;span class="sb">`&lt;/span>mysqlbinlog -u &lt;span class="nv">$master&lt;/span> -h &lt;span class="nv">$RDS&lt;/span> --read-from-remote-server &lt;span class="nv">$file&lt;/span> --result-file&lt;span class="o">=&lt;/span>&lt;span class="nv">$Backup_dir&lt;/span>/ --raw&lt;span class="sb">`&lt;/span>
+&lt;span class="ln">23&lt;/span>&lt;span class="k">done&lt;/span>
+&lt;span class="ln">24&lt;/span>
+&lt;span class="ln">25&lt;/span>&lt;span class="c1"># Upload to S3 bucket&lt;/span>
+&lt;span class="ln">26&lt;/span>&lt;span class="c1">#aws s3 sync $Backup_dir s3://$Bucket/binlog&lt;/span>
+&lt;span class="ln">27&lt;/span>
+&lt;span class="ln">28&lt;/span>&lt;span class="c1"># Clean binlog on disk 7 day ago&lt;/span>
+&lt;span class="ln">29&lt;/span>&lt;span class="sb">`&lt;/span>find &lt;span class="nv">$Binlog_dir&lt;/span> -mtime +7 -name &lt;span class="s2">&amp;#34;*&amp;#34;&lt;/span> -exec rm -rf &lt;span class="o">{}&lt;/span> &lt;span class="se">\;&lt;/span>&lt;span class="sb">`&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="設立排程-下面為每-15-分鐘執行一次的-cron">設立排程, 下面為每 15 分鐘執行一次的 cron&lt;/h3>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>&lt;span class="nb">echo&lt;/span> &lt;span class="s1">&amp;#39;*/15 * * * * root bash /opt/mysql-binlog-backup/rds-binlog-to-s3.sh&amp;#39;&lt;/span> &amp;gt;&amp;gt; /etc/crontab
+&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

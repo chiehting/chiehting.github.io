@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ap on Chiehting</title><link>https://chiehting.com/tags/ap/</link><description>Recent content in ap on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 17 Oct 2019 18:05:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/ap/index.xml" rel="self" type="application/rss+xml"/><item><title>Active Directory authentication on centos 7</title><link>https://chiehting.com/posts/2019-10-17-active-directory-authentication/</link><pubDate>Thu, 17 Oct 2019 18:05:00 +0800</pubDate><guid>https://chiehting.com/posts/2019-10-17-active-directory-authentication/</guid><description>
+&lt;p>這篇主要在記錄如何再Centos 7上執行AD認證.
+在建設 develop 的環境時, 有需求是允許 RD 可以進入 server, 這邊期望可以透過 Active Directory (下面簡稱AD) 統一管理員工帳戶, 不用另外開帳號或放 ssh public key.&lt;/p>
+&lt;p>目前註冊帳戶的方式有兩種,一種是執行Ansible腳本,建立使用者帳戶與配置權限以及放入ssh key,適合特殊權限的人;另一種是透過AD,一般開發者權限.&lt;/p>
+&lt;h2 id="環境">環境&lt;/h2>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># uname -a&lt;/span>
+&lt;span class="ln">2&lt;/span>Linux localhost.localdomain 3.10.0-1062.1.2.el7.x86_64 &lt;span class="c1">#1 SMP Mon Sep 30 14:19:46 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux&lt;/span>
+&lt;span class="ln">3&lt;/span>
+&lt;span class="ln">4&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># cat /etc/redhat-release&lt;/span>
+&lt;span class="ln">5&lt;/span>CentOS Linux release 7.7.1908 &lt;span class="o">(&lt;/span>Core&lt;span class="o">)&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="設定">設定&lt;/h2>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>&lt;span class="c1">## install package&lt;/span>
+&lt;span class="ln"> 2&lt;/span>yum install -y krb5-workstation realmd sssd samba-common-tools adcli oddjob oddjob-mkhomedir
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="c1"># 加入域名&lt;/span>
+&lt;span class="ln"> 5&lt;/span>
+&lt;span class="ln"> 6&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># realm join --user=itadmin --client-software=sssd solartninc.com&lt;/span>
+&lt;span class="ln"> 7&lt;/span>Password &lt;span class="k">for&lt;/span> itadmin:
+&lt;span class="ln"> 8&lt;/span>
+&lt;span class="ln"> 9&lt;/span>&lt;span class="c1"># 查看域名&lt;/span>
+&lt;span class="ln">10&lt;/span>
+&lt;span class="ln">11&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># realm list&lt;/span>
+&lt;span class="ln">12&lt;/span>solartninc.com
+&lt;span class="ln">13&lt;/span> type: kerberos
+&lt;span class="ln">14&lt;/span> realm-name: SOLARTNINC.COM
+&lt;span class="ln">15&lt;/span> domain-name: solartninc.com
+&lt;span class="ln">16&lt;/span> configured: kerberos-member
+&lt;span class="ln">17&lt;/span> server-software: active-directory
+&lt;span class="ln">18&lt;/span> client-software: sssd
+&lt;span class="ln">19&lt;/span> required-package: oddjob
+&lt;span class="ln">20&lt;/span> required-package: oddjob-mkhomedir
+&lt;span class="ln">21&lt;/span> required-package: sssd
+&lt;span class="ln">22&lt;/span> required-package: adcli
+&lt;span class="ln">23&lt;/span> required-package: samba-common-tools
+&lt;span class="ln">24&lt;/span> login-formats: %U@solartninc.com
+&lt;span class="ln">25&lt;/span> login-policy: allow-realm-logins
+&lt;span class="ln">26&lt;/span>
+&lt;span class="ln">27&lt;/span>&lt;span class="c1"># 測試登入&lt;/span>
+&lt;span class="ln">28&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># id justin.lee@solartninc.com&lt;/span>
+&lt;span class="ln">29&lt;/span>
+&lt;span class="ln">30&lt;/span>&lt;span class="c1"># 修改設定. 拿掉完全匹配方便登入,登入時只需要打帳號不用帶上域名&lt;/span>
+&lt;span class="ln">31&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># vi /etc/sssd/sssd.conf&lt;/span>
+&lt;span class="ln">32&lt;/span>
+&lt;span class="ln">33&lt;/span>&lt;span class="nv">use_fully_qualified_names&lt;/span> &lt;span class="o">=&lt;/span> False
+&lt;span class="ln">34&lt;/span>&lt;span class="nv">fallback_homedir&lt;/span> &lt;span class="o">=&lt;/span> /home/%u
+&lt;span class="ln">35&lt;/span>
+&lt;span class="ln">36&lt;/span>&lt;span class="c1"># 從起sssd服務&lt;/span>
+&lt;span class="ln">37&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># systemctl restart sssd&lt;/span>
+&lt;span class="ln">38&lt;/span>&lt;span class="o">[&lt;/span>root@localhost ~&lt;span class="o">]&lt;/span>&lt;span class="c1"># systemctl daemon-reload&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

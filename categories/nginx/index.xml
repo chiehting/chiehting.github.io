@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>nginx on Chiehting</title><link>https://chiehting.com/categories/nginx/</link><description>Recent content in nginx on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 02 Apr 2019 13:00:49 +0800</lastBuildDate><atom:link href="https://chiehting.com/categories/nginx/index.xml" rel="self" type="application/rss+xml"/><item><title>Create a Self-Signed SSL Certificate for Nginx</title><link>https://chiehting.com/posts/2019-04-02-create-a-self-signed-ssl-certificate-for-nginx/</link><pubDate>Tue, 02 Apr 2019 13:00:49 +0800</pubDate><guid>https://chiehting.com/posts/2019-04-02-create-a-self-signed-ssl-certificate-for-nginx/</guid><description>
+&lt;h2 id="create-certificate">Create certificate&lt;/h2>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>sudo openssl req -x509 -nodes -days &lt;span class="m">3650&lt;/span> -newkey rsa:2048 -keyout /etc/nginx/certs/nginx-selfsigned.key -out /etc/nginx/certs/nginx-selfsigned.crt
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>sudo openssl dhparam -out /etc/nginx/certs/dhparam.pem &lt;span class="m">2048&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="setting-nginx-configuration">Setting Nginx configuration&lt;/h2>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>ssl_certificate /etc/nginx/certs/nginx-selfsigned.crt&lt;span class="p">;&lt;/span>
+&lt;span class="ln">2&lt;/span>ssl_certificate_key /etc/nginx/certs/nginx-selfsigned.key&lt;span class="p">;&lt;/span>
+&lt;span class="ln">3&lt;/span>ssl_dhparam /etc/nginx/certs/dhparam.pem&lt;span class="p">;&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln"> 1&lt;/span>server &lt;span class="o">{&lt;/span>
+&lt;span class="ln"> 2&lt;/span> listen &lt;span class="m">443&lt;/span> ssl&lt;span class="p">;&lt;/span>
+&lt;span class="ln"> 3&lt;/span> server_name _&lt;span class="p">;&lt;/span>
+&lt;span class="ln"> 4&lt;/span> index index.html index.php&lt;span class="p">;&lt;/span>
+&lt;span class="ln"> 5&lt;/span> access_log /var/log/nginx/access.log main&lt;span class="p">;&lt;/span>
+&lt;span class="ln"> 6&lt;/span> error_log /var/log/nginx/error.log error&lt;span class="p">;&lt;/span>
+&lt;span class="ln"> 7&lt;/span>
+&lt;span class="ln"> 8&lt;/span> location / &lt;span class="o">{&lt;/span>
+&lt;span class="ln"> 9&lt;/span> proxy_pass http://backend&lt;span class="p">;&lt;/span>
+&lt;span class="ln">10&lt;/span> &lt;span class="o">}&lt;/span>
+&lt;span class="ln">11&lt;/span>
+&lt;span class="ln">12&lt;/span> location ~ /&lt;span class="se">\.&lt;/span>ht &lt;span class="o">{&lt;/span>
+&lt;span class="ln">13&lt;/span> deny all&lt;span class="p">;&lt;/span>
+&lt;span class="ln">14&lt;/span> &lt;span class="o">}&lt;/span>
+&lt;span class="ln">15&lt;/span>&lt;span class="o">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="references">References&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="http://nginx.org/en/docs/http/configuring_https_servers.html">configuring https servers of Nginx&lt;/a>&lt;/li>
+&lt;/ul></description></item></channel></rss>

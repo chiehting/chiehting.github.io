@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ingress on Chiehting</title><link>https://chiehting.com/tags/ingress/</link><description>Recent content in ingress on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 02 Jun 2021 16:12:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/ingress/index.xml" rel="self" type="application/rss+xml"/><item><title>troubleshoot the eks creating load balancer access denied</title><link>https://chiehting.com/posts/2021-06-02-troubleshoot-the-eks-creating-load-balancer-access-denied/</link><pubDate>Wed, 02 Jun 2021 16:12:00 +0800</pubDate><guid>https://chiehting.com/posts/2021-06-02-troubleshoot-the-eks-creating-load-balancer-access-denied/</guid><description>
+&lt;h2 id="issue">Issue&lt;/h2>
+&lt;p>&lt;a href="https://github.com/terraform-aws-modules/terraform-aws-eks/issues/183">https://github.com/terraform-aws-modules/terraform-aws-eks/issues/183&lt;/a>&lt;/p>
+&lt;h2 id="error-message">Error message&lt;/h2>
+&lt;p>helm install ingress-nginx ingress-nginx 時發生錯誤, 盤查後發現下面錯誤&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="ln">1&lt;/span>Warning SyncLoadBalancerFailed 24m (x10 over 69m) service-controller (combined from similar events): Error syncing load balancer: failed to ensure load balancer: error creating load balancer: &amp;#34;AccessDenied:
+&lt;span class="ln">2&lt;/span>is not authorized to perform: ec2:DescribeAccountAttributes\n\tstatus code: 403
+&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="ln">1&lt;/span>Warning SyncLoadBalancerFailed 25s service-controller Error syncing load balancer: failed to ensure load balancer: error creating load balancer: &amp;#34;AccessDenied: is not authorized to perform: ec2:D
+&lt;span class="ln">2&lt;/span>escribeInternetGateways\n\tstatus code: 403, request id: ba2ab5e2-9690-498a-aad3-3e46fb693588&amp;#34;
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="solution">Solution&lt;/h2>
+&lt;p>從上面錯誤可以看到缺少 policy, 這邊建立 policy eks-cluster-ingress-loadbalancer-creation 後並配置給我們自建的 AWSEKSClusterRole&lt;/p>
+&lt;p>arn:aws:iam::xxxxxxxxxx:policy/eks-cluster-ingress-loadbalancer-creation&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="ln"> 1&lt;/span>&lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 2&lt;/span> &lt;span class="nt">&amp;#34;Version&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2012-10-17&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="ln"> 3&lt;/span> &lt;span class="nt">&amp;#34;Statement&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;span class="ln"> 4&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="nt">&amp;#34;Effect&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Allow&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="ln"> 6&lt;/span> &lt;span class="nt">&amp;#34;Action&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;span class="ln"> 7&lt;/span> &lt;span class="s2">&amp;#34;ec2:DescribeAccountAttributes&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;span class="ln"> 8&lt;/span> &lt;span class="s2">&amp;#34;ec2:DescribeInternetGateways&amp;#34;&lt;/span>
+&lt;span class="ln"> 9&lt;/span> &lt;span class="p">],&lt;/span>
+&lt;span class="ln">10&lt;/span> &lt;span class="nt">&amp;#34;Resource&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;*&amp;#34;&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="ln">12&lt;/span> &lt;span class="p">]&lt;/span>
+&lt;span class="ln">13&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

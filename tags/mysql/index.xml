@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>mysql on Chiehting</title><link>https://chiehting.com/tags/mysql/</link><description>Recent content in mysql on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 17 Mar 2021 11:28:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/mysql/index.xml" rel="self" type="application/rss+xml"/><item><title>Concept of MySQL transaction</title><link>https://chiehting.com/posts/2021-03-17-concept-of-mysql-transaction/</link><pubDate>Wed, 17 Mar 2021 11:28:00 +0800</pubDate><guid>https://chiehting.com/posts/2021-03-17-concept-of-mysql-transaction/</guid><description>
+&lt;p>再處理事務時, 一件事務通常是由多個的 sql 來操作完成. 為了不讓同時執行多件事情造成資料互相干擾, 所以就會採用事務 (transaction) 功能來維護資料的準確性. 但是要注意的是 MYISAM not supports transaction, 所以要使用 transaction 必須採用 InnoDB.&lt;/p>
+&lt;p>下面命令可以查詢 MySQL 的引擎.&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-mysql" data-lang="mysql">&lt;span class="ln"> 1&lt;/span>&lt;span class="n">mysql&lt;/span>&lt;span class="o">&amp;gt;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">SHOW&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ENGINES&lt;/span>&lt;span class="err">\&lt;/span>&lt;span class="n">G&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 2&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="o">***************************&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">row&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">***************************&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 3&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">Engine&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">CSV&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 4&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Support&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">YES&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 5&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Comment&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">CSV&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">storage&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">engine&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 6&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="n">Transactions&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">NO&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 7&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">XA&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">NO&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 8&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Savepoints&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">NO&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 9&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="o">***************************&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="mi">5&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">row&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">***************************&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">10&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">Engine&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">InnoDB&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">11&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Support&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">DEFAULT&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">12&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Comment&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Supports&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">transactions&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">row&lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">level&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">locking&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">and&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">foreign&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">keys&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">13&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="n">Transactions&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">YES&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">14&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">XA&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">YES&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">15&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Savepoints&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">YES&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">16&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="o">***************************&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="mi">8&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">row&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">***************************&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">17&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">Engine&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">MyISAM&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">18&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Support&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">YES&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">19&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Comment&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">MyISAM&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">storage&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">engine&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">20&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="n">Transactions&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">NO&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">21&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">XA&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">NO&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">22&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Savepoints&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">NO&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln">23&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="mi">9&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">rows&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">in&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">set&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="mi">00&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">sec&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="acid">ACID&lt;/h3>
+&lt;p>這是 MySQL 中滿重要的觀念之一, 定義如下.&lt;/p>
+&lt;ul>
+&lt;li>Atomicity (原子性): 資料操作不能只有部分完成.一次的 transaction 只能有兩種結果: 成功或失敗&lt;/li>
+&lt;li>Consistency (一致性): transaction 完成前後, 資料都必須永遠符合 schema 的規範,保持資料與資料庫的一致性&lt;/li>
+&lt;li>Isolation (隔離性): 資料庫允許多個 transactions 同時對其資料進行操作,但也同時確保這些 transaction 的交叉執行,不會導致數據的不一致&lt;/li>
+&lt;li>Durability (耐久性): transaction 完成後,對資料的操作就是永久的,即便系統故障也不會丟失&lt;/li>
+&lt;/ul>
+&lt;h3 id="事務的隔離性">事務的隔離性&lt;/h3>
+&lt;p>ISO 和 ANIS SQL 標準制定了四種事務隔離級別的標準,分別為:&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>type&lt;/th>
+&lt;th>descript&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>read uncommitted&lt;br>讀未提交&lt;/td>
+&lt;td>一個事務還沒提交時,它做的變更就能被別的事務看到&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>read committed&lt;br>讀提交&lt;/td>
+&lt;td>一個事務提交之後,它做的變更才會被其他事務看到&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>repeatable read&lt;br>可重複讀&lt;/td>
+&lt;td>一個事務執行過程中看到的資料,總是跟這個事務在啟動時看到的資料是一致的.當然在可重複讀隔離級別下,未提交的變更對其他事務也是不可見的&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>serializable&lt;br>序列化&lt;/td>
+&lt;td>顧名思義是對於同一行記錄,「寫」會加「寫鎖」,「讀」會加「讀鎖」.當出現讀寫鎖衝突的時候,後存取的事務必須等前一個事務執行完成,才能繼續執行&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>SQL 標準中規定, 針對不同的隔離級別,並行事務發生不同嚴重程度的問題為:&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>隔離級別&lt;/th>
+&lt;th>髒讀&lt;/th>
+&lt;th>不可重複讀&lt;/th>
+&lt;th>幻讀&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>read uncommitted&lt;br>讀未提交&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>read committed&lt;br>讀提交&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>repeatable read&lt;br>可重複讀&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>serializable&lt;br>序列化&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>x&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="範例">範例&lt;/h3>
+&lt;p>初始資料&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-mysql" data-lang="mysql">&lt;span class="ln"> 1&lt;/span>&lt;span class="c1">-- create table
+&lt;/span>&lt;span class="ln"> 2&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">CREATE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">TABLE&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="n">account&lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 3&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="n">id&lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">11&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">NOT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="no">NULL&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">AUTO_INCREMENT&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 4&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="n">name&lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">varchar&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">10&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">NOT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="no">NULL&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 5&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="n">money&lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">NOT&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="no">NULL&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 6&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">PRIMARY&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">KEY&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="n">id&lt;/span>&lt;span class="o">`&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 7&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">ENGINE&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="n">InnoDB&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kp">AUTO_INCREMENT&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 8&lt;/span>&lt;span class="w">
+&lt;/span>&lt;span class="ln"> 9&lt;/span>&lt;span class="w">&lt;/span>&lt;span class="c1">-- insert data
+&lt;/span>&lt;span class="ln">10&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="k">insert&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">into&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">account&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">values&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="s1">&amp;#39;justin&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mi">500&lt;/span>&lt;span class="p">),(&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="s1">&amp;#39;tom&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mi">800&lt;/span>&lt;span class="p">),(&lt;/span>&lt;span class="mi">3&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="s1">&amp;#39;bill&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="mi">1200&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="dirty-read-髒讀">Dirty Read 髒讀&lt;/h4>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>step&lt;/th>
+&lt;th>transaction A&lt;/th>
+&lt;th>transaction B&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;&lt;/td>
+&lt;td>SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>BEGIN;&lt;/td>
+&lt;td>BEGIN;&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>3&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>select count(*) from account; -- 此時count=3&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>4&lt;/td>
+&lt;td>insert into account values (4,'set',500);&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>5&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>select count(*) from account; -- 此時count=4&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>6&lt;/td>
+&lt;td>rollback;&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>7&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>select count(*) from account; -- 此時count=3&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>8&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>commit;&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="non-repeatable-read-不可重複讀">Non-Repeatable Read 不可重複讀&lt;/h4>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>step&lt;/th>
+&lt;th>transaction A&lt;/th>
+&lt;th>transaction B&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>SET TRANSACTION ISOLATION LEVEL READ COMMITTED;&lt;/td>
+&lt;td>SET TRANSACTION ISOLATION LEVEL READ COMMITTED;&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>BEGIN;&lt;/td>
+&lt;td>BEGIN;&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>3&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>select money from account where id=1; -- 此時money=500&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>4&lt;/td>
+&lt;td>update account set money=100 where id=1;&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>5&lt;/td>
+&lt;td>commit;&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>6&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>select money from account where id=1; -- 此時money=100&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>7&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>commit;&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="phantom-read-幻讀">Phantom Read 幻讀&lt;/h4>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>step&lt;/th>
+&lt;th>transaction A&lt;/th>
+&lt;th>transaction B&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>1&lt;/td>
+&lt;td>SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;&lt;/td>
+&lt;td>SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>2&lt;/td>
+&lt;td>BEGIN;&lt;/td>
+&lt;td>BEGIN;&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>3&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>select money from account where id=4; -- 此時not find&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>4&lt;/td>
+&lt;td>insert into account values (4,'set',300);&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>5&lt;/td>
+&lt;td>commit;&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>6&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>update account set money=500 where id=4;&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>7&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>select money from account where id=4; -- 此時money=500&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>8&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>commit;&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://dev.mysql.com/doc/refman/8.0/en/storage-engines.html">storage engines&lt;/a>&lt;/li>
+&lt;/ol></description></item></channel></rss>

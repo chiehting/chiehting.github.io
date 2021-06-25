@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>sre on Chiehting</title><link>https://chiehting.com/categories/sre/</link><description>Recent content in sre on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 04 Nov 2020 17:22:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/categories/sre/index.xml" rel="self" type="application/rss+xml"/><item><title>SLA、SLO和SLI概念</title><link>https://chiehting.com/posts/2020-11-04-concept-of-sla-slo-sli/</link><pubDate>Wed, 04 Nov 2020 17:22:00 +0800</pubDate><guid>https://chiehting.com/posts/2020-11-04-concept-of-sla-slo-sli/</guid><description>
+&lt;p>工作上需要維護開發環境與確保服務的穩定性. 但是要怎麼證明的服務是穩定的?&lt;/p>
+&lt;p>現在主流的雲端服務都會發布各家的 SAL (服務等級協定),但是什麼是 SAL?&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://aws.amazon.com/tw/legal/service-level-agreements/">AWS&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://cloud.google.com/terms/sla?hl=zh-tw">GCP&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://azure.microsoft.com/zh-tw/support/legal/sla/">Azure&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="定義">定義&lt;/h2>
+&lt;p>SLA = Service Level Agreement 服務等級協定
+SLO = Service Level Objective 服務等級目標
+SLI = Services Level Indicator 服務等級指標&lt;/p>
+&lt;h2 id="sla-服務等級協定">SLA (服務等級協定)&lt;/h2>
+&lt;p>SLA 是保障系統穩定的一個協定,必須供應商與用戶都同意. 協助雙方對服務狀況達到共識.
+通常供應商會用 N 個 9 來表示服務穩定度. 如果沒有達到就做出後果.&lt;/p>
+&lt;h3 id="例子1-">例子1 :&lt;/h3>
+&lt;p>Amazon API Gateway Service Level Agreement 為例, AWS 將努力使API Gateway 在每個 AWS 區域正常運行時間百分比至少達到 99.95％. 如果不能滿足則給出服務積分,用來計算賠償使用.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Monthly Uptime Percentage&lt;/th>
+&lt;th>Service Credit Percentage&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Less than 99.95% but greater than or equal to 99.0%&lt;/td>
+&lt;td>10%&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Less than 99.0% but greater than or equal to 95.0%&lt;/td>
+&lt;td>25%&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Less than 95.0%&lt;/td>
+&lt;td>100%&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="例子2">例子2:&lt;/h3>
+&lt;p>PChome 24h購物為例, 全台灣保證24h到貨,遲到將提供100元現金積點;週末假日照常出貨.&lt;/p>
+&lt;h2 id="slo-服務等級目標">SLO (服務等級目標)&lt;/h2>
+&lt;p>SLO 是評估服務穩定的目標, 例如:&lt;/p>
+&lt;ol>
+&lt;li>每月運行時長 99.9% (即每月只有 43 分鐘宕機時間)&lt;/li>
+&lt;li>每月 99.99% 的 HTTP 請求成功返回「200 OK」&lt;/li>
+&lt;li>50% 的 HTTP 在 300 毫秒內返回&lt;/li>
+&lt;/ol>
+&lt;h2 id="sli-服務等級指標">SLI (服務等級指標)&lt;/h2>
+&lt;p>SLI 則是 SLO 的指標, 例如:&lt;/p>
+&lt;ol>
+&lt;li>每月運行時長 99.9% (即每月只有 43 分鐘宕機時間)
+&lt;ul>
+&lt;li>測量的五分鐘內的 cpu 使用率低於 80%&lt;/li>
+&lt;li>測量的五分鐘內的 memory 使用率低於 80%&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="references">references&lt;/h2>
+&lt;p>&lt;a href="https://buzzorange.com/techorange/2013/05/21/service-level-agreement-sla/">雲端服務品質不卡住？連 Google、微軟都在用的 SLA 你不能不懂！&lt;/a>
+&lt;a href="https://landing.google.com/sre/sre-book/chapters/service-level-objectives/">Service Level Objectives&lt;/a>
+&lt;a href="https://kknews.cc/news/4ob3g2v.html">Google:你的SRE實踐可能是錯的&lt;/a>
+&lt;a href="https://earou.dev/zh/sre/Improve-Legacy-System-from-SRE-Perspective.html">如何以 SRE 角度改善既有系統&lt;/a>&lt;/p></description></item><item><title>The SLI Menu</title><link>https://chiehting.com/posts/2020-11-13-the-sli-menu/</link><pubDate>Wed, 04 Nov 2020 17:22:00 +0800</pubDate><guid>https://chiehting.com/posts/2020-11-13-the-sli-menu/</guid><description>
+&lt;p>要如何定義服務的 &lt;a href="../2020-11-04-concept-of-sla-slo-sli">SLI&lt;/a>, 這教學很不錯的 &lt;a href="https://www.coursera.org/lecture/site-reliability-engineering-slos/the-sli-menu-CST0V">The SLI menu&lt;/a>&lt;/p>
+&lt;p>服務水平指標（Service Level Indicator - SLI）通常是一個數值或百分比來反映服務的狀況, 例如: request latency、error rate.&lt;/p>
+&lt;p>The SLI Menu 是一份 SLI 的定義參考,The SLI Menu 將系統操作情境分成三大類，每個分類底下都有幾個建議使用的 SLI 範本，完整清單如下：&lt;/p>
+&lt;p>如果服務是需要被用戶請求的, 第一類&lt;/p>
+&lt;ol>
+&lt;li>請求/回應（Request/Response）
+&lt;ul>
+&lt;li>可用性指標（Availability）&lt;/li>
+&lt;li>回應時間指標（Latency）&lt;/li>
+&lt;li>回應品質指標（Quality）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>數據處理（Data Processing）
+&lt;ul>
+&lt;li>覆蓋率指標（Coverage）&lt;/li>
+&lt;li>正確性指標（Correctness）&lt;/li>
+&lt;li>新鮮度指標（Freshness）&lt;/li>
+&lt;li>吞吐量指標（Throughput）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>資料存儲（Storage）
+&lt;ul>
+&lt;li>持久性指標（Durability）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol></description></item></channel></rss>

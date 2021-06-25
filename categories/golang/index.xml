@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>golang on Chiehting</title><link>https://chiehting.com/categories/golang/</link><description>Recent content in golang on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 12 Mar 2021 11:00:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/categories/golang/index.xml" rel="self" type="application/rss+xml"/><item><title>More types structs, slices, and maps.</title><link>https://chiehting.com/posts/2021-03-12-more-types-in-golang/</link><pubDate>Fri, 12 Mar 2021 11:00:00 +0800</pubDate><guid>https://chiehting.com/posts/2021-03-12-more-types-in-golang/</guid><description>
+&lt;p>了解 Golang 有哪些進階型態. 官網上的 &lt;a href="https://tour.golang.org/moretypes/11">More types&lt;/a>.&lt;/p>
+&lt;h3 id="pointers">Pointers&lt;/h3>
+&lt;p>Go has pointers. A pointer holds the memory address of a value.
+The type &lt;code>*T&lt;/code> is a pointer to a &lt;code>T&lt;/code> value. Its zero value is &lt;code>nil&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-golang" data-lang="golang">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="kd">var&lt;/span> &lt;span class="nx">p&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="kt">int&lt;/span>
+&lt;span class="ln"> 6&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">p&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// &amp;lt;nil&amp;gt;
+&lt;/span>&lt;span class="ln"> 7&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">100&lt;/span>
+&lt;span class="ln"> 8&lt;/span> &lt;span class="nx">p&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="nx">i&lt;/span>
+&lt;span class="ln"> 9&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">p&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 0xc0000be020
+&lt;/span>&lt;span class="ln">10&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="nx">p&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">21&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 21
+&lt;/span>&lt;span class="ln">12&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="structs">Structs&lt;/h3>
+&lt;p>用結構來定義同類型的屬性/欄位.&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-golang" data-lang="golang">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">type&lt;/span> &lt;span class="nx">Vertex&lt;/span> &lt;span class="kd">struct&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="nx">X&lt;/span> &lt;span class="kt">int&lt;/span>
+&lt;span class="ln"> 6&lt;/span> &lt;span class="nx">Y&lt;/span> &lt;span class="kt">int&lt;/span>
+&lt;span class="ln"> 7&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;span class="ln"> 8&lt;/span>
+&lt;span class="ln"> 9&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln">10&lt;/span> &lt;span class="nx">v&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">Vertex&lt;/span>&lt;span class="p">{}&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">v&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">X&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">4&lt;/span>
+&lt;span class="ln">12&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;v.X=%d, v.Y=%d&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">v&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">X&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">v&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Y&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln">13&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="array-and-slices">Array and Slices&lt;/h3>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-golang" data-lang="golang">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="err">#&lt;/span> &lt;span class="nx">array&lt;/span>
+&lt;span class="ln"> 6&lt;/span> &lt;span class="nx">primes&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="p">[&lt;/span>&lt;span class="mi">6&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">5&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">7&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">11&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">13&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;span class="ln"> 7&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">primes&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln"> 8&lt;/span>
+&lt;span class="ln"> 9&lt;/span> &lt;span class="err">#&lt;/span> &lt;span class="nx">slices&lt;/span>
+&lt;span class="ln">10&lt;/span> &lt;span class="kd">var&lt;/span> &lt;span class="nx">s&lt;/span> &lt;span class="p">[]&lt;/span>&lt;span class="kt">int&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">primes&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">s&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln">12&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>這邊要注意切片會取得陣列的指標, 而不是重新賦予值. 所以&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-go" data-lang="go">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="nx">s&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="p">[]&lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">5&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">7&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">11&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">13&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;span class="ln"> 6&lt;/span>
+&lt;span class="ln"> 7&lt;/span> &lt;span class="nx">t&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">s&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">3&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;span class="ln"> 8&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;len:%d, cap:%d, content:%v, %p\n&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="nb">cap&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln"> 9&lt;/span> &lt;span class="c1">// len:2, cap:5, content:[3 5], 0xc00007a038
+&lt;/span>&lt;span class="ln">10&lt;/span>&lt;span class="c1">&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">t&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">[:]&lt;/span>
+&lt;span class="ln">12&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;len:%d, cap:%d, content:%v, %p\n&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="nb">cap&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln">13&lt;/span> &lt;span class="c1">// len:6, cap:6, content:[2 3 5 7 11 13], 0xc00007a030
+&lt;/span>&lt;span class="ln">14&lt;/span>&lt;span class="c1">&lt;/span>
+&lt;span class="ln">15&lt;/span> &lt;span class="nx">t&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="mi">3&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;span class="ln">16&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;len:%d, cap:%d, content:%v, %p\n&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">len&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="nb">cap&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">t&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln">17&lt;/span> &lt;span class="c1">// len:2, cap:5, content:[3 5], 0xc00007a038
+&lt;/span>&lt;span class="ln">18&lt;/span>&lt;span class="c1">&lt;/span>
+&lt;span class="ln">19&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;%v, %p\n&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="nx">s&lt;/span>&lt;span class="p">[:&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="p">],&lt;/span>&lt;span class="nx">s&lt;/span>&lt;span class="p">[:&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;span class="ln">20&lt;/span> &lt;span class="c1">// [2 3 5 7], 0xc00007a030, 超過 t 的 len and capality
+&lt;/span>&lt;span class="ln">21&lt;/span>&lt;span class="c1">&lt;/span>
+&lt;span class="ln">22&lt;/span> &lt;span class="nx">t&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;span class="ln">23&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;%v, %p&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="nx">s&lt;/span>&lt;span class="p">[:&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="p">],&lt;/span>&lt;span class="nx">s&lt;/span>&lt;span class="p">[:&lt;/span>&lt;span class="mi">4&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;span class="ln">24&lt;/span> &lt;span class="c1">// [2 3 0 7], 0xc00007a030, array s also change
+&lt;/span>&lt;span class="ln">25&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="nil">Nil&lt;/h3>
+&lt;ul>
+&lt;li>Nil 很特別並不是&lt;code>關鍵字&lt;/code>&lt;/li>
+&lt;li>不同類型的 nil 都只到同一個記憶體位置&lt;/li>
+&lt;li>不同類型的 nil 不能比較, 轉型後做比較為 false&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-golang" data-lang="golang">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="kd">var&lt;/span> &lt;span class="nx">s&lt;/span> &lt;span class="kd">func&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="ln"> 6&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;%p\n&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="nx">s&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 0x0
+&lt;/span>&lt;span class="ln"> 7&lt;/span>&lt;span class="c1">&lt;/span>
+&lt;span class="ln"> 8&lt;/span> &lt;span class="kd">var&lt;/span> &lt;span class="nx">a&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="kt">int&lt;/span>
+&lt;span class="ln"> 9&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;%p\n&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">a&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="c1">// 0x0
+&lt;/span>&lt;span class="ln">10&lt;/span>&lt;span class="c1">&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="nx">s&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">)&lt;/span> &lt;span class="c1">// true
+&lt;/span>&lt;span class="ln">12&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="nx">a&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="kc">nil&lt;/span> &lt;span class="p">)&lt;/span> &lt;span class="c1">// true
+&lt;/span>&lt;span class="ln">13&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kd">interface&lt;/span>&lt;span class="p">{})(&lt;/span>&lt;span class="nx">s&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kd">interface&lt;/span>&lt;span class="p">{})(&lt;/span>&lt;span class="nx">a&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">)&lt;/span> &lt;span class="c1">// false
+&lt;/span>&lt;span class="ln">14&lt;/span>&lt;span class="c1">&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kd">interface&lt;/span>&lt;span class="p">{})(&lt;/span>&lt;span class="kc">nil&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">*&lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="p">)(&lt;/span>&lt;span class="kc">nil&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">)&lt;/span> &lt;span class="c1">// false
+&lt;/span>&lt;span class="ln">15&lt;/span>&lt;span class="c1">&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="maps">Maps&lt;/h3>
+&lt;p>key-value 結構&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-golang" data-lang="golang">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="nx">m&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nb">make&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">map&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="kt">string&lt;/span>&lt;span class="p">]&lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln"> 6&lt;/span>
+&lt;span class="ln"> 7&lt;/span> &lt;span class="nx">m&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s">&amp;#34;Answer&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">42&lt;/span>
+&lt;span class="ln"> 8&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;The value:&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">m&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s">&amp;#34;Answer&amp;#34;&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;span class="ln"> 9&lt;/span>
+&lt;span class="ln">10&lt;/span> &lt;span class="nx">m&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s">&amp;#34;Answer&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">48&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;The value:&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">m&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s">&amp;#34;Answer&amp;#34;&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;span class="ln">12&lt;/span>
+&lt;span class="ln">13&lt;/span> &lt;span class="nb">delete&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">m&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Answer&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln">14&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;The value:&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">m&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s">&amp;#34;Answer&amp;#34;&lt;/span>&lt;span class="p">])&lt;/span>
+&lt;span class="ln">15&lt;/span>
+&lt;span class="ln">16&lt;/span> &lt;span class="nx">v&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">ok&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nx">m&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s">&amp;#34;Answer&amp;#34;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;span class="ln">17&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;The value:&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">v&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s">&amp;#34;Present?&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">ok&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln">18&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="function-closures">Function closures&lt;/h3>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-golang" data-lang="golang">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">fibonacci&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kd">func&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="nx">p&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;span class="ln"> 6&lt;/span> &lt;span class="nx">pp&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;span class="ln"> 7&lt;/span> &lt;span class="nx">sum&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;span class="ln"> 8&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="kd">func&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 9&lt;/span> &lt;span class="nx">sum&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">p&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="nx">pp&lt;/span>
+&lt;span class="ln">10&lt;/span> &lt;span class="nx">p&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">pp&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">pp&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">sum&lt;/span>
+&lt;span class="ln">12&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="nx">sum&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln">13&lt;/span> &lt;span class="nx">p&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">1&lt;/span>
+&lt;span class="ln">14&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="ln">15&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="nx">sum&lt;/span>
+&lt;span class="ln">16&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="ln">17&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;span class="ln">18&lt;/span>
+&lt;span class="ln">19&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln">20&lt;/span> &lt;span class="nx">f&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nf">fibonacci&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;span class="ln">21&lt;/span> &lt;span class="k">for&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="p">&amp;lt;&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="nx">i&lt;/span>&lt;span class="o">++&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln">22&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nf">f&lt;/span>&lt;span class="p">())&lt;/span>
+&lt;span class="ln">23&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;span class="ln">24&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;span class="ln">25&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="references">References&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="https://tour.golang.org/moretypes/1">More type&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://hsinyu.gitbooks.io/golang_note/content/slice.html">slice&lt;/a>&lt;/li>
+&lt;/ol></description></item><item><title>Basic types in Golang</title><link>https://chiehting.com/posts/2021-03-11-basic-types-in-golang/</link><pubDate>Thu, 11 Mar 2021 11:17:00 +0800</pubDate><guid>https://chiehting.com/posts/2021-03-11-basic-types-in-golang/</guid><description>
+&lt;p>了解 Golang 有哪些資料型態. 官網上的 &lt;a href="https://tour.golang.org/basics/11">Basic types&lt;/a> 列出了多種的型態.&lt;/p>
+&lt;h3 id="variables">Variables&lt;/h3>
+&lt;p>下面列出資料類型, 其中可分為 &lt;code>Booleans&lt;/code>、&lt;code>Numeric Types&lt;/code>、&lt;code>Complex Numbers&lt;/code>、&lt;code>Strings&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="ln"> 1&lt;/span>bool
+&lt;span class="ln"> 2&lt;/span>
+&lt;span class="ln"> 3&lt;/span>string
+&lt;span class="ln"> 4&lt;/span>
+&lt;span class="ln"> 5&lt;/span>int int8 int16 int32 int64
+&lt;span class="ln"> 6&lt;/span>uint uint8 uint16 uint32 uint64 uintptr
+&lt;span class="ln"> 7&lt;/span>
+&lt;span class="ln"> 8&lt;/span>byte // alias for uint8
+&lt;span class="ln"> 9&lt;/span>
+&lt;span class="ln">10&lt;/span>rune // alias for int32
+&lt;span class="ln">11&lt;/span> // represents a Unicode code point
+&lt;span class="ln">12&lt;/span>
+&lt;span class="ln">13&lt;/span>float32 float64
+&lt;span class="ln">14&lt;/span>
+&lt;span class="ln">15&lt;/span>complex64 complex128
+&lt;span class="ln">16&lt;/span>
+&lt;span class="ln">17&lt;/span>string
+&lt;/code>&lt;/pre>&lt;/div>&lt;p>變數宣告與印出&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-golang" data-lang="golang">&lt;span class="ln"> 1&lt;/span>&lt;span class="kn">package&lt;/span> &lt;span class="nx">main&lt;/span>
+&lt;span class="ln"> 2&lt;/span>&lt;span class="kn">import&lt;/span> &lt;span class="s">&amp;#34;fmt&amp;#34;&lt;/span>
+&lt;span class="ln"> 3&lt;/span>
+&lt;span class="ln"> 4&lt;/span>&lt;span class="kd">func&lt;/span> &lt;span class="nf">main&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;span class="ln"> 5&lt;/span> &lt;span class="nx">i&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">100&lt;/span>
+&lt;span class="ln"> 6&lt;/span> &lt;span class="nx">ui&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="nb">uint&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">i&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln"> 7&lt;/span> &lt;span class="nx">f&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mf">1.425&lt;/span>
+&lt;span class="ln"> 8&lt;/span> &lt;span class="nx">b&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="kc">true&lt;/span>
+&lt;span class="ln"> 9&lt;/span> &lt;span class="nx">s&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="s">&amp;#34;Hello World&amp;#34;&lt;/span>
+&lt;span class="ln">10&lt;/span> &lt;span class="nx">c&lt;/span> &lt;span class="o">:=&lt;/span> &lt;span class="mi">3&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="m">4i&lt;/span>
+&lt;span class="ln">11&lt;/span> &lt;span class="nx">fmt&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nf">Printf&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;%T, %T,%T,%T,%T,%T&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">i&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">ui&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">f&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">b&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">s&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">c&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;span class="ln">12&lt;/span>&lt;span class="p">}&lt;/span>
+&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="booleans">Booleans&lt;/h3>
+&lt;p>Booleans have two possible values &lt;code>true&lt;/code> and &lt;code>fales&lt;/code>.&lt;/p>
+&lt;h3 id="numeric-types">Numeric Types&lt;/h3>
+&lt;h4 id="signed-integers">Signed Integers&lt;/h4>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>type&lt;/th>
+&lt;th>size&lt;/th>
+&lt;th>十進制範圍&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>int&lt;/td>
+&lt;td>依據系統&lt;/td>
+&lt;td>依據系統&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>int8&lt;/td>
+&lt;td>8 bits&lt;/td>
+&lt;td>-128 ~ 127&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>int16&lt;/td>
+&lt;td>16 bits&lt;/td>
+&lt;td>-32768 ~ 32767&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>int32&lt;/td>
+&lt;td>32 bits&lt;/td>
+&lt;td>-2147483648 ~ 2147483647&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>int64&lt;/td>
+&lt;td>64 bits&lt;/td>
+&lt;td>-9223372036854775808 ~ 9223372036854775807&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="unsigned-integers">Unsigned Integers&lt;/h4>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>type&lt;/th>
+&lt;th>size&lt;/th>
+&lt;th>十進制範圍&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>uint&lt;/td>
+&lt;td>依據系統&lt;/td>
+&lt;td>依據系統&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>uint8&lt;/td>
+&lt;td>8 bits&lt;/td>
+&lt;td>0 ~ 255&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>uint16&lt;/td>
+&lt;td>16 bits&lt;/td>
+&lt;td>0 ~ 65535&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>uint32&lt;/td>
+&lt;td>32 bits&lt;/td>
+&lt;td>0 ~ 4294967295&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>uint64&lt;/td>
+&lt;td>64 bits&lt;/td>
+&lt;td>0 ~ 18446744073709551615&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="float">Float&lt;/h3>
+&lt;p>&lt;strong>float64&lt;/strong> is the default float type. When you initialize a variable with a decimal value and don’t specify the float type, the default type inferred will be &lt;strong>float64&lt;/strong>.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>type&lt;/th>
+&lt;th>size&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>float32&lt;/td>
+&lt;td>32 bits or 4 bytes&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>float64&lt;/td>
+&lt;td>64 bits or 8 bytes&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="complex-numbers">Complex Numbers&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>type&lt;/th>
+&lt;th>property&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>complex64&lt;/td>
+&lt;td>實數與虛數都是 float32&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>complex128&lt;/td>
+&lt;td>實數與虛數都是 float64&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h2 id="references">References&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="https://tour.golang.org/basics/11">Basic types&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.callicoder.com/golang-basic-types-operators-type-conversion/">Golang Basic Types, Operators and Type Conversion&lt;/a>&lt;/li>
+&lt;/ol></description></item></channel></rss>

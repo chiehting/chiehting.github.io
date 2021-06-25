@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>launchd on Chiehting</title><link>https://chiehting.com/tags/launchd/</link><description>Recent content in launchd on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 12 Nov 2020 17:45:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/launchd/index.xml" rel="self" type="application/rss+xml"/><item><title>Use Launchd in macOS</title><link>https://chiehting.com/posts/2020-11-12-what-is-launchd/</link><pubDate>Thu, 12 Nov 2020 17:45:00 +0800</pubDate><guid>https://chiehting.com/posts/2020-11-12-what-is-launchd/</guid><description>
+&lt;h2 id="launchd">launchd&lt;/h2>
+&lt;p>在 macOS 上使用 launchd 來管理服務與進程. 使用者不會直接與 launchd 做互動, 是透過 launchctl 指令來載入或取消載入 launchd 服務程式和代理程式.&lt;/p>
+&lt;p>例如:&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>&lt;span class="c1"># 查看資源限制&lt;/span>
+&lt;span class="ln">2&lt;/span>$ launchctl limit
+&lt;span class="ln">3&lt;/span>
+&lt;span class="ln">4&lt;/span>&lt;span class="c1"># 列出服務清單&lt;/span>
+&lt;span class="ln">5&lt;/span>$ launchctl list
+&lt;span class="ln">6&lt;/span>
+&lt;span class="ln">7&lt;/span>&lt;span class="c1"># 列出服務說明&lt;/span>
+&lt;span class="ln">8&lt;/span>$ launchctl print system/com.apple.timed
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="plists-property-list">plists (property list)&lt;/h2>
+&lt;p>plist 檔案是用來定義服務的屬性檔案, 可分系統服務與第三方服務, 而 plist 檔案會放置在下面路徑.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>檔案夾&lt;/th>
+&lt;th>使用情況&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>/System/Library/LaunchDaemons&lt;/td>
+&lt;td>Apple 提供的系統服務程式&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/System/Library/LaunchAgents&lt;/td>
+&lt;td>Apple 提供的代理程式，適用於以使用者為基礎的所有使用者&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/Library/LaunchDaemons&lt;/td>
+&lt;td>第三方系統服務程式&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/Library/LaunchAgents&lt;/td>
+&lt;td>第三方代理程式，適用於以使用者為基礎的所有使用者&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>~/Library/LaunchAgents&lt;/td>
+&lt;td>第三方代理程式，僅適用於已登入的使用者&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>如下指令,查看 dock 服務的 plist 檔案內容. 可以看到是 DTD (Document Type Definition) 格式.&lt;/p>
+&lt;div class="highlight">&lt;pre class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="ln">1&lt;/span>&lt;span class="c1"># 查看 plist&lt;/span>
+&lt;span class="ln">2&lt;/span>cat /System/Library/LaunchAgents/com.apple.Dock.plist
+&lt;span class="ln">3&lt;/span>...
+&lt;span class="ln">4&lt;/span> &amp;lt;key&amp;gt;Program&amp;lt;/key&amp;gt;
+&lt;span class="ln">5&lt;/span> &amp;lt;string&amp;gt;/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock&amp;lt;/string&amp;gt;
+&lt;span class="ln">6&lt;/span>...
+&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="references">references&lt;/h2>
+&lt;ol>
+&lt;li>&lt;a href="https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/Introduction.html#//apple_ref/doc/uid/10000172i-SW1-SW1">about daemons and services
+&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://support.apple.com/zh-tw/guide/terminal/apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac">launchd&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://support.apple.com/zh-hk/guide/terminal/apda49a1bb2-577e-4721-8f25-ffc0836f6997/mac">plist&lt;/a>&lt;/li>
+&lt;/ol></description></item></channel></rss>
