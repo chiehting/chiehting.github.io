@@ -1,7 +1,0 @@
-錯誤日誌
-2022-01-26 02:58:47.049 UTC [27] ERROR:  missing chunk number 0 for toast value 19341 in pg_toast_2619
-2022-01-26 02:58:47.049 UTC [27] STATEMENT:  SELECT count(*) as total
-
-
-解決方法
-REINDEX table pg_toast.pg_toast_2619;

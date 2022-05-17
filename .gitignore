@@ -1,6 +1,7 @@
 # OS generated files
 Thumbs.db
 .DS_Store
+.serena
 
 # Logs
 *.log
@@ -23,6 +24,7 @@ Thumbs.db
 *.o
 *.so
 main
+.hugo_build.lock
 
 # Service
 0-work

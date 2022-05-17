@@ -1,0 +1,1428 @@
+---
+title: Chiehting website
+description: this website is preview about Chiehting. irregular update.
+image:
+  path: https://storage.googleapis.com/chiehting.com/blog/preview-image.png
+  height: 1200
+  width: 620
+url: /sre/
+---
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRE 學習路線圖 | Site Reliability Engineering Learning Path</title>
+<style>
+:root{
+  --bg:#0f1115; --bg-elev:#161a21; --bg-elev2:#1d222b;
+  --fg:#e6e8ec; --fg-dim:#9aa3b2; --fg-faint:#6b7383;
+  --accent:#4f8cff; --accent-dim:#2d5cad;
+  --ok:#3fb950; --warn:#d29922; --err:#f85149; --info:#58a6ff;
+  --border:#262c36; --border-soft:#1e232b;
+  --code-bg:#12161c;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --maxw:860px;
+}
+html[data-theme="light"]{
+  --bg:#ffffff; --bg-elev:#f6f7f9; --bg-elev2:#eceef2;
+  --fg:#1a1d23; --fg-dim:#565d6b; --fg-faint:#858c99;
+  --accent:#0f62fe; --accent-dim:#8ab4ff;
+  --ok:#1a7f37; --warn:#9a6700; --err:#cf222e; --info:#0969da;
+  --border:#d8dce3; --border-soft:#e6e9ee;
+  --code-bg:#f4f5f7;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth; scroll-padding-top:24px;}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:var(--sans); font-size:16px; line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Layout ---------- */
+.layout{display:grid; grid-template-columns:290px minmax(0,1fr); min-height:100vh;}
+.sidebar{
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+  background:var(--bg-elev); border-right:1px solid var(--border);
+  padding:22px 0 60px;
+}
+.sidebar::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+.brand{padding:0 22px 16px; border-bottom:1px solid var(--border-soft); margin-bottom:14px;}
+.brand h1{font-size:17px; margin:0 0 4px; letter-spacing:-.01em;}
+.brand p{margin:0; font-size:12px; color:var(--fg-faint); font-family:var(--mono);}
+nav ol{list-style:none; margin:0; padding:0;}
+nav a{
+  display:block; padding:6px 22px 6px 22px; color:var(--fg-dim);
+  text-decoration:none; font-size:13.5px; border-left:2px solid transparent;
+  transition:.12s;
+}
+nav a:hover{color:var(--fg); background:var(--bg-elev2);}
+nav a.active{color:var(--accent); border-left-color:var(--accent); background:var(--bg-elev2);}
+nav .lvl0{font-weight:600; color:var(--fg); margin-top:12px; font-size:12px;
+  letter-spacing:.08em; text-transform:uppercase; padding:6px 22px 4px; color:var(--fg-faint);}
+nav a.lvl2{padding-left:36px; font-size:12.5px; color:var(--fg-faint);}
+
+main{padding:52px 44px 140px; max-width:calc(var(--maxw) + 88px); margin:0 auto; width:100%;}
+
+/* ---------- Typography ---------- */
+h2{
+  font-size:26px; margin:64px 0 6px; letter-spacing:-.02em; line-height:1.3;
+  padding-top:8px;
+}
+h2:first-of-type{margin-top:0;}
+h2 .en{display:block; font-size:13px; font-weight:400; color:var(--fg-faint);
+  font-family:var(--mono); letter-spacing:0; margin-top:4px;}
+h3{font-size:18.5px; margin:38px 0 10px; letter-spacing:-.01em;}
+h4{font-size:15px; margin:26px 0 8px; color:var(--fg-dim); letter-spacing:.01em;}
+p{margin:0 0 14px;}
+ul,ol{margin:0 0 16px; padding-left:22px;}
+li{margin:5px 0;}
+li>ul,li>ol{margin:6px 0;}
+a{color:var(--accent);}
+strong{color:var(--fg); font-weight:650;}
+hr{border:0; border-top:1px solid var(--border-soft); margin:44px 0;}
+
+code{
+  font-family:var(--mono); font-size:.87em; background:var(--code-bg);
+  padding:.14em .38em; border-radius:4px; border:1px solid var(--border-soft);
+}
+pre{
+  background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+  padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.6; margin:0 0 18px;
+}
+pre code{background:none; border:0; padding:0; font-size:inherit;}
+
+/* ---------- Components ---------- */
+.hero{
+  border:1px solid var(--border); border-radius:14px; padding:34px 34px 30px;
+  background:linear-gradient(160deg,var(--bg-elev) 0%,var(--bg) 90%); margin-bottom:12px;
+}
+.hero h2{margin:0 0 10px; font-size:32px;}
+.hero .sub{color:var(--fg-dim); font-size:15px; margin:0;}
+.meta-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;}
+.chip{
+  font-family:var(--mono); font-size:11.5px; padding:4px 10px; border-radius:999px;
+  border:1px solid var(--border); color:var(--fg-dim); background:var(--bg-elev2);
+}
+
+.callout{
+  border:1px solid var(--border); border-left:3px solid var(--accent);
+  background:var(--bg-elev); border-radius:0 8px 8px 0;
+  padding:14px 18px; margin:0 0 18px; font-size:14.5px;
+}
+.callout .t{font-weight:650; font-size:13px; letter-spacing:.03em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:6px; font-family:var(--mono);}
+.callout p:last-child{margin-bottom:0;}
+.callout.warn{border-left-color:var(--warn);} .callout.warn .t{color:var(--warn);}
+.callout.ok{border-left-color:var(--ok);} .callout.ok .t{color:var(--ok);}
+.callout.err{border-left-color:var(--err);} .callout.err .t{color:var(--err);}
+
+table{
+  width:100%; border-collapse:collapse; margin:0 0 20px; font-size:14px;
+  border:1px solid var(--border); border-radius:8px; overflow:hidden;
+}
+th,td{padding:9px 13px; text-align:left; border-bottom:1px solid var(--border-soft); vertical-align:top;}
+th{background:var(--bg-elev2); font-size:12.5px; letter-spacing:.03em;
+   text-transform:uppercase; color:var(--fg-dim); font-weight:600;}
+tr:last-child td{border-bottom:0;}
+tbody tr:hover{background:var(--bg-elev);}
+td code{white-space:nowrap;}
+
+.term{
+  display:inline-block; border-bottom:1px dotted var(--fg-faint); cursor:help;
+}
+.en-inline{color:var(--fg-faint); font-family:var(--mono); font-size:.86em;}
+
+.stage{
+  display:flex; gap:14px; align-items:baseline; margin:0 0 4px;
+}
+.stage .num{
+  font-family:var(--mono); font-size:12px; color:var(--bg); background:var(--accent);
+  width:26px; height:26px; border-radius:6px; display:grid; place-items:center;
+  flex:0 0 26px; font-weight:700;
+}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin-bottom:20px;}
+.card{
+  border:1px solid var(--border); border-radius:10px; padding:16px 18px;
+  background:var(--bg-elev);
+}
+.card h4{margin:0 0 8px; color:var(--fg); font-size:14.5px;}
+.card ul{margin:0; padding-left:18px; font-size:13.5px; color:var(--fg-dim);}
+.card p{font-size:13.5px; color:var(--fg-dim); margin:0;}
+
+.toolbar{
+  position:fixed; top:14px; right:18px; display:flex; gap:8px; z-index:50;
+}
+.toolbar button{
+  background:var(--bg-elev2); color:var(--fg-dim); border:1px solid var(--border);
+  border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer;
+  font-family:var(--mono); transition:.12s;
+}
+.toolbar button:hover{color:var(--fg); border-color:var(--accent);}
+
+.progress{position:fixed; top:0; left:0; height:2px; background:var(--accent); z-index:60; width:0;}
+
+.footnote{font-size:13px; color:var(--fg-faint); border-top:1px solid var(--border-soft);
+  padding-top:18px; margin-top:50px;}
+.footnote a{color:var(--fg-dim);}
+
+.ascii{
+  font-family:var(--mono); font-size:12.5px; line-height:1.45; white-space:pre;
+  background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+  padding:16px 18px; overflow-x:auto; margin:0 0 18px; color:var(--fg-dim);
+}
+
+.menu-btn{display:none;}
+@media (max-width:960px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{position:fixed; z-index:40; width:290px; transform:translateX(-100%); transition:.2s;}
+  .sidebar.open{transform:none;}
+  .menu-btn{display:block;}
+  main{padding:64px 20px 100px;}
+  .hero{padding:24px 20px;}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="toolbar">
+  <button class="menu-btn" id="menuBtn">☰ 目錄</button>
+  <button id="themeBtn">◐ 主題</button>
+</div>
+
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <h1>SRE 學習路線圖</h1>
+    <p>Site Reliability Engineering</p>
+  </div>
+  <nav id="toc"></nav>
+</aside>
+
+<main id="content">
+
+<section class="hero">
+  <h2 style="border:0;padding:0;">SRE 學習路線圖<span class="en">A Progressive Learning Path for Site Reliability Engineering</span></h2>
+  <p class="sub">從零開始，循序漸進地成為<strong>網站可靠性工程師</strong><span class="en-inline"> (Site Reliability Engineer, SRE)</span>。<br>
+  本教程聚焦於<strong>學習路線</strong>本身 — 說明每個階段「要學什麼、為什麼要學、學到什麼程度」，並列出對應的技術與工具，但不展開工具教學。</p>
+  <div class="meta-row">
+    <span class="chip">9 個階段</span>
+    <span class="chip">由簡入深</span>
+    <span class="chip">中英對照</span>
+    <span class="chip">2026-08</span>
+  </div>
+</section>
+
+<div class="callout">
+  <div class="t">如何使用本教程</div>
+  <p>每個階段都有 <strong>學習目標</strong>、<strong>核心概念</strong>、<strong>工具清單</strong>、<strong>驗收標準</strong>（你怎麼知道自己學會了）。
+  工具清單只列名稱與定位，<em>不展開教學</em> — 因為工具會換，路線不會。請按階段順序推進，不要跳關；
+  第 5 階段（Kubernetes）之前如果沒有第 1 階段（Linux／網路）的地基，你會只學會指令而不理解行為。</p>
+</div>
+
+<hr>
+
+<h2 id="s0">階段 0 — 認識這個角色<span class="en">Stage 0 — Understanding the Role</span></h2>
+
+<h3 id="s0-1">0.1 SRE 是什麼</h3>
+<p><strong>網站可靠性工程</strong><span class="en-inline"> (Site Reliability Engineering, SRE)</span> 是 Google 於 2003 年由 Ben Treynor Sloss 創立的一套工程實踐。
+最常被引用的定義是：</p>
+<div class="callout">
+  <div class="t">定義 / Definition</div>
+  <p><em>"SRE is what happens when you ask a software engineer to design an operations team."</em></p>
+  <p>「當你請一位軟體工程師去設計一個維運團隊時，所產生的結果就是 SRE。」</p>
+</div>
+<p>這句話的重點不在「維運」，而在<strong>用軟體工程的方法解決維運問題</strong>。傳統維運靠「加人」來擴張，
+SRE 靠「寫程式把人從迴圈裡拿掉」來擴張。這是整個角色的思想源頭，後面所有實踐都是它的推論。</p>
+
+<h3 id="s0-2">0.2 SRE、DevOps、Platform Engineering 的關係</h3>
+<table>
+<thead><tr><th>角色</th><th>本質</th><th>產出</th></tr></thead>
+<tbody>
+<tr><td><strong>DevOps</strong><br><span class="en-inline">Development + Operations</span></td>
+    <td>一組<strong>原則與文化</strong>（打破開發與維運的牆）</td>
+    <td>沒有標準實作，是一種「該怎麼做」的哲學</td></tr>
+<tr><td><strong>SRE</strong><br><span class="en-inline">Site Reliability Engineering</span></td>
+    <td>DevOps 原則的一種<strong>具體實作</strong>，以「可靠性」為量化目標</td>
+    <td>SLO、錯誤預算、自動化、事後檢討</td></tr>
+<tr><td><strong>Platform Engineering</strong><br><span class="en-inline">Platform Engineering</span></td>
+    <td>把上述能力<strong>產品化</strong>成內部開發者平台</td>
+    <td>IDP、黃金路徑 (Golden Path)、自助式工具</td></tr>
+</tbody>
+</table>
+<p>Google 用一句程式碼比喻總結：<code>class SRE implements interface DevOps</code> —
+DevOps 是介面（宣告要做什麼），SRE 是實作（規定具體怎麼做、用什麼數字衡量）。</p>
+
+<h3 id="s0-3">0.3 SRE 的日常究竟在做什麼</h3>
+<p>一個常見誤解是「SRE 就是待命救火」。實際上 SRE 有一條著名的紀律：</p>
+<div class="callout ok">
+  <div class="t">50% 上限規則 / The 50% Rule</div>
+  <p>SRE 花在<strong>維運工作</strong><span class="en-inline"> (ops work)</span> 的時間必須被限制在 <strong>50% 以下</strong>，
+  剩餘時間必須投入<strong>工程專案</strong> — 也就是寫程式把維運工作消滅掉。
+  若某團隊長期超過 50%，多出的工作量會被<strong>退回給開發團隊</strong>，或增派人力，直到回到平衡。</p>
+</div>
+<p>典型的時間分配：</p>
+<ul>
+  <li><strong>待命與事件處理</strong><span class="en-inline"> (On-call &amp; Incident Response)</span> — 值班輪值、處理告警、主導事故</li>
+  <li><strong>可靠性工程</strong><span class="en-inline"> (Reliability Engineering)</span> — 設計評審、容量規劃、韌性改善</li>
+  <li><strong>自動化</strong><span class="en-inline"> (Automation)</span> — 消除瑣務、建工具、建平台</li>
+  <li><strong>可觀測性建設</strong><span class="en-inline"> (Observability)</span> — 監控、告警、儀表板、SLO 落地</li>
+  <li><strong>事後檢討</strong><span class="en-inline"> (Postmortem)</span> — 寫報告、追蹤改善項</li>
+</ul>
+
+<h3 id="s0-4">0.4 你需要具備的心智模型</h3>
+<div class="grid2">
+  <div class="card"><h4>可靠性是可以被「花掉」的</h4>
+    <p>100% 可用性既不可能也不划算。可靠性是一個<strong>預算</strong>，用來換取發布速度。</p></div>
+  <div class="card"><h4>失敗是常態，不是例外</h4>
+    <p>分散式系統中，部分失敗永遠在發生。設計目標是<strong>優雅降級</strong>，不是「永不出錯」。</p></div>
+  <div class="card"><h4>人不該做機器能做的事</h4>
+    <p>重複性的手動操作是<strong>瑕疵</strong>，不是工作內容。</p></div>
+  <div class="card"><h4>對事不對人</h4>
+    <p>事故的根因是<strong>系統設計</strong>，不是「某人按錯按鈕」。</p></div>
+</div>
+
+<div class="callout warn">
+  <div class="t">階段 0 驗收</div>
+  <p>你能用三句話向非技術人員解釋：SRE 跟維運工程師差在哪、為什麼公司需要 SRE、SRE 怎麼衡量自己做得好不好。</p>
+</div>
+
+<hr>
+
+<h2 id="s1">階段 1 — 技術地基<span class="en">Stage 1 — Technical Foundations</span></h2>
+<p>這是<strong>不可跳過</strong>的階段。SRE 的價值來自於「當系統壞掉時，你能一路往下追到底」。
+沒有地基，你只能重啟服務然後祈禱。</p>
+
+<h3 id="s1-1">1.1 作業系統與 Linux</h3>
+<p>目標不是「會用指令」，而是<strong>理解作業系統如何調度資源</strong>，因為 90% 的線上問題最後都會收斂到
+CPU、記憶體、磁碟 I/O、網路這四類資源之一。</p>
+<h4>必須理解的概念</h4>
+<ul>
+  <li><strong>行程與執行緒</strong><span class="en-inline"> (Process &amp; Thread)</span>、行程狀態、殭屍行程、<code>fork/exec</code></li>
+  <li><strong>排程與負載</strong><span class="en-inline"> (Scheduling &amp; Load Average)</span> — 為什麼 load average 高不等於 CPU 忙</li>
+  <li><strong>記憶體管理</strong><span class="en-inline"> (Memory Management)</span> — 虛擬記憶體、page cache、swap、<strong>OOM Killer</strong></li>
+  <li><strong>檔案系統與 I/O</strong><span class="en-inline"> (Filesystem &amp; I/O)</span> — inode、file descriptor、阻塞與非阻塞 I/O</li>
+  <li><strong>系統呼叫</strong><span class="en-inline"> (System Call)</span> — 使用者空間與核心空間的邊界</li>
+  <li><strong>命名空間與控制群組</strong><span class="en-inline"> (Namespace &amp; cgroup)</span> — <em>這是容器的底層原理，第 4 階段會用到</em></li>
+  <li><strong>訊號</strong><span class="en-inline"> (Signal)</span> — <code>SIGTERM</code> 與 <code>SIGKILL</code> 的差異（優雅關閉的基礎）</li>
+</ul>
+<h4>工具清單</h4>
+<table>
+<thead><tr><th>類別</th><th>工具</th><th>定位</th></tr></thead>
+<tbody>
+<tr><td>綜觀</td><td><code>top</code> / <code>htop</code> / <code>vmstat</code> / <code>dstat</code></td><td>系統整體資源快照</td></tr>
+<tr><td>行程</td><td><code>ps</code> / <code>pstree</code> / <code>lsof</code></td><td>誰在跑、開了什麼檔案</td></tr>
+<tr><td>CPU</td><td><code>mpstat</code> / <code>pidstat</code> / <code>perf</code></td><td>CPU 使用分解與剖析</td></tr>
+<tr><td>記憶體</td><td><code>free</code> / <code>smem</code> / <code>/proc/meminfo</code></td><td>記憶體去哪了</td></tr>
+<tr><td>磁碟</td><td><code>iostat</code> / <code>iotop</code> / <code>df</code> / <code>du</code></td><td>I/O 瓶頸定位</td></tr>
+<tr><td>追蹤</td><td><code>strace</code> / <code>ltrace</code> / <strong>eBPF</strong> (<code>bpftrace</code>, <code>bcc</code>)</td><td>看系統呼叫層級發生什麼</td></tr>
+<tr><td>日誌</td><td><code>journalctl</code> / <code>dmesg</code></td><td>核心與服務日誌</td></tr>
+<tr><td>服務管理</td><td><code>systemd</code> / <code>systemctl</code></td><td>服務生命週期</td></tr>
+</tbody>
+</table>
+<div class="callout"><div class="t">建議路徑</div>
+<p>先跑一遍 <strong>USE 方法</strong>（第 3 階段會正式介紹）的檢查清單，再回頭補理論。
+把 Brendan Gregg 的 <em>Linux Performance Tools</em> 圖表當成地圖，每個工具至少實際用過一次。</p></div>
+
+<h3 id="s1-2">1.2 網路</h3>
+<p>SRE 面對的分散式系統本質上是「一堆透過網路溝通的行程」。網路知識的深度，直接決定你能不能診斷
+「服務沒掛但很慢」這類最難的問題。</p>
+<h4>必須理解的概念</h4>
+<ul>
+  <li><strong>OSI 與 TCP/IP 模型</strong> — 尤其是 L3（IP）、L4（TCP/UDP）、L7（HTTP）的分工</li>
+  <li><strong>TCP 三次交握與四次揮手</strong><span class="en-inline"> (Three-way Handshake / Connection Teardown)</span>、<code>TIME_WAIT</code> 的意義</li>
+  <li><strong>TCP 壅塞控制與重傳</strong><span class="en-inline"> (Congestion Control &amp; Retransmission)</span> — 為什麼丟包會讓延遲暴增</li>
+  <li><strong>DNS 解析流程</strong>、TTL、快取 — <em>大量線上事故的根因</em></li>
+  <li><strong>TLS 交握</strong><span class="en-inline"> (TLS Handshake)</span>、憑證鏈、憑證過期</li>
+  <li><strong>HTTP/1.1 vs HTTP/2 vs HTTP/3</strong>、keep-alive、連線池</li>
+  <li><strong>負載平衡</strong><span class="en-inline"> (Load Balancing)</span> — L4 與 L7 的差異、健康檢查</li>
+  <li><strong>NAT、防火牆、路由表、子網路劃分</strong><span class="en-inline"> (CIDR)</span></li>
+</ul>
+<h4>工具清單</h4>
+<p><code>dig</code> / <code>nslookup</code>（DNS）、<code>curl</code>（HTTP 與時間分解）、<code>ss</code> / <code>netstat</code>（連線狀態）、
+<code>tcpdump</code> / <strong>Wireshark</strong>（封包分析）、<code>mtr</code> / <code>traceroute</code>（路徑診斷）、
+<code>iptables</code> / <code>nftables</code>（封包過濾）、<code>openssl s_client</code>（TLS 診斷）。</p>
+
+<h3 id="s1-3">1.3 程式設計能力</h3>
+<div class="callout err">
+  <div class="t">關鍵分水嶺</div>
+  <p>SRE 與傳統維運工程師最大的差別，就是<strong>能不能寫出正式的、可維護的軟體</strong>。
+  這不是「會寫 shell script」的程度，而是「能設計並交付一個內部工具或服務」的程度。</p>
+</div>
+<ul>
+  <li><strong>Python</strong> — 自動化、工具、資料處理的通用選擇；標準函式庫、型別註記、測試</li>
+  <li><strong>Go</strong> — 雲原生生態的通用語言（Kubernetes、Prometheus、Terraform 皆為 Go 撰寫）；
+      並行模型 (goroutine/channel)、編譯成單一二進位檔的維運友善性</li>
+  <li><strong>Bash</strong> — 黏合層；但要知道<em>什麼時候該停止用 Bash</em>（超過 100 行就該換語言）</li>
+  <li><strong>資料結構與演算法</strong> — 不需要刷題到競賽水準，但要能分析複雜度、理解雜湊與樹</li>
+  <li><strong>並行與同步</strong><span class="en-inline"> (Concurrency &amp; Synchronization)</span> — 競態條件、死鎖、鎖的成本</li>
+  <li><strong>測試</strong> — 單元測試、整合測試；自動化腳本也需要測試</li>
+</ul>
+
+<h3 id="s1-4">1.4 版本控制與協作</h3>
+<ul>
+  <li><strong>Git</strong> — 不只是 <code>add/commit/push</code>，而是理解 DAG 模型：分支、rebase、cherry-pick、bisect（<em>找出哪個 commit 引入問題的利器</em>）</li>
+  <li><strong>分支策略</strong><span class="en-inline"> (Branching Strategy)</span> — trunk-based development、GitHub Flow</li>
+  <li><strong>程式碼審查</strong><span class="en-inline"> (Code Review)</span> — 這是 SRE 影響系統可靠性最早、最便宜的介入點</li>
+</ul>
+
+<div class="callout warn">
+  <div class="t">階段 1 驗收</div>
+  <p>給你一台「HTTP 回應變慢」的 Linux 機器，你能在不重啟服務的前提下，
+  用工具逐層排除 CPU／記憶體／磁碟／網路／應用程式，並說出你的判斷依據。
+  以及：你能獨立寫出一個有測試、有錯誤處理、能交付給同事使用的 CLI 工具。</p>
+</div>
+
+<hr>
+
+<h2 id="s2">階段 2 — 可靠性的核心語言<span class="en">Stage 2 — The Core Vocabulary of Reliability</span></h2>
+<p>這是 SRE <strong>真正獨有</strong>的知識體系。前一階段的內容，後端工程師也可能會；
+但這一階段的內容，是 SRE 這個角色存在的理由。<strong>這一章請讀兩遍。</strong></p>
+
+<h3 id="s2-1">2.1 SLI / SLO / SLA — 可靠性的度量三層</h3>
+<div class="ascii">
+  使用者體驗
+      │
+      ▼
+  ┌──────────────────────────────────────────────┐
+  │  SLI  服務等級指標 (Service Level Indicator)  │  ← 「量測什麼」：一個數字
+  └──────────────────────────────────────────────┘
+      │  對這個數字設一個目標
+      ▼
+  ┌──────────────────────────────────────────────┐
+  │  SLO  服務等級目標 (Service Level Objective)  │  ← 「目標多少」：內部承諾
+  └──────────────────────────────────────────────┘
+      │  對外簽約，附帶罰則
+      ▼
+  ┌──────────────────────────────────────────────┐
+  │  SLA  服務等級協議 (Service Level Agreement)  │  ← 「違約賠多少」：法律合約
+  └──────────────────────────────────────────────┘
+</div>
+
+<h4>SLI — 服務等級指標 <span class="en-inline">(Service Level Indicator)</span></h4>
+<p>一個<strong>可量測的、反映使用者體驗</strong>的數值。標準寫法是一個比例：</p>
+<pre><code>SLI = (良好事件數 / 有效事件總數) × 100%
+
+例：成功的 HTTP 請求數 / 全部 HTTP 請求數
+例：回應時間 &lt; 300ms 的請求數 / 全部請求數</code></pre>
+<p>SRE Workbook 依<strong>系統類型</strong>整理出這組 SLI 分類 — 先認出你的系統屬於哪一類，再挑對應的 SLI：</p>
+<table>
+<thead><tr><th>系統類型</th><th>SLI</th><th>英文</th><th>衡量什麼</th></tr></thead>
+<tbody>
+<tr><td rowspan="3">請求驅動型<br><span class="en-inline">Request-driven</span><br>（API、網頁服務）</td>
+    <td>可用性</td><td>Availability</td><td>請求是否成功回應</td></tr>
+<tr><td>延遲</td><td>Latency</td><td>回應是否夠快（用<strong>百分位數</strong>，不要用平均值）</td></tr>
+<tr><td>品質</td><td>Quality</td><td>在降級模式下，回應的完整度是否受損</td></tr>
+<tr><td rowspan="3">管線型<br><span class="en-inline">Pipeline</span><br>（批次、串流處理）</td>
+    <td>新鮮度</td><td>Freshness</td><td>資料是否夠新</td></tr>
+<tr><td>正確性</td><td>Correctness</td><td>產出的資料是否正確</td></tr>
+<tr><td>涵蓋率</td><td>Coverage</td><td>應處理的資料有多少比例真的被處理了</td></tr>
+<tr><td>儲存型<br><span class="en-inline">Storage</span></td>
+    <td>耐久性</td><td>Durability</td><td>寫入的資料是否還讀得回來</td></tr>
+</tbody>
+</table>
+<p class="en-inline" style="font-size:13.5px;">注意：<strong>吞吐量 (throughput) 不在這份官方分類中</strong> —
+它是重要的容量指標，但通常不是好的 SLI，因為使用者不會因為「系統每秒處理很多請求」而感到滿意。</p>
+<div class="callout warn">
+  <div class="t">為什麼延遲不能用平均值</div>
+  <p>平均延遲會被大量的快速請求稀釋，完全隱藏尾端問題。務必使用<strong>百分位數</strong><span class="en-inline"> (percentile)</span>：
+  p50（中位數）、p95、p99、p99.9。「p99 延遲 2 秒」代表<strong>每 100 個請求就有 1 個使用者等了 2 秒</strong>。</p>
+</div>
+
+<h4>SLO — 服務等級目標 <span class="en-inline">(Service Level Objective)</span></h4>
+<p>對 SLI 設定的<strong>目標值 + 時間窗</strong>。這是 SRE 團隊的內部承諾，也是所有決策的依據。</p>
+<pre><code>過去 28 天內，99.9% 的 HTTP 請求應在 300ms 內成功回應
+ └──時間窗──┘  └─目標─┘        └────── SLI 定義 ──────┘</code></pre>
+<p>Google 的預設是<strong>四週滾動窗口</strong><span class="en-inline"> (four-week rolling window)</span>。
+用滾動窗口而非「自然月」，是為了避免每個月一號預算歸零時的行為扭曲。</p>
+<p>設定 SLO 的三個原則：</p>
+<ul>
+  <li><strong>不要追求 100%</strong>。SRE Book 的原話是
+      <em>「100% 幾乎永遠不會是正確的可靠性目標」</em>。理由有二：<br>
+      (1) <strong>成本是非線性的</strong> — 可靠性每往上推一級，<em>下一級的改善可能比上一級貴 100 倍</em>；<br>
+      (2) <strong>使用者根本感受不到</strong> — 書中的例子是：
+      <em>「一個用著 99% 可靠度手機的使用者，分辨不出 99.99% 與 99.999% 的服務可靠性差異。」</em>
+      使用者端的網路、裝置、ISP 本身就是可靠性的天花板。</li>
+  <li><strong>從使用者旅程出發</strong><span class="en-inline"> (Critical User Journey, CUJ)</span>，不要從機器指標出發。
+      「CPU 使用率」不是 SLI，因為使用者不在乎 CPU。</li>
+  <li><strong>從寬鬆開始，逐步收緊</strong>。先觀測現況，再訂一個「略優於現況」的目標。</li>
+</ul>
+
+<h4>SLA — 服務等級協議 <span class="en-inline">(Service Level Agreement)</span></h4>
+<p>對<strong>外部客戶</strong>的合約，違反時有<strong>財務或法律後果</strong>（退款、賠償）。
+關鍵設計原則：<strong>SLA 必須比 SLO 寬鬆</strong>。</p>
+<pre><code>內部 SLO: 99.9%   ←─ 團隊真正努力達成的目標
+外部 SLA: 99.5%   ←─ 對客戶的承諾（留有安全邊際）
+                      SLO 破了還有緩衝，不會立刻違約賠錢</code></pre>
+<div class="callout warn">
+  <div class="t">反直覺但重要：不要過度達標 (Don&#39;t Overachieve)</div>
+  <p>如果你承諾 99.9% 卻長期跑出 99.999%，<strong>下游團隊會開始依賴那個沒被承諾的可靠性</strong>，
+  於是你實際上被鎖死在 99.999%，再也不能承擔任何風險。<br>
+  Google 對此的做法相當激進：內部鎖服務 Chubby 曾因為<em>太可靠</em>，
+  而被<strong>刻意安排計畫性停機</strong>，好讓依賴它的團隊維持正確的失敗處理假設。<br>
+  這也是 SLA 必須比 SLO 寬鬆的同一個道理 — <strong>可靠性的承諾，講到做到就好，不要超額奉送。</strong></p>
+</div>
+
+<h4>可用性數字直覺表</h4>
+<p>以下數字取自 Google SRE Book 附錄 A 的官方對照表（假設<strong>無計畫性停機</strong>，且採「一個月 = 30 天」的換算慣例）：</p>
+<table>
+<thead><tr><th>可用性</th><th>俗稱</th><th>每年允許停機</th><th>每月</th><th>每週</th></tr></thead>
+<tbody>
+<tr><td>90%</td><td>一個 9</td><td>36.5 天</td><td>3 天</td><td>16.8 小時</td></tr>
+<tr><td>99%</td><td>兩個 9</td><td>3.65 天</td><td>7.2 小時</td><td>1.68 小時</td></tr>
+<tr><td>99.9%</td><td>三個 9</td><td>8.76 小時</td><td>43.2 分鐘</td><td>10.1 分鐘</td></tr>
+<tr><td>99.95%</td><td>—</td><td>4.38 小時</td><td>21.6 分鐘</td><td>5.04 分鐘</td></tr>
+<tr><td>99.99%</td><td>四個 9</td><td>52.6 分鐘</td><td>4.32 分鐘</td><td>60.5 秒</td></tr>
+<tr><td>99.999%</td><td>五個 9</td><td>5.26 分鐘</td><td>25.9 秒</td><td>6.05 秒</td></tr>
+</tbody>
+</table>
+<div class="callout">
+  <div class="t">兩種可用性算法</div>
+  <p><strong>以時間為基礎</strong><span class="en-inline"> (time-based availability)</span> —
+  <code>正常運行時間 / 總時間</code>，也就是上表的算法。<br>
+  <strong>以請求成功率為基礎</strong><span class="en-inline"> (aggregate availability)</span> —
+  <code>成功請求數 / 總請求數</code>。<br>
+  對全球分散式服務，後者更貼近現實：系統很少「整個掛掉」，更常見的是「某個地區的一部分請求失敗」，
+  而以時間計算的可用性完全無法表達這件事。</p>
+</div>
+<div class="callout">
+  <div class="t">實務判斷</div>
+  <p>看到「五個 9」先問：<strong>你的告警到人接手要幾分鐘？</strong>如果值班工程師從收到告警到打開電腦要 5 分鐘，
+  那你的系統在人為介入的前提下，數學上就不可能達到 99.999%。這種等級只能靠<strong>全自動故障轉移</strong>達成。</p>
+</div>
+
+<h3 id="s2-2">2.2 錯誤預算 — SRE 最重要的一個發明</h3>
+<p><strong>錯誤預算</strong><span class="en-inline"> (Error Budget)</span> 是 SLO 的數學補數：</p>
+<pre><code>錯誤預算 = 100% − SLO
+
+SLO = 99.9%  →  錯誤預算 = 0.1%
+                在 28 天內 ≈ 40 分鐘的不可用時間額度</code></pre>
+<p>它的天才之處在於：<strong>把「穩定 vs 創新」這個永恆的組織衝突，變成一個雙方都同意的數字。</strong></p>
+<div class="grid2">
+  <div class="card"><h4>預算還有剩</h4>
+    <ul><li>盡量發布，加快實驗</li><li>可以承擔風險（灰度、新架構）</li><li>不必為了求穩而凍結</li></ul></div>
+  <div class="card"><h4>預算燒完了</h4>
+    <ul><li><strong>凍結功能發布</strong>，只允許修 bug 與可靠性改善</li><li>所有工程資源轉向穩定性</li><li>直到預算回補才解凍</li></ul></div>
+</div>
+<p>這個「燒完就凍結」的規則要事先寫成<strong>錯誤預算政策</strong><span class="en-inline"> (Error Budget Policy)</span>，
+並由開發、SRE、產品三方<strong>共同簽署</strong>。重點不是懲罰，而是<strong>事先約定好，事發時不必吵架</strong>。</p>
+<p>SRE Workbook 附錄 B 的官方範例政策，提供了幾個可以直接抄的具體條款：</p>
+<ul>
+  <li>預算耗盡時：<strong>停止所有變更與發布</strong>，僅放行 P0 問題與安全性修補。</li>
+  <li>單一事故若消耗掉<strong>四週預算的 20% 以上</strong>，就<strong>必須</strong>產出事後檢討報告，
+      且報告中至少要有一個 <strong>P0 級行動項</strong>。</li>
+  <li>政策要寫明<strong>爭議升級路徑</strong> — 範例中一路可升級到 <strong>CTO 裁決</strong>。</li>
+</ul>
+<div class="callout">
+  <div class="t">為什麼「升級路徑」不能省</div>
+  <p>錯誤預算政策真正被考驗的時刻，是<strong>產品部門非常想在預算已耗盡時發布某個功能</strong>。
+  如果政策沒有事先寫好誰有權裁決，那一刻它就會變成一場靠職位高低決定的角力 — 而政策本身也就名存實亡了。</p>
+</div>
+
+<h4>燃燒率告警 <span class="en-inline">(Burn Rate Alerting)</span></h4>
+<p>不要對「SLO 已違反」告警 — 那太晚了。要對<strong>消耗速度</strong>告警：</p>
+<pre><code>燃燒率 = 目前錯誤率 / 允許錯誤率
+
+燃燒率 = 1   →  剛好在 28 天末用完預算（健康）
+燃燒率 = 14.4 →  2 小時就會燒掉 28 天預算的 2% （緊急，叫人起床）
+燃燒率 = 6    →  6 小時燒掉 5%（重要，開工單）</code></pre>
+<p>用<strong>多重時間窗</strong><span class="en-inline"> (multi-window, multi-burn-rate)</span> 組合告警，
+可以同時做到「嚴重問題快速通知」與「輕微抖動不吵醒人」。這是現代告警設計的標準做法。</p>
+
+<h3 id="s2-3">2.3 瑣務 — 需要被消滅的東西</h3>
+<p><strong>瑣務</strong><span class="en-inline"> (Toil)</span> 在 SRE 中有非常嚴格的定義，不是「我不喜歡的工作」。
+一項工作符合以下特徵越多，越算是瑣務：</p>
+<table>
+<thead><tr><th>特徵</th><th>英文</th><th>說明</th></tr></thead>
+<tbody>
+<tr><td>手動的</td><td>Manual</td><td>需要人親手執行</td></tr>
+<tr><td>重複的</td><td>Repetitive</td><td>做過很多次，還會再做</td></tr>
+<tr><td>可自動化的</td><td>Automatable</td><td>機器完全能做，只是還沒寫</td></tr>
+<tr><td>戰術性的</td><td>Tactical</td><td>被動反應，而非主動規劃</td></tr>
+<tr><td>無長期價值</td><td>No enduring value</td><td>做完後服務並沒有變好</td></tr>
+<tr><td>隨規模線性成長</td><td>O(n) with service growth</td><td><strong>最致命的一項</strong>：流量翻倍，工作量也翻倍</td></tr>
+</tbody>
+</table>
+<div class="callout err">
+  <div class="t">為什麼瑣務是頭號敵人</div>
+  <p>「隨規模線性成長」意味著這份工作<strong>永遠追不上業務成長</strong>，最終必然導致團隊崩潰或無限擴編。
+  SRE 的核心任務就是把 O(n) 的維運成本壓成 O(1)。<br>
+  注意：<strong>瑣務不等於「壞工作」</strong>。少量瑣務是正常的、甚至有療癒效果；問題出在它佔比失控（超過 50%）。</p>
+</div>
+<p>消滅瑣務的階梯：<strong>手動操作 → 寫成文件（Runbook）→ 寫成腳本 → 自我修復系統 → 從架構上根除</strong>。
+最高境界不是把它自動化，而是<strong>讓它不再需要發生</strong>。</p>
+<div class="callout"><div class="t">參考基準</div>
+<p>Google 自己實測的 SRE 瑣務佔比：<strong>平均約 33%</strong>，各團隊分布在 <strong>0% 到 80%</strong> 之間。
+換句話說，連 Google 都沒有把它壓到零 — 重點是<strong>持續量測它、並讓它保持在 50% 以下</strong>。</p></div>
+
+<div class="callout warn">
+  <div class="t">階段 2 驗收</div>
+  <p>你能為一個真實服務（哪怕是你自己的側專案）寫出一份完整的 SLO 文件：
+  定義 2–3 個 SLI、訂出 SLO 與時間窗、算出錯誤預算、設計燃燒率告警門檻、寫出錯誤預算政策。
+  並且你能解釋：為什麼你選了這些 SLI 而不是 CPU 使用率。</p>
+</div>
+
+<hr>
+
+<h2 id="s3">階段 3 — 可觀測性<span class="en">Stage 3 — Observability</span></h2>
+<p>階段 2 告訴你「該量什麼」，階段 3 告訴你「怎麼量得到」。沒有可觀測性，SLO 只是一張紙。</p>
+
+<h3 id="s3-1">3.1 監控 vs 可觀測性</h3>
+<table>
+<thead><tr><th></th><th>監控 (Monitoring)</th><th>可觀測性 (Observability)</th></tr></thead>
+<tbody>
+<tr><td>回答的問題</td><td>「系統壞了嗎？」</td><td>「系統為什麼壞了？」</td></tr>
+<tr><td>前提</td><td>你<strong>事先知道</strong>會出什麼問題</td><td>你<strong>事先不知道</strong>會出什麼問題</td></tr>
+<tr><td>對應</td><td>已知的未知<br><span class="en-inline">known unknowns</span></td><td>未知的未知<br><span class="en-inline">unknown unknowns</span></td></tr>
+<tr><td>做法</td><td>預設好的儀表板與告警</td><td>能對系統做任意的探索式查詢</td></tr>
+</tbody>
+</table>
+<p>可觀測性源自控制理論：<strong>能否僅憑系統的外部輸出，推斷其內部狀態</strong>。
+在實務上這意味著你的遙測資料要有<strong>足夠高的維度</strong>（cardinality），能讓你事後切分出「只有某個版本、某個地區、某類使用者出問題」。</p>
+
+<h3 id="s3-2">3.2 遙測三支柱 <span class="en-inline">(The Three Pillars of Telemetry)</span></h3>
+<div class="grid2">
+  <div class="card"><h4>指標 <span class="en-inline">Metrics</span></h4>
+    <p>隨時間變化的<strong>數值聚合</strong>。成本低、可長期保存、適合告警與趨勢。
+    缺點：無法回答「這一個特定請求發生什麼事」。</p></div>
+  <div class="card"><h4>日誌 <span class="en-inline">Logs</span></h4>
+    <p>離散的<strong>事件記錄</strong>。細節最豐富，適合事後鑑識。
+    缺點：量大、貴、難以聚合。應採用<strong>結構化日誌</strong> (structured logging, 通常是 JSON)。</p></div>
+  <div class="card"><h4>追蹤 <span class="en-inline">Traces</span></h4>
+    <p>一個請求<strong>穿越多個服務</strong>的完整路徑與各段耗時。
+    微服務架構下定位「慢在哪一環」的唯一有效手段。</p></div>
+</div>
+<p>三者靠<strong>關聯</strong>發揮威力：從一個異常的 SLO 圖表（指標）→ 鑽取到該時段的慢請求（追蹤）→ 查看該請求的錯誤細節（日誌）。
+這條路徑能不能一鍵打通，是可觀測性平台成熟度的真正指標。</p>
+
+<h3 id="s3-3">3.3 四大黃金訊號 <span class="en-inline">(The Four Golden Signals)</span></h3>
+<p>如果你只能監控四件事，就監控這四件。這是 Google SRE 提出的、面向<strong>使用者</strong>的監控起手式：</p>
+<table>
+<thead><tr><th>訊號</th><th>英文</th><th>量什麼</th><th>陷阱</th></tr></thead>
+<tbody>
+<tr><td><strong>延遲</strong></td><td>Latency</td><td>處理一個請求所需的時間</td><td>必須<strong>區分成功與失敗請求</strong>的延遲 — 快速失敗會讓平均延遲變好看</td></tr>
+<tr><td><strong>流量</strong></td><td>Traffic</td><td>系統承受的需求量（QPS、頻寬、並發連線）</td><td>不同服務的「流量」定義不同</td></tr>
+<tr><td><strong>錯誤</strong></td><td>Errors</td><td>失敗請求的比率</td><td>要包含<strong>隱性失敗</strong>：HTTP 200 但內容錯誤、或違反延遲承諾</td></tr>
+<tr><td><strong>飽和度</strong></td><td>Saturation</td><td>系統中<strong>最受限的那項資源</strong>有多滿</td><td>最難量測；系統通常在<strong>遠未達 100% 使用率前就開始劣化</strong>，所以要看佇列長度而非單看使用率</td></tr>
+</tbody>
+</table>
+<div class="callout">
+  <div class="t">書中兩個值得記住的提醒</div>
+  <p>1. 延遲一定要<strong>區分成功與失敗請求</strong>來看 — 原文的說法是
+  <em>"a slow error is even worse than a fast error!"</em>（一個慢的錯誤，比一個快的錯誤還糟）。
+  快速失敗會把平均延遲拉得很好看，掩蓋真正的問題。<br>
+  2. <strong>延遲上升往往是飽和度的領先指標</strong> (<em>"Latency increases are often a leading indicator of saturation"</em>)。
+  在資源使用率還沒觸頂時，延遲就會先告訴你系統快撐不住了。</p>
+</div>
+
+<h4>兩個互補的檢查方法</h4>
+<ul>
+  <li><strong>USE 方法</strong><span class="en-inline"> (Utilization, Saturation, Errors)</span> — 由 Brendan Gregg 提出，
+      針對<strong>資源</strong>（CPU、記憶體、磁碟、網卡）。用於「機器層」的排查：對每一項資源檢查使用率、飽和度、錯誤。</li>
+  <li><strong>RED 方法</strong><span class="en-inline"> (Rate, Errors, Duration)</span> — 針對<strong>服務</strong>。
+      用於「請求層」的排查：每個服務量測請求速率、錯誤率、耗時分布。是微服務監控的預設範本。</li>
+</ul>
+<div class="callout"><div class="t">怎麼選</div>
+<p><strong>USE 由下往上</strong>（我的機器怎麼了），<strong>RED 由上往下</strong>（我的使用者怎麼了），
+<strong>四大黃金訊號</strong>是兩者的交集加上流量。實務上：對服務用 RED，對資源用 USE，對 SLO 用黃金訊號。</p></div>
+
+<h3 id="s3-4">3.4 告警設計 — 比監控本身更難</h3>
+<div class="callout err">
+  <div class="t">告警疲勞是可靠性的頭號殺手</div>
+  <p>當工程師開始<strong>忽略</strong>告警，你的監控系統就等於不存在。而且更糟 — 它給了你虛假的安全感。</p>
+</div>
+<p>告警的鐵律：</p>
+<ul>
+  <li><strong>每一則會叫醒人的告警，都必須是「緊急、重要、且可採取行動」的。</strong>三者缺一，就不該呼叫。</li>
+  <li><strong>對症狀告警，不要對原因告警</strong><span class="en-inline"> (Alert on symptoms, not causes)</span>。
+      「使用者的請求失敗率超標」是症狀（該告警）；「某台機器 CPU 90%」是原因（不該直接叫人 — 也許它本來就該滿）。</li>
+  <li><strong>以 SLO 為告警基礎</strong>。用燃燒率告警取代靜態閾值告警，能大幅減少誤報。</li>
+  <li>區分<strong>呼叫</strong><span class="en-inline"> (Page)</span>、<strong>工單</strong><span class="en-inline"> (Ticket)</span>、
+      <strong>日誌</strong><span class="en-inline"> (Log)</span> 三種嚴重度，只有第一種能在半夜響。</li>
+</ul>
+
+<h3 id="s3-5">3.5 工具清單</h3>
+<table>
+<thead><tr><th>層次</th><th>工具</th><th>定位</th></tr></thead>
+<tbody>
+<tr><td>標準規範</td><td><strong>OpenTelemetry (OTel)</strong></td><td>廠商中立的遙測資料標準與 SDK；<em>先學規範，再學實作</em></td></tr>
+<tr><td>指標</td><td><strong>Prometheus</strong></td><td>拉取式時序資料庫 + PromQL 查詢語言，雲原生事實標準</td></tr>
+<tr><td>指標（長期）</td><td>Thanos / Cortex / Mimir / VictoriaMetrics</td><td>Prometheus 的長期儲存與全域查詢</td></tr>
+<tr><td>視覺化</td><td><strong>Grafana</strong></td><td>儀表板與告警的統一前端</td></tr>
+<tr><td>日誌</td><td>Loki / Elasticsearch(ELK) / OpenSearch</td><td>日誌聚合與查詢</td></tr>
+<tr><td>日誌收集</td><td>Fluent Bit / Fluentd / Vector</td><td>日誌管線與轉換</td></tr>
+<tr><td>追蹤</td><td>Jaeger / Tempo / Zipkin</td><td>分散式追蹤後端</td></tr>
+<tr><td>告警路由</td><td>Alertmanager / PagerDuty / Opsgenie</td><td>去重、分組、抑制、值班排程</td></tr>
+<tr><td>綜合平台</td><td>Datadog / New Relic / Honeycomb / Dynatrace</td><td>商業一站式方案</td></tr>
+<tr><td>SLO 工具</td><td>Sloth / Pyrra / OpenSLO / Nobl9</td><td>把 SLO 定義成程式碼並自動產生告警規則</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+  <div class="t">階段 3 驗收</div>
+  <p>你能從零搭起一套 Prometheus + Grafana + Alertmanager，
+  用 <strong>PromQL</strong> 寫出 p99 延遲與錯誤率的查詢，
+  把階段 2 訂的 SLO 做成儀表板，並設定<strong>多重時間窗燃燒率告警</strong>。
+  你也能說出你的告警為什麼「不會在半夜為了一個無關緊要的抖動吵醒你」。</p>
+</div>
+
+<hr>
+
+<h2 id="s4">階段 4 — 基礎設施與雲端<span class="en">Stage 4 — Infrastructure &amp; Cloud</span></h2>
+<p>從「一台機器」進入「一群機器」。這是 SRE 工作的實際場域。</p>
+
+<h3 id="s4-1">4.1 雲端運算基礎</h3>
+<ul>
+  <li><strong>服務模型</strong> — IaaS / PaaS / SaaS 的邊界，以及<strong>共同責任模型</strong><span class="en-inline"> (Shared Responsibility Model)</span>：雲商負責什麼、你負責什麼</li>
+  <li><strong>核心資源</strong> — 運算 (Compute)、儲存 (Object / Block / File Storage)、網路 (VPC、子網路、安全群組)、託管資料庫</li>
+  <li><strong>可用區與地區</strong><span class="en-inline"> (Availability Zone / Region)</span> — <strong>故障域</strong><span class="en-inline"> (Failure Domain)</span> 的實體邊界，是所有高可用設計的基礎</li>
+  <li><strong>身分與存取管理</strong><span class="en-inline"> (Identity and Access Management, IAM)</span> — 最小權限原則</li>
+  <li><strong>成本管理</strong><span class="en-inline"> (FinOps)</span> — 可靠性與成本是一體兩面，SRE 往往也是成本的把關者</li>
+</ul>
+<p><strong>工具／平台：</strong>AWS、Google Cloud (GCP)、Azure。<em>學一家學透，其餘觸類旁通。</em>
+另可參考各雲商的<strong>架構良好架構框架</strong><span class="en-inline"> (Well-Architected Framework)</span> 的可靠性支柱，那是官方整理的設計檢查清單。</p>
+
+<h3 id="s4-2">4.2 基礎設施即程式碼 <span class="en-inline">(Infrastructure as Code, IaC)</span></h3>
+<div class="callout">
+  <div class="t">核心思想</div>
+  <p>基礎設施的狀態應該被<strong>宣告在版本控制的檔案裡</strong>，而不是存在於某個人的記憶或 Console 的點擊歷史中。
+  這讓基礎設施可審查、可回溯、可重建 — 也讓「重建一個一模一樣的環境」從三天變成三十分鐘。</p>
+</div>
+<h4>必須理解的概念</h4>
+<ul>
+  <li><strong>宣告式 vs 命令式</strong><span class="en-inline"> (Declarative vs Imperative)</span> —
+      宣告「我要什麼結果」而非「怎麼一步步做」。這是雲原生的核心心智轉換。</li>
+  <li><strong>冪等性</strong><span class="en-inline"> (Idempotency)</span> — 執行一次跟執行十次結果相同</li>
+  <li><strong>狀態管理</strong><span class="en-inline"> (State Management)</span> — Terraform 的 state 檔為何存在、為何要遠端存放與加鎖</li>
+  <li><strong>配置漂移</strong><span class="en-inline"> (Configuration Drift)</span> — 實際狀態偏離宣告狀態，以及如何偵測</li>
+  <li><strong>不可變基礎設施</strong><span class="en-inline"> (Immutable Infrastructure)</span> —
+      更新即替換，而非就地修改。<em>「寵物 vs 牲畜」(Pets vs Cattle) 的比喻</em></li>
+</ul>
+<h4>工具清單</h4>
+<table>
+<thead><tr><th>類別</th><th>工具</th><th>定位</th></tr></thead>
+<tbody>
+<tr><td>資源供裝</td><td><strong>Terraform</strong> / OpenTofu</td><td>跨雲的宣告式資源管理，業界標準</td></tr>
+<tr><td>資源供裝（程式語言）</td><td>Pulumi / AWS CDK</td><td>用通用程式語言寫 IaC</td></tr>
+<tr><td>組態管理</td><td><strong>Ansible</strong> / Chef / Puppet / Salt</td><td>機器內部的軟體與設定</td></tr>
+<tr><td>映像建置</td><td>Packer</td><td>產出不可變的機器映像檔</td></tr>
+<tr><td>密鑰管理</td><td>Vault / AWS Secrets Manager / External Secrets</td><td>機密資訊的儲存與輪換</td></tr>
+<tr><td>政策即程式碼</td><td>OPA / Conftest / Sentinel</td><td>在套用前攔截不合規的設定</td></tr>
+</tbody>
+</table>
+
+<h3 id="s4-3">4.3 容器化 <span class="en-inline">(Containerization)</span></h3>
+<p>容器不是輕量虛擬機。它是<strong>一個被 Linux 核心的 namespace（隔離視野）與 cgroup（限制資源）圈起來的普通行程</strong>。
+理解這一點，你才能理解為什麼容器裡的 <code>top</code> 可能顯示宿主機的 CPU、為什麼 PID 1 的訊號處理很特別。</p>
+<ul>
+  <li><strong>映像檔分層</strong><span class="en-inline"> (Image Layers)</span> 與 OCI 標準</li>
+  <li><strong>多階段建置</strong><span class="en-inline"> (Multi-stage Build)</span>、映像檔瘦身與安全掃描</li>
+  <li><strong>容器內的 PID 1 問題</strong> — 訊號轉發與殭屍行程回收</li>
+  <li><strong>資源限制</strong> — CPU throttling 與 OOM kill 在容器中的表現</li>
+</ul>
+<p><strong>工具：</strong>Docker、containerd、Podman、BuildKit、Trivy／Grype（漏洞掃描）、Harbor／ECR／GAR（映像檔倉庫）。</p>
+
+<div class="callout warn">
+  <div class="t">階段 4 驗收</div>
+  <p>你能用 Terraform 從零建出一個跨可用區的環境（VPC、子網路、負載平衡器、運算節點），
+  整份設定放在 Git 中，且<strong>整個環境可以完整銷毀再重建</strong>。你也能解釋 state 檔為什麼不能放在本機。</p>
+</div>
+
+<hr>
+
+<h2 id="s5">階段 5 — 分散式架構與 Kubernetes<span class="en">Stage 5 — Distributed Architecture &amp; Kubernetes</span></h2>
+<p>現代 SRE 的主戰場。<strong>分散式架構</strong><span class="en-inline"> (Distributed Architecture)</span> 是問題的來源，
+<strong>Kubernetes (K8s)</strong> 是目前業界管理它的主要工具。</p>
+
+<h3 id="s5-1">5.1 分散式系統的基本困難</h3>
+<p>在寫任何 YAML 之前，先接受這些殘酷事實：</p>
+<ul>
+  <li><strong>分散式運算的謬誤</strong><span class="en-inline"> (Fallacies of Distributed Computing)</span> —
+      網路不可靠、延遲不為零、頻寬非無限、網路不安全、拓撲會變、管理員不只一個、傳輸成本不為零、網路不同質。<em>每一條都是事故的來源。</em></li>
+  <li><strong>CAP 定理</strong><span class="en-inline"> (Consistency, Availability, Partition tolerance)</span> —
+      網路分區發生時，只能在一致性與可用性之間擇一。實務上「P 不可選」，所以真正的問題是 <strong>CP 還是 AP</strong>。</li>
+  <li><strong>部分失敗</strong><span class="en-inline"> (Partial Failure)</span> — 單機程式非成即敗，
+      分散式系統會處在「不知道成功了沒」的第三態（逾時）。這催生了<strong>冪等性</strong>與<strong>重試</strong>的設計需求。</li>
+  <li><strong>共識</strong><span class="en-inline"> (Consensus)</span> — Raft / Paxos 的存在理由：讓一群機器對某件事達成一致。
+      <em>你不需要實作它，但要知道 etcd、ZooKeeper 依賴它，以及它為什麼需要多數節點存活（quorum）。</em></li>
+  <li><strong>時間不可信</strong> — 時鐘漂移、NTP、為什麼不能用機器時間戳排序分散式事件（→ 邏輯時鐘）</li>
+</ul>
+
+<h3 id="s5-2">5.2 韌性設計模式 <span class="en-inline">(Resilience Patterns)</span></h3>
+<table>
+<thead><tr><th>模式</th><th>英文</th><th>解決什麼</th></tr></thead>
+<tbody>
+<tr><td>逾時</td><td>Timeout</td><td>避免無限等待拖垮呼叫方 — <strong>最基本也最常被遺漏的一項</strong></td></tr>
+<tr><td>重試與退避</td><td>Retry with Exponential Backoff + Jitter</td><td>應對瞬時故障；<strong>沒有抖動的重試會造成驚群效應</strong></td></tr>
+<tr><td>斷路器</td><td>Circuit Breaker</td><td>下游持續失敗時快速失敗，給對方恢復的空間</td></tr>
+<tr><td>艙壁隔離</td><td>Bulkhead</td><td>資源池隔離，避免單一依賴耗盡全部執行緒</td></tr>
+<tr><td>限流</td><td>Rate Limiting / Throttling</td><td>保護自己不被打垮</td></tr>
+<tr><td>負載卸除</td><td>Load Shedding</td><td>過載時<strong>主動拒絕</strong>低優先級請求，保住核心功能</td></tr>
+<tr><td>優雅降級</td><td>Graceful Degradation</td><td>降低功能而非整體失敗（例：推薦掛了就顯示熱門榜）</td></tr>
+<tr><td>健康檢查</td><td>Health Check</td><td>讓流量只送往真正能服務的實例</td></tr>
+</tbody>
+</table>
+<div class="callout err">
+  <div class="t">必須理解的失效模式：級聯故障 (Cascading Failure)</div>
+  <p>一個節點過載 → 它變慢或掛掉 → 流量被導向其餘節點 → 其餘節點也過載 → 全體崩潰。
+  更惡劣的是<strong>重試風暴</strong>：客戶端的重試在系統已經過載時，讓負載再翻倍。<br>
+  對策：限流 + 負載卸除 + 帶抖動的指數退避 + 重試預算 (retry budget) + 斷路器。
+  而且 — <strong>恢復時要小心「驚群」</strong>，冷快取重啟往往比原故障更致命。</p>
+</div>
+
+<h3 id="s5-3">5.3 Kubernetes — 為什麼是它</h3>
+<p>Kubernetes 的本質是一個<strong>宣告式的、以控制迴圈驅動的叢集狀態管理器</strong>：</p>
+<div class="ascii">
+  你宣告「期望狀態」          控制器持續比對         系統趨向期望狀態
+  (Desired State)   ────▶   (Control Loop)   ────▶   (Actual State)
+       YAML                  觀察 → 比對 → 修正            │
+         ▲                                                 │
+         └─────────────────── 持續調和 (Reconciliation) ────┘
+</div>
+<p>這個「調和迴圈」<span class="en-inline">(Reconciliation Loop)</span> 是理解 K8s 一切行為的鑰匙 —
+包括為什麼你刪掉的 Pod 會自己長回來，以及為什麼 GitOps（階段 6）能成立。</p>
+
+<h4>控制平面 <span class="en-inline">(Control Plane)</span> 元件</h4>
+<table>
+<thead><tr><th>元件</th><th>職責</th></tr></thead>
+<tbody>
+<tr><td><code>kube-apiserver</code></td><td>叢集的唯一入口與真相來源前端，所有操作都經過它</td></tr>
+<tr><td><code>etcd</code></td><td>分散式鍵值儲存，叢集狀態的<strong>唯一真相來源</strong>（備份重點！）</td></tr>
+<tr><td><code>kube-scheduler</code></td><td>決定 Pod 該放到哪個節點</td></tr>
+<tr><td><code>kube-controller-manager</code></td><td>執行各種控制迴圈（Deployment、Node、Job…）</td></tr>
+<tr><td><code>cloud-controller-manager</code><br><span class="en-inline">(選用 / optional)</span></td><td>與雲商 API 互動（LB、磁碟、節點）；自架或本機學習叢集通常沒有這個元件</td></tr>
+</tbody>
+</table>
+<h4>節點 <span class="en-inline">(Node)</span> 元件</h4>
+<table>
+<thead><tr><th>元件</th><th>職責</th></tr></thead>
+<tbody>
+<tr><td><code>kubelet</code></td><td>節點代理，確保 Pod 內的容器依規格執行</td></tr>
+<tr><td><code>kube-proxy</code><br><span class="en-inline">(選用 / optional)</span></td><td>維護節點上的網路規則，實現 Service 的流量轉發；<em>官方標示為選用</em> — 若網路外掛（如 Cilium）自行提供等效轉發能力，就不需要它</td></tr>
+<tr><td>容器執行環境 <span class="en-inline">(Container Runtime)</span></td><td>實際跑容器；任何實作 <strong>CRI</strong> (Container Runtime Interface) 的實作皆可（containerd、CRI-O）</td></tr>
+</tbody>
+</table>
+<p class="en-inline" style="font-size:13px;">附加元件 (Addons — DNS、Dashboard、叢集層級日誌、網路外掛) 在官方文件中屬於<strong>獨立分類</strong>，不算節點元件。</p>
+
+<h4>SRE 最該掌握的 Kubernetes 物件與機制</h4>
+<ul>
+  <li><strong>工作負載</strong> — Pod、Deployment、StatefulSet、DaemonSet、Job／CronJob 各自適用的場景</li>
+  <li><strong>探針</strong><span class="en-inline"> (Probes)</span> — <code>liveness</code>（該不該重啟）、<code>readiness</code>（能不能收流量）、
+      <code>startup</code>（啟動慢的服務）。<em>設錯探針是 K8s 事故排行榜第一名</em></li>
+  <li><strong>資源請求與限制</strong><span class="en-inline"> (Requests &amp; Limits)</span> 與 QoS 等級 —
+      直接決定排程結果與 OOM 時誰先被殺</li>
+  <li><strong>水平自動擴縮</strong><span class="en-inline"> (Horizontal Pod Autoscaler, HPA)</span>、VPA、Cluster Autoscaler／Karpenter</li>
+  <li><strong>Pod 中斷預算</strong><span class="en-inline"> (PodDisruptionBudget, PDB)</span> — 節點維護時保住最低可用副本數</li>
+  <li><strong>排程控制</strong> — 親和性 (Affinity)、反親和性 (Anti-Affinity)、Taint／Toleration、
+      <strong>拓撲分佈約束</strong> (Topology Spread Constraints) — <em>跨可用區高可用的關鍵</em></li>
+  <li><strong>服務與流量</strong> — Service 類型、Ingress、Gateway API、CNI 網路模型</li>
+  <li><strong>設定與機密</strong> — ConfigMap、Secret、以及為什麼 Secret 預設只是 base64（不是加密）</li>
+  <li><strong>擴充機制</strong> — CRD 與<strong>操作器模式</strong><span class="en-inline"> (Operator Pattern)</span>：把維運知識寫成控制器</li>
+</ul>
+
+<h4>工具清單</h4>
+<table>
+<thead><tr><th>類別</th><th>工具</th><th>定位</th></tr></thead>
+<tbody>
+<tr><td>核心</td><td><strong>Kubernetes</strong></td><td>容器編排事實標準</td></tr>
+<tr><td>本地／學習</td><td>kind / minikube / k3s</td><td>本機叢集，練習用</td></tr>
+<tr><td>託管服務</td><td>EKS / GKE / AKS</td><td>生產環境通常不自建控制平面</td></tr>
+<tr><td>套件管理</td><td><strong>Helm</strong> / Kustomize</td><td>應用打包與環境差異化</td></tr>
+<tr><td>操作工具</td><td>kubectl / k9s / stern / kubectx</td><td>日常操作與除錯</td></tr>
+<tr><td>服務網格</td><td>Istio / Linkerd / Cilium</td><td>把重試、逾時、mTLS、流量切分下沉到基礎設施層</td></tr>
+<tr><td>網路</td><td>Calico / Cilium (eBPF)</td><td>CNI 實作與網路政策</td></tr>
+<tr><td>安全</td><td>OPA Gatekeeper / Kyverno / Falco</td><td>准入控制與執行期偵測</td></tr>
+<tr><td>備份</td><td>Velero</td><td>叢集資源與持久卷備份</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+  <div class="t">階段 5 驗收</div>
+  <p>你能在一個真實叢集上部署多副本、跨可用區分散、設好探針與資源限制、掛上 HPA 與 PDB 的服務；
+  能在 Pod 反覆重啟時，用 <code>describe</code>／事件／日誌／指標判斷是 OOM、探針失敗、映像檔問題還是排程不到；
+  並且能解釋 requests 與 limits 分別影響了什麼。</p>
+</div>
+
+<hr>
+
+<h2 id="s6">階段 6 — 自動化與交付<span class="en">Stage 6 — Automation &amp; Delivery</span></h2>
+<p><strong>絕大多數的線上事故源自變更</strong>。因此「怎麼安全地變更」是 SRE 的核心命題，而不是開發團隊的家務事。</p>
+
+<h3 id="s6-1">6.1 持續整合與持續交付 <span class="en-inline">(CI/CD)</span></h3>
+<ul>
+  <li><strong>持續整合</strong><span class="en-inline"> (Continuous Integration, CI)</span> — 頻繁合併到主幹，每次合併都自動建置與測試</li>
+  <li><strong>持續交付</strong><span class="en-inline"> (Continuous Delivery, CD)</span> — 每個通過測試的版本都<em>隨時可以</em>上線</li>
+  <li><strong>持續部署</strong><span class="en-inline"> (Continuous Deployment)</span> — 通過測試就<em>自動</em>上線，無人工關卡</li>
+  <li><strong>建置的可重現性</strong><span class="en-inline"> (Reproducible Build)</span>、
+      <strong>物料清單</strong><span class="en-inline"> (SBOM)</span> 與供應鏈安全</li>
+  <li><strong>發布工程</strong><span class="en-inline"> (Release Engineering)</span> 四原則：
+      自助服務模式、追求高速度、密封建置 (Hermetic Build)、政策與程序的強制執行</li>
+</ul>
+
+<h3 id="s6-2">6.2 GitOps</h3>
+<div class="callout">
+  <div class="t">核心思想</div>
+  <p><strong>Git 儲存庫是系統期望狀態的唯一真相來源</strong>，由叢集內的代理程式持續<em>拉取</em>並自動調和實際狀態。
+  部署不再是「推送一個指令」，而是「合併一個 PR」。這讓每一次變更都自帶審查、稽核與回滾（<code>git revert</code>）。</p>
+</div>
+<p>GitOps 的四項原則：<strong>宣告式</strong> (Declarative)、<strong>版本化且不可變</strong> (Versioned and Immutable)、
+<strong>自動拉取</strong> (Pulled Automatically)、<strong>持續調和</strong> (Continuously Reconciled)。
+注意最後一項 — 它同時解決了<strong>配置漂移</strong>：有人手動改了叢集，系統會自己改回來。</p>
+
+<h3 id="s6-3">6.3 漸進式交付 <span class="en-inline">(Progressive Delivery)</span></h3>
+<p>目標是<strong>把變更的爆炸半徑</strong><span class="en-inline"> (Blast Radius)</span> <strong>控制在可接受範圍</strong>。</p>
+<table>
+<thead><tr><th>策略</th><th>英文</th><th>做法</th><th>代價</th></tr></thead>
+<tbody>
+<tr><td>滾動更新</td><td>Rolling Update</td><td>逐批替換舊實例（K8s 預設）</td><td>回滾慢；過程中新舊版本並存</td></tr>
+<tr><td>藍綠部署</td><td>Blue-Green</td><td>備妥完整新環境，流量一次切換</td><td>需要雙倍資源</td></tr>
+<tr><td>金絲雀發布</td><td>Canary Release</td><td>先導 1% 流量，觀察指標再逐步放大</td><td>需要成熟的自動化指標分析；<strong>金絲雀群體越小，風險越小，但要累積到統計顯著所需的時間就越長</strong></td></tr>
+<tr><td>功能旗標</td><td>Feature Flag</td><td>程式碼已上線，功能用開關控制</td><td>旗標會累積成技術債</td></tr>
+<tr><td>影子流量</td><td>Shadow / Dark Traffic</td><td>複製真實流量到新版但不回傳結果</td><td>需處理副作用（不能重複寫入）</td></tr>
+</tbody>
+</table>
+<div class="callout ok">
+  <div class="t">SRE 的介入點</div>
+  <p><strong>金絲雀分析必須綁定 SLI</strong>：讓部署系統自動比較金絲雀與基準版本的錯誤率與延遲，
+  超標就<strong>自動回滾</strong>，不需要人判斷。這是「把維運知識寫成程式」的最佳範例。<br>
+  典型的自動化原語是三個步驟的組合：<strong>設定流量比例</strong> (setWeight) →
+  <strong>暫停觀察</strong> (pause) → <strong>執行分析並決定進退</strong> (analysis)。<br>
+  另外務必先確保<strong>回滾比修復快</strong> — 事故當下的第一選擇永遠是「先止血（回滾），再查因」。</p>
+</div>
+
+<h4>工具清單</h4>
+<p><strong>CI：</strong>GitHub Actions、GitLab CI、Jenkins、Buildkite、Tekton。<br>
+<strong>GitOps／CD：</strong>Argo CD、Flux。<br>
+<strong>漸進式交付：</strong>Argo Rollouts、Flagger、Spinnaker。<br>
+<strong>功能旗標：</strong>OpenFeature（標準）、Unleash、LaunchDarkly。<br>
+<strong>製品倉庫：</strong>Artifactory、Nexus、OCI Registry。</p>
+
+<div class="callout warn">
+  <div class="t">階段 6 驗收</div>
+  <p>你能建出一條從 <code>git push</code> 到生產環境的完整管線：自動測試 → 建置映像 → GitOps 同步 → 金絲雀發布 →
+  <strong>指標異常自動回滾</strong>。並且整條管線上沒有任何步驟需要你手動 SSH 進機器。</p>
+</div>
+
+<hr>
+
+<h2 id="s7">階段 7 — 事件管理與待命<span class="en">Stage 7 — Incident Response &amp; On-Call</span></h2>
+<p>前面所有階段都是為了「少出事」。這一階段處理的是「出事之後」— 而這正是 SRE 專業度最被檢驗的時刻。</p>
+
+<h3 id="s7-1">7.1 待命 <span class="en-inline">(On-Call)</span></h3>
+<p>待命是 SRE 的責任，但<strong>健康的待命制度是有設計的</strong>，不是「大家輪流受苦」：</p>
+<ul>
+  <li><strong>可持續性</strong> — 待命期間的告警量應該低到讓人能兼顧正常工作與睡眠。
+      Google SRE 給出的量化上限是<strong>每 12 小時輪班最多 2 起事故</strong>
+      （推導依據：完整處理一起事故 — 含調查、根因分析、修復、撰寫事後檢討 — 約需 <strong>6 小時</strong>）。
+      <em>註：SRE Book 第 1 章的表述略有出入，寫作「每 8–12 小時輪班最多兩起事件」。</em>
+      超過這個量，代表要修的是系統或告警，不是人的耐受度。</li>
+  <li><strong>補償</strong> — 待命必須有明確的時間補休或金錢補償，否則制度會靜靜地崩壞。</li>
+  <li><strong>主／副輪值</strong><span class="en-inline"> (Primary / Secondary)</span> — 主值班漏接時的安全網。</li>
+  <li><strong>交接</strong><span class="en-inline"> (Handoff)</span> — 每次輪班結束要有明確的狀態交接。</li>
+  <li><strong>值班手冊</strong><span class="en-inline"> (Runbook / Playbook)</span> —
+      每一則會呼叫人的告警，都必須連結到一份說明「這是什麼、影響誰、先做什麼」的文件。
+      <em>研究顯示，有值班手冊能大幅降低平均修復時間。</em></li>
+</ul>
+
+<h3 id="s7-2">7.2 事故管理 <span class="en-inline">(Incident Management)</span></h3>
+<div class="callout err">
+  <div class="t">事故中最大的風險不是技術，是混亂</div>
+  <p>常見失敗模式：所有人都在查同一件事、沒有人在對外溝通、有人在未告知的情況下改了生產環境、
+  指揮權不明導致決策癱瘓。<strong>結構化的角色分工是解方。</strong></p>
+</div>
+<p>源自消防體系的<strong>事故指揮系統</strong><span class="en-inline"> (Incident Command System, ICS)</span> 角色劃分：</p>
+<table>
+<thead><tr><th>角色</th><th>英文</th><th>職責</th></tr></thead>
+<tbody>
+<tr><td><strong>事故指揮官</strong></td><td>Incident Commander (IC)</td><td><strong>做決策、分派任務、維持全局視野</strong>。IC 不動手修 — 一動手就失去全局。</td></tr>
+<tr><td>維運主管</td><td>Operations Lead (OL)</td><td>實際執行修復動作的人，唯一被授權變更系統者</td></tr>
+<tr><td>溝通主管</td><td>Communications Lead (CL)</td><td>對內外通報進度，隔絕干擾讓技術人員專心</td></tr>
+<tr><td>計畫主管</td><td>Planning Lead</td><td>記錄時間軸、追蹤待辦、處理交接與長期事故的輪班</td></tr>
+</tbody>
+</table>
+<h4>事故處理流程</h4>
+<ol>
+  <li><strong>偵測</strong> (Detect) — 告警觸發或使用者回報</li>
+  <li><strong>分級</strong> (Triage) — 判定嚴重度 (Severity, SEV1–SEV4)，決定要動員多少人</li>
+  <li><strong>宣告</strong> (Declare) — 明確宣布「這是事故」，指定 IC，開專屬溝通頻道。<em>寧可過度宣告，也不要拖延</em></li>
+  <li><strong>止血</strong> (Mitigate) — <strong>優先恢復服務，而不是找出根因</strong>。回滾、切流量、擴容、關閉功能旗標</li>
+  <li><strong>解決</strong> (Resolve) — 確認 SLI 回到正常水位</li>
+  <li><strong>檢討</strong> (Review) — 撰寫事後檢討報告</li>
+</ol>
+<div class="callout">
+  <div class="t">關鍵心法</div>
+  <p><strong>止血優先於診斷</strong> (Mitigate before you diagnose)。使用者不在乎根因，只在乎服務有沒有恢復。
+  找根因是事後檢討的工作，不是事故當下的工作。</p>
+</div>
+
+<h3 id="s7-3">7.3 事後檢討 <span class="en-inline">(Postmortem)</span></h3>
+<p>SRE 文化中最重要、也最容易被做壞的一項實踐。</p>
+<div class="callout ok">
+  <div class="t">免責的事後檢討 (Blameless Postmortem)</div>
+  <p>核心假設：<strong>每個人在當下都基於自己掌握的資訊、以合理的意圖做出了最好的判斷。</strong>
+  因此檢討的對象是<strong>系統與流程</strong>，不是個人。<br>
+  如果一個人「按錯按鈕」就能造成大規模故障，問題在於<strong>那個按鈕不該這麼容易按錯</strong> —
+  缺少確認機制、缺少權限隔離、缺少自動化。<br>
+  反面警訊：一旦開始追究責任，工程師就會隱藏錯誤與細節，而<strong>你將永遠失去改善系統所需的真實資訊</strong>。</p>
+</div>
+<h4>一份合格的事後檢討報告應包含</h4>
+<ul>
+  <li><strong>摘要與影響</strong> — 影響了誰、多久、多嚴重（量化：燒掉多少錯誤預算、多少請求失敗）</li>
+  <li><strong>時間軸</strong><span class="en-inline"> (Timeline)</span> — 從起因到恢復的關鍵時間點，含偵測與回應延遲</li>
+  <li><strong>根因分析</strong><span class="en-inline"> (Root Cause Analysis)</span> —
+      注意：複雜系統的事故通常有<strong>多重成因</strong>，「唯一根因」往往是過度簡化</li>
+  <li><strong>觸發因素與偵測方式</strong> — 為什麼發生、我們怎麼知道的（<em>是使用者告訴我們的嗎？那監控有缺口</em>）</li>
+  <li><strong>做對了什麼／哪裡走運了</strong> — 保存有效的做法，也標記出僥倖之處</li>
+  <li><strong>行動項</strong><span class="en-inline"> (Action Items)</span> —
+      必須有<strong>負責人、期限、追蹤編號</strong>。<em>沒有追蹤的行動項等於沒有檢討。</em></li>
+</ul>
+
+<h3 id="s7-4">7.4 關鍵指標</h3>
+<table>
+<thead><tr><th>指標</th><th>英文</th><th>意義</th></tr></thead>
+<tbody>
+<tr><td>平均偵測時間</td><td>MTTD — Mean Time To Detect</td><td>故障發生到系統察覺 — <em>改善監控</em></td></tr>
+<tr><td>平均確認時間</td><td>MTTA — Mean Time To Acknowledge</td><td>告警發出到人接手 — <em>改善值班流程</em></td></tr>
+<tr><td>平均修復時間</td><td>MTTR — Mean Time To Recovery</td><td>故障到恢復的總時長 — <em>改善自動化與 Runbook</em></td></tr>
+<tr><td>平均故障間隔</td><td>MTBF — Mean Time Between Failures</td><td>系統穩定度 — <em>改善架構與測試</em></td></tr>
+</tbody>
+</table>
+<p><strong>工具：</strong>PagerDuty／Opsgenie／Grafana OnCall（值班與呼叫）、Incident.io／FireHydrant／Rootly（事故流程協作）、
+Slack／Teams 戰情室、Statuspage（對外狀態頁）。</p>
+
+<div class="callout warn">
+  <div class="t">階段 7 驗收</div>
+  <p>你曾經（哪怕是在演練中）擔任過事故指揮官，並產出一份完整的免責事後檢討報告，
+  其中的行動項<strong>真的被完成了</strong>。你也能寫出一份讓半夜被叫醒的同事能照著做的值班手冊。</p>
+</div>
+
+<hr>
+
+<h2 id="s8">階段 8 — 進階可靠性工程<span class="en">Stage 8 — Advanced Reliability Engineering</span></h2>
+<p>從「處理已發生的問題」進化到「主動找出還沒發生的問題」。</p>
+
+<h3 id="s8-1">8.1 容量規劃 <span class="en-inline">(Capacity Planning)</span></h3>
+<ul>
+  <li><strong>需求預測</strong><span class="en-inline"> (Demand Forecasting)</span> — 有機成長（自然流量成長）與非有機成長（行銷活動、新功能上線）要分開估</li>
+  <li><strong>負載測試</strong><span class="en-inline"> (Load Testing)</span> 的四種類型 —
+      基準測試 (Baseline)、壓力測試 (Stress，找斷點)、浸泡測試 (Soak，找記憶體洩漏)、尖峰測試 (Spike)</li>
+  <li><strong>擴展性建模</strong> — Amdahl 定律與通用擴展定律 (USL)：為什麼加機器的效益會遞減甚至變負</li>
+  <li><strong>排隊理論的直覺</strong><span class="en-inline"> (Queueing Theory)</span> — Little's Law；
+      <em>系統使用率超過約 80% 後，延遲會以非線性方式暴增</em>。這是「不要把資源用滿」的數學理由。</li>
+  <li><strong>成本與可靠性的權衡</strong> — 多留 50% 冗餘的成本，是否高於停機的成本</li>
+</ul>
+
+<h3 id="s8-2">8.2 混沌工程 <span class="en-inline">(Chaos Engineering)</span></h3>
+<div class="callout">
+  <div class="t">定義</div>
+  <p>混沌工程是<strong>在系統上進行實驗的學科，目的是建立對系統在生產環境中抵禦動盪狀況能力的信心</strong>。<br>
+  <em>"Chaos Engineering is the discipline of experimenting on a system in order to build confidence in the system's capability to withstand turbulent conditions in production."</em></p>
+</div>
+<p>它<strong>不是</strong>「隨機弄壞東西」。它是一套有假說、有對照、有爆炸半徑控制的科學方法：</p>
+<ol>
+  <li>定義系統的<strong>穩態</strong><span class="en-inline"> (Steady State)</span> — 用可量測的業務指標（如訂單成功率），不是機器指標</li>
+  <li>假設穩態在實驗組與對照組都會維持</li>
+  <li>注入真實世界會發生的事件 — 機器當機、網路延遲、依賴逾時、磁碟寫滿、憑證過期</li>
+  <li>試圖<strong>推翻</strong>假說；穩態被打破的地方就是你的脆弱點</li>
+</ol>
+<p>官方列出的<strong>五項進階原則</strong><span class="en-inline"> (Advanced Principles)</span>：</p>
+<table>
+<thead><tr><th>原則</th><th>英文</th><th>重點</th></tr></thead>
+<tbody>
+<tr><td>圍繞穩態行為建立假說</td><td>Build a Hypothesis around Steady State Behavior</td>
+    <td>混沌實驗是<strong>驗證系統「確實能運作」，而不是驗證它「如何運作」</strong>；焦點在可量測的輸出，不是內部細節</td></tr>
+<tr><td>變動真實世界的事件</td><td>Vary Real-world Events</td>
+    <td>只注入<strong>真的會發生</strong>的事件（機器當機、磁碟故障、網路中斷、流量尖峰），並依影響或頻率排序</td></tr>
+<tr><td>在正式環境中執行實驗</td><td>Run Experiments in Production</td>
+    <td><strong>取樣真實流量是唯一能可靠捕捉請求路徑的方式</strong> — 測試環境的行為不等於正式環境</td></tr>
+<tr><td>自動化實驗使其持續執行</td><td>Automate Experiments to Run Continuously</td>
+    <td>手動執行<strong>勞力密集且終究無法持續</strong>；要把實驗建進系統裡</td></tr>
+<tr><td>最小化爆炸半徑</td><td>Minimize Blast Radius</td>
+    <td>連帶損害必須被<strong>最小化並加以圍堵</strong>；先從 1% 流量開始，且必須有一鍵中止機制</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+  <div class="t">前置條件</div>
+  <p>不要在階段 3（可觀測性）與階段 7（事故流程）成熟之前做混沌工程。
+  <strong>如果你看不見系統的狀態，你只是在製造事故，不是在做實驗。</strong></p>
+</div>
+<p><strong>工具：</strong>Chaos Mesh、LitmusChaos、Gremlin、AWS Fault Injection Service、Toxiproxy（網路故障注入）。</p>
+
+<h3 id="s8-3">8.3 效能工程 <span class="en-inline">(Performance Engineering)</span></h3>
+<ul>
+  <li><strong>剖析</strong><span class="en-inline"> (Profiling)</span> — CPU、記憶體、鎖競爭；<strong>火焰圖</strong> (Flame Graph) 的判讀</li>
+  <li><strong>持續剖析</strong><span class="en-inline"> (Continuous Profiling)</span> — 在生產環境長期低開銷取樣（Pyroscope、Parca）</li>
+  <li><strong>尾端延遲</strong><span class="en-inline"> (Tail Latency)</span> —
+      當一個請求要扇出到 100 個後端，<strong>p99 就變成了實質上的常態</strong>。對策：對沖請求 (Hedged Request)、分層取消。</li>
+  <li><strong>資料層</strong> — 索引、查詢計畫、連線池、N+1 問題、快取策略與<strong>快取雪崩</strong> (Cache Stampede)</li>
+</ul>
+
+<h3 id="s8-4">8.4 災難復原 <span class="en-inline">(Disaster Recovery, DR)</span></h3>
+<table>
+<thead><tr><th>指標</th><th>英文</th><th>問題</th></tr></thead>
+<tbody>
+<tr><td>復原時間目標</td><td>RTO — Recovery Time Objective</td><td>我們可以容忍<strong>停多久</strong>？</td></tr>
+<tr><td>復原點目標</td><td>RPO — Recovery Point Objective</td><td>我們可以容忍<strong>丟多少資料</strong>？</td></tr>
+</tbody>
+</table>
+<div class="callout err">
+  <div class="t">鐵律</div>
+  <p><strong>沒有測試過的備份，等於沒有備份。</strong>定期執行真實的還原演練 —
+  而且要演練「整個地區失效」的情境，不只是「一台機器掛了」。<br>
+  Google 內部以<strong>災難復原測試</strong><span class="en-inline"> (DiRT, Disaster Recovery Testing)</span> 演習制度化這件事。</p>
+</div>
+
+<div class="callout warn">
+  <div class="t">階段 8 驗收</div>
+  <p>你能設計並執行一場有明確假說、有爆炸半徑限制、有中止條件的混沌實驗，並從中找出一個真實的脆弱點加以修復。
+  你也能回答「我們現在的架構能撐多少倍流量、瓶頸在哪一層、多久會撞牆」。</p>
+</div>
+
+<hr>
+
+<h2 id="s9">階段 9 — 文化、組織與職涯<span class="en">Stage 9 — Culture, Organization &amp; Career</span></h2>
+<p>技術能讓你成為一個好工程師，但讓你成為一個好 SRE 的，是<strong>影響組織的能力</strong>。
+資深 SRE 的大部分價值不是自己修好了什麼，而是<strong>讓整個組織不再需要修那件事</strong>。</p>
+
+<h3 id="s9-1">9.1 SRE 的組織模式</h3>
+<table>
+<thead><tr><th>模式</th><th>做法</th><th>適用</th></tr></thead>
+<tbody>
+<tr><td><strong>嵌入式</strong><br><span class="en-inline">Embedded</span></td><td>SRE 直接坐進產品團隊</td><td>單一關鍵服務、需要深度介入時</td></tr>
+<tr><td><strong>顧問／賦能式</strong><br><span class="en-inline">Consulting / Enablement</span></td><td>SRE 提供方法、標準與評審，不直接維運</td><td>SRE 人力稀缺、團隊眾多時</td></tr>
+<tr><td><strong>基礎設施／平台式</strong><br><span class="en-inline">Infrastructure / Platform</span></td><td>SRE 打造共用平台與工具</td><td>規模化階段，追求槓桿效果</td></tr>
+<tr><td><strong>Kitchen Sink</strong></td><td>負責所有沒人負責的東西</td><td><em>常見但不健康</em>，是缺乏定位的徵兆</td></tr>
+</tbody>
+</table>
+<h4>參與與退出 <span class="en-inline">(Engagement &amp; Disengagement)</span></h4>
+<p>成熟的 SRE 團隊會定義<strong>接手一個服務的門檻</strong>（production readiness review：要有 SLO、有 Runbook、有可觀測性、
+有容量規劃）與<strong>退出的條件</strong>（服務不再符合可靠性要求或不再重要時，把維運責任交還開發團隊）。
+<strong>「SRE 不是無條件的維運外包」</strong>— 這個界線是保護 SRE 團隊不被瑣務淹沒的制度性防線。</p>
+
+<h3 id="s9-2">9.2 DORA 四大關鍵指標 <span class="en-inline">(DORA Four Keys)</span></h3>
+<p>由 DevOps Research and Assessment 研究計畫提出，用來衡量<strong>軟體交付表現</strong>。
+SRE 常用它來證明「更快」與「更穩」不是取捨關係 — 高績效團隊在兩邊同時勝出。</p>
+<div class="callout warn">
+  <div class="t">名稱已更新 — 別再用舊稱</div>
+  <p>DORA 官方頁面現行列出的是<strong>五個</strong>指標，且名稱與早期廣為流傳的版本不同：
+  第四項<strong>已不再叫 "Time to Restore Service" 或 MTTR</strong>，而是 <strong>Failed deployment recovery time</strong>；
+  第三項官方寫法是 <strong>Change fail rate</strong>（不是 change <em>failure</em> rate）；
+  並新增了第五項 <strong>Deployment rework rate</strong>。分組也改為<strong>吞吐量 / 不穩定性</strong>，而非舊的「速度 / 穩定」。</p>
+</div>
+<table>
+<thead><tr><th>分組</th><th>指標（官方現行名稱）</th><th>中文</th><th>衡量</th></tr></thead>
+<tbody>
+<tr><td rowspan="3">吞吐量<br><span class="en-inline">Throughput</span></td>
+    <td>Deployment frequency</td><td>部署頻率</td><td>一段期間內的部署次數，或兩次部署之間的間隔</td></tr>
+<tr><td>Change lead time</td><td>變更前置時間</td><td>一項變更從提交進版本控制到部署上線所需的時間</td></tr>
+<tr><td>Change fail rate</td><td>變更失敗率</td><td>部署後需要立即介入處理的部署佔比</td></tr>
+<tr><td rowspan="2">不穩定性<br><span class="en-inline">Instability</span></td>
+    <td>Failed deployment recovery time</td><td>失敗部署恢復時間</td><td>從一次失敗且需立即介入的部署中恢復所需的時間</td></tr>
+<tr><td>Deployment rework rate</td><td>部署返工率</td><td>非計畫中、因生產環境事故而發生的部署佔比</td></tr>
+</tbody>
+</table>
+<div class="callout warn">
+  <div class="t">使用注意</div>
+  <p>DORA 官方明言：<em>「目標是隨時間改善<strong>你自己團隊</strong>的表現，而不是與其他團隊或組織競爭。」</em>
+  官方並點名兩個反模式 — <strong>不對等的比較</strong> (making disparate comparisons) 與
+  <strong>把指標本身當成目標</strong> (setting metrics as a goal)。<br>
+  後者就是 Goodhart 定律：<em>當一個量測成為目標，它就不再是好的量測</em>（例：把一次部署拆成十次來衝高頻率）。
+  另外，官方的指標頁面<strong>並沒有</strong>列出 Elite / High / Medium / Low 的績效門檻 —
+  那些數字散落在各年度的年報中且逐年不同，引用時務必註明年份。</p>
+</div>
+
+<h3 id="s9-3">9.3 非技術能力</h3>
+<div class="grid2">
+  <div class="card"><h4>技術寫作</h4>
+    <p>事後檢討、設計文件、Runbook、SLO 文件。<strong>寫作品質直接決定你的影響力半徑</strong> — 你不在場時，只有文件替你說話。</p></div>
+  <div class="card"><h4>危機溝通</h4>
+    <p>在壓力下清晰、簡短、誠實地更新狀態。對高階主管要講影響與時程，不要講技術細節。</p></div>
+  <div class="card"><h4>不靠職權的影響力</h4>
+    <p>SRE 通常無權命令開發團隊。你靠<strong>數據</strong>（SLO、錯誤預算）與<strong>信任</strong>推動改變。</p></div>
+  <div class="card"><h4>風險判斷</h4>
+    <p>知道什麼時候該說「這個風險可以接受」。過度追求可靠性跟不夠可靠一樣有害。</p></div>
+</div>
+
+<h3 id="s9-4">9.4 認證與資源</h3>
+<p><strong>認證不是必要條件，但能提供結構化的學習路徑與檢查點。</strong></p>
+<table>
+<thead><tr><th>認證</th><th>發證單位</th><th>對應階段</th></tr></thead>
+<tbody>
+<tr><td>CKA — Certified Kubernetes Administrator</td><td>CNCF / Linux Foundation</td><td>階段 5（最推薦）</td></tr>
+<tr><td>CKAD — Certified Kubernetes Application Developer</td><td>CNCF / Linux Foundation</td><td>階段 5</td></tr>
+<tr><td>CKS — Certified Kubernetes Security Specialist</td><td>CNCF / Linux Foundation</td><td>階段 5 進階（需先有 CKA）</td></tr>
+<tr><td>Professional Cloud DevOps Engineer</td><td>Google Cloud</td><td>階段 2 + 4 + 6（SLO 觀念考得最正統）</td></tr>
+<tr><td>AWS Certified DevOps Engineer – Professional</td><td>AWS</td><td>階段 4 + 6</td></tr>
+<tr><td>HashiCorp Certified: Terraform Associate</td><td>HashiCorp</td><td>階段 4</td></tr>
+<tr><td>Prometheus Certified Associate (PCA)</td><td>CNCF / Linux Foundation</td><td>階段 3</td></tr>
+<tr><td>LFCS / RHCSA</td><td>Linux Foundation / Red Hat</td><td>階段 1</td></tr>
+</tbody>
+</table>
+
+<div class="callout warn">
+  <div class="t">關於認證資訊的時效</div>
+  <p>認證的價格、考試領域權重、及格分數與有效期<strong>會隨時間變動</strong>，且部分資訊官方並未公布
+  （例如 CNCF 的 CKA 頁面就<strong>沒有</strong>列出及格分數）。<br>
+  報名前請一律以各發證單位的官方頁面為準，不要相信二手整理 — 包含本表。</p>
+</div>
+
+<h4>必讀書單</h4>
+<ul>
+  <li><strong>《Site Reliability Engineering》</strong>（Google，2016）— SRE 的原典，<em>可在 sre.google 免費線上閱讀</em></li>
+  <li><strong>《The Site Reliability Workbook》</strong>（Google，2018）— 前者的實作篇，SLO 落地看這本</li>
+  <li><strong>《Building Secure and Reliable Systems》</strong>（Google，2020）— 可靠性與安全的交集</li>
+  <li><strong>《Designing Data-Intensive Applications》</strong>（Martin Kleppmann）— 分散式系統的必修課</li>
+  <li><strong>《Systems Performance》</strong>、<strong>《BPF Performance Tools》</strong>（Brendan Gregg）— 階段 1 與 8 的深水區</li>
+  <li><strong>《Accelerate》</strong>（Forsgren, Humble, Kim）— DORA 研究的理論基礎</li>
+  <li><strong>《Seeking SRE》</strong>（David Blank-Edelman 編）— 多元組織中的 SRE 實踐</li>
+</ul>
+
+<hr>
+
+<h2 id="a1">附錄 A — 12 個月學習排程建議<span class="en">Appendix A — A 12-Month Schedule</span></h2>
+<p>以「每週投入 8–10 小時」為假設。若你已有後端或維運經驗，可壓縮至 6–8 個月。</p>
+<table>
+<thead><tr><th>月份</th><th>階段</th><th>重點產出（做出來，不只是讀過）</th></tr></thead>
+<tbody>
+<tr><td>M1–M2</td><td>0 + 1</td><td>Linux 效能排查演練；用 Go 或 Python 寫一個有測試的 CLI 工具；讀完 SRE Book 第 1–3 章</td></tr>
+<tr><td>M3</td><td>2</td><td>為一個真實服務寫完整 SLO 文件＋錯誤預算政策</td></tr>
+<tr><td>M4–M5</td><td>3</td><td>自架 Prometheus + Grafana + Alertmanager；把 SLO 做成儀表板與燃燒率告警</td></tr>
+<tr><td>M6</td><td>4</td><td>用 Terraform 建出可完整銷毀重建的雲端環境；容器化一個應用</td></tr>
+<tr><td>M7–M8</td><td>5</td><td>K8s 深入；部署高可用服務；<strong>考 CKA</strong>；刻意製造並排查 5 種常見故障</td></tr>
+<tr><td>M9</td><td>6</td><td>建出 GitOps + 金絲雀自動回滾的完整管線</td></tr>
+<tr><td>M10</td><td>7</td><td>設計值班制度與 Runbook；主持一場事故演練並寫出事後檢討</td></tr>
+<tr><td>M11</td><td>8</td><td>執行負載測試找出容量上限；跑第一個混沌實驗</td></tr>
+<tr><td>M12</td><td>9</td><td>整理成作品集；用 DORA 指標檢視自己的管線；準備面試</td></tr>
+</tbody>
+</table>
+<div class="callout ok">
+  <div class="t">最重要的一句建議</div>
+  <p><strong>蓋一個你自己的服務，然後想辦法弄壞它。</strong>
+  SRE 的能力來自於處理故障的次數。在自己的環境裡故意製造 OOM、磁碟寫滿、憑證過期、DNS 失效、依賴逾時、
+  資料庫連線耗盡 — 每一次排查，都是別人要在半夜付出代價才能學到的經驗。</p>
+</div>
+
+<hr>
+
+<h2 id="a2">附錄 B — 技術與工具全景圖<span class="en">Appendix B — Technology &amp; Tooling Map</span></h2>
+<p>依階段整理。<strong>不需要全部學會</strong> — 每一格挑一個主力學透，其餘知道定位即可。</p>
+<table>
+<thead><tr><th>階段</th><th>領域</th><th>代表技術／工具</th></tr></thead>
+<tbody>
+<tr><td rowspan="4">1 地基</td><td>作業系統</td><td>Linux、systemd、cgroup／namespace</td></tr>
+<tr><td>效能與追蹤</td><td>top/vmstat/iostat/ss、strace、<strong>eBPF</strong>、perf、火焰圖</td></tr>
+<tr><td>網路</td><td>TCP/IP、DNS、TLS、HTTP/2·3、dig／curl／tcpdump／Wireshark／mtr</td></tr>
+<tr><td>程式與協作</td><td><strong>Go</strong>、<strong>Python</strong>、Bash、Git</td></tr>
+
+<tr><td>2 可靠性</td><td>度量體系</td><td>SLI／SLO／SLA、錯誤預算、燃燒率、OpenSLO、Sloth／Pyrra</td></tr>
+
+<tr><td rowspan="4">3 可觀測性</td><td>標準</td><td><strong>OpenTelemetry</strong></td></tr>
+<tr><td>指標</td><td><strong>Prometheus</strong> + PromQL、Thanos／Mimir、VictoriaMetrics</td></tr>
+<tr><td>日誌與追蹤</td><td>Loki／ELK、Fluent Bit／Vector、Jaeger／Tempo</td></tr>
+<tr><td>視覺化與告警</td><td><strong>Grafana</strong>、Alertmanager、PagerDuty</td></tr>
+
+<tr><td rowspan="3">4 基礎設施</td><td>雲端</td><td>AWS／GCP／Azure、Well-Architected 可靠性支柱</td></tr>
+<tr><td>IaC</td><td><strong>Terraform</strong>／OpenTofu、Ansible、Packer、Vault、OPA</td></tr>
+<tr><td>容器</td><td>Docker、containerd、OCI、Trivy</td></tr>
+
+<tr><td rowspan="3">5 分散式</td><td>編排</td><td><strong>Kubernetes</strong>、Helm／Kustomize、Operator／CRD、k9s</td></tr>
+<tr><td>網路與網格</td><td>CNI（Calico／Cilium）、Istio／Linkerd、Gateway API</td></tr>
+<tr><td>資料與訊息</td><td>PostgreSQL／MySQL、Redis、Kafka、etcd（Raft）</td></tr>
+
+<tr><td rowspan="2">6 交付</td><td>CI</td><td>GitHub Actions、GitLab CI、Jenkins、Tekton</td></tr>
+<tr><td>CD／GitOps</td><td><strong>Argo CD</strong>／Flux、Argo Rollouts／Flagger、OpenFeature</td></tr>
+
+<tr><td>7 事故</td><td>值班與流程</td><td>PagerDuty／Opsgenie／Grafana OnCall、Incident.io、Statuspage</td></tr>
+
+<tr><td rowspan="3">8 進階</td><td>負載測試</td><td>k6、Locust、Vegeta、Gatling</td></tr>
+<tr><td>混沌工程</td><td>Chaos Mesh、LitmusChaos、Gremlin、Toxiproxy</td></tr>
+<tr><td>持續剖析</td><td>Pyroscope、Parca</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2 id="a3">附錄 C — 常見反模式<span class="en">Appendix C — Anti-Patterns</span></h2>
+<table>
+<thead><tr><th>反模式</th><th>為什麼有害</th></tr></thead>
+<tbody>
+<tr><td><strong>把 SRE 當成改名的維運團隊</strong></td><td>沒有工程時間、沒有拒絕權、沒有 SLO — 只是換個名字繼續燒人</td></tr>
+<tr><td><strong>追求 100% 可用性</strong></td><td>成本無上限，且會凍結所有創新；使用者也感受不到</td></tr>
+<tr><td><strong>沒有錯誤預算政策的 SLO</strong></td><td>SLO 破了沒有任何後果，就只是一張漂亮的圖表</td></tr>
+<tr><td><strong>對 CPU／記憶體使用率設告警並呼叫人</strong></td><td>對原因告警而非症狀，製造大量與使用者無關的雜訊</td></tr>
+<tr><td><strong>究責式的事後檢討</strong></td><td>工程師會隱藏資訊，你將永遠拿不到改善系統所需的真相</td></tr>
+<tr><td><strong>工具先行、問題後補</strong></td><td>先導入服務網格再問要解決什麼；複雜度本身就是可靠性的敵人</td></tr>
+<tr><td><strong>事故當下堅持先找根因</strong></td><td>延長使用者受影響時間；止血優先，診斷留給事後</td></tr>
+<tr><td><strong>行動項沒有負責人與期限</strong></td><td>同樣的事故會再發生一次，而且大家都記得上次討論過</td></tr>
+<tr><td><strong>可觀測性未成熟就做混沌工程</strong></td><td>看不見系統狀態時，那不是實驗，只是自己製造事故</td></tr>
+<tr><td><strong>Runbook 只存在於某個資深工程師腦中</strong></td><td>該人一離職或休假，MTTR 立刻暴增</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2 id="a4">附錄 D — 術語中英對照表<span class="en">Appendix D — Glossary (中英對照)</span></h2>
+<table>
+<thead><tr><th>中文</th><th>English</th><th>縮寫</th><th>一句話說明</th></tr></thead>
+<tbody>
+<tr><td>網站可靠性工程</td><td>Site Reliability Engineering</td><td>SRE</td><td>用軟體工程方法解決維運問題的實踐</td></tr>
+<tr><td>服務等級指標</td><td>Service Level Indicator</td><td>SLI</td><td>反映使用者體驗的可量測數值</td></tr>
+<tr><td>服務等級目標</td><td>Service Level Objective</td><td>SLO</td><td>對 SLI 設定的內部目標值</td></tr>
+<tr><td>服務等級協議</td><td>Service Level Agreement</td><td>SLA</td><td>對外的合約承諾，違反有後果</td></tr>
+<tr><td>錯誤預算</td><td>Error Budget</td><td>—</td><td>100% 減去 SLO，可容許的不可靠額度</td></tr>
+<tr><td>錯誤預算政策</td><td>Error Budget Policy</td><td>—</td><td>預算耗盡時各方須採取行動的事先約定</td></tr>
+<tr><td>燃燒率</td><td>Burn Rate</td><td>—</td><td>錯誤預算的消耗速度倍率</td></tr>
+<tr><td>瑣務</td><td>Toil</td><td>—</td><td>手動、重複、可自動化、無長期價值且隨規模成長的工作</td></tr>
+<tr><td>四大黃金訊號</td><td>Four Golden Signals</td><td>—</td><td>延遲、流量、錯誤、飽和度</td></tr>
+<tr><td>可觀測性</td><td>Observability</td><td>o11y</td><td>從外部輸出推斷系統內部狀態的能力</td></tr>
+<tr><td>遙測</td><td>Telemetry</td><td>—</td><td>指標、日誌、追蹤的統稱</td></tr>
+<tr><td>百分位數</td><td>Percentile</td><td>p50/p99</td><td>延遲分佈的統計表達，取代平均值</td></tr>
+<tr><td>尾端延遲</td><td>Tail Latency</td><td>—</td><td>分佈末端的高延遲請求</td></tr>
+<tr><td>值班／待命</td><td>On-Call</td><td>—</td><td>輪值承擔緊急回應責任</td></tr>
+<tr><td>呼叫</td><td>Page</td><td>—</td><td>會叫醒人的最高級別告警</td></tr>
+<tr><td>值班手冊</td><td>Runbook / Playbook</td><td>—</td><td>告警對應的處置步驟文件</td></tr>
+<tr><td>事故指揮官</td><td>Incident Commander</td><td>IC</td><td>事故中負責決策與調度的角色</td></tr>
+<tr><td>事故指揮系統</td><td>Incident Command System</td><td>ICS</td><td>源自消防的結構化事故應變框架</td></tr>
+<tr><td>事後檢討</td><td>Postmortem</td><td>—</td><td>事故後的書面分析與改善追蹤</td></tr>
+<tr><td>免責文化</td><td>Blameless Culture</td><td>—</td><td>檢討系統與流程而非追究個人</td></tr>
+<tr><td>平均修復時間</td><td>Mean Time To Recovery</td><td>MTTR</td><td>故障到恢復的平均時長</td></tr>
+<tr><td>平均故障間隔</td><td>Mean Time Between Failures</td><td>MTBF</td><td>兩次故障之間的平均時長</td></tr>
+<tr><td>爆炸半徑</td><td>Blast Radius</td><td>—</td><td>一次故障或變更的影響範圍</td></tr>
+<tr><td>級聯故障</td><td>Cascading Failure</td><td>—</td><td>局部故障逐級擴散導致全域崩潰</td></tr>
+<tr><td>驚群效應</td><td>Thundering Herd</td><td>—</td><td>大量客戶端同時湧入造成二次過載</td></tr>
+<tr><td>優雅降級</td><td>Graceful Degradation</td><td>—</td><td>犧牲次要功能以保住核心服務</td></tr>
+<tr><td>負載卸除</td><td>Load Shedding</td><td>—</td><td>過載時主動拒絕部分請求</td></tr>
+<tr><td>斷路器</td><td>Circuit Breaker</td><td>—</td><td>下游持續失敗時快速失敗以利恢復</td></tr>
+<tr><td>指數退避與抖動</td><td>Exponential Backoff with Jitter</td><td>—</td><td>重試間隔遞增並加入隨機性</td></tr>
+<tr><td>冪等性</td><td>Idempotency</td><td>—</td><td>重複執行與執行一次結果相同</td></tr>
+<tr><td>故障域</td><td>Failure Domain</td><td>—</td><td>會一起失效的資源邊界（如可用區）</td></tr>
+<tr><td>可用區／地區</td><td>Availability Zone / Region</td><td>AZ</td><td>雲端的實體隔離單位</td></tr>
+<tr><td>基礎設施即程式碼</td><td>Infrastructure as Code</td><td>IaC</td><td>用版本控制的檔案宣告基礎設施</td></tr>
+<tr><td>宣告式／命令式</td><td>Declarative / Imperative</td><td>—</td><td>宣告結果 vs 描述步驟</td></tr>
+<tr><td>配置漂移</td><td>Configuration Drift</td><td>—</td><td>實際狀態偏離宣告狀態</td></tr>
+<tr><td>不可變基礎設施</td><td>Immutable Infrastructure</td><td>—</td><td>更新即替換而非就地修改</td></tr>
+<tr><td>調和迴圈</td><td>Reconciliation Loop</td><td>—</td><td>持續比對期望與實際狀態並修正</td></tr>
+<tr><td>控制平面／資料平面</td><td>Control Plane / Data Plane</td><td>—</td><td>決策層 vs 實際處理流量層</td></tr>
+<tr><td>探針</td><td>Liveness / Readiness / Startup Probe</td><td>—</td><td>K8s 判斷容器是否存活與可收流量</td></tr>
+<tr><td>水平自動擴縮</td><td>Horizontal Pod Autoscaler</td><td>HPA</td><td>依指標自動增減副本數</td></tr>
+<tr><td>Pod 中斷預算</td><td>PodDisruptionBudget</td><td>PDB</td><td>自願中斷時保障最低可用副本</td></tr>
+<tr><td>服務網格</td><td>Service Mesh</td><td>—</td><td>把服務間通訊治理下沉到基礎設施層</td></tr>
+<tr><td>持續整合／持續交付</td><td>Continuous Integration / Delivery</td><td>CI/CD</td><td>自動化建置、測試與發布</td></tr>
+<tr><td>漸進式交付</td><td>Progressive Delivery</td><td>—</td><td>逐步放量的發布策略總稱</td></tr>
+<tr><td>金絲雀發布</td><td>Canary Release</td><td>—</td><td>先導少量流量觀察後再全面放量</td></tr>
+<tr><td>藍綠部署</td><td>Blue-Green Deployment</td><td>—</td><td>雙環境並存後一次性切換</td></tr>
+<tr><td>功能旗標</td><td>Feature Flag</td><td>—</td><td>用開關控制已上線程式碼的行為</td></tr>
+<tr><td>混沌工程</td><td>Chaos Engineering</td><td>—</td><td>以實驗建立對系統韌性的信心</td></tr>
+<tr><td>穩態</td><td>Steady State</td><td>—</td><td>混沌實驗中代表系統正常的可量測指標</td></tr>
+<tr><td>容量規劃</td><td>Capacity Planning</td><td>—</td><td>預測需求並確保資源足夠</td></tr>
+<tr><td>復原時間／點目標</td><td>Recovery Time / Point Objective</td><td>RTO/RPO</td><td>可容忍的停機時長與資料遺失量</td></tr>
+<tr><td>部署頻率</td><td>Deployment Frequency</td><td>DORA</td><td>一段期間內的部署次數</td></tr>
+<tr><td>變更前置時間</td><td>Change Lead Time</td><td>DORA</td><td>提交進版控到部署上線的時間</td></tr>
+<tr><td>變更失敗率</td><td>Change Fail Rate</td><td>DORA</td><td>部署後需立即介入的部署佔比</td></tr>
+<tr><td>失敗部署恢復時間</td><td>Failed Deployment Recovery Time</td><td>DORA</td><td>從失敗部署中恢復所需時間（取代舊稱 MTTR）</td></tr>
+<tr><td>部署返工率</td><td>Deployment Rework Rate</td><td>DORA</td><td>因生產事故而發生的非計畫部署佔比</td></tr>
+<tr><td>關鍵使用者旅程</td><td>Critical User Journey</td><td>CUJ</td><td>使用者完成核心任務的路徑，SLI 的來源</td></tr>
+</tbody>
+</table>
+
+<div class="footnote">
+  <p><strong>SRE 學習路線圖</strong> · 更新於 2026-08 · 中英對照版<br>
+  本教程聚焦於<strong>角色的學習路線</strong>：說明每個階段的目標、概念與驗收標準，並列出對應技術與工具的定位，但刻意不展開各工具的操作教學。<br>
+  書中的關鍵定義與數字（瑣務六特徵、四大黃金訊號、50% 上限、每輪班事故上限、燃燒率門檻、GitOps 四原則、DORA 指標、K8s 元件清單、混沌工程原則）
+  已逐條對照一手來源查核，逐字引用與出處整理於隨附的
+  <a href="research/sre-learning-path-research.md"><code>research/sre-learning-path-research.md</code></a>。<br>
+  <strong>時效提醒：</strong>查核作業完成於 2026-08-18。認證資訊、雲端框架版本、規格版本號與 DORA 各年度績效門檻均會隨時間變動；
+  引用具體數字前請重新核對官方頁面。研究檔末的「Gaps／未驗證」章節列出了 8 項無法從一手來源證實的項目，本教程中未採用這些說法。<br>
+  權威來源：Google SRE Book &amp; Workbook（<a href="https://sre.google/books/">sre.google/books</a>）、
+  Kubernetes 官方文件（<a href="https://kubernetes.io/docs/">kubernetes.io/docs</a>）、
+  OpenTelemetry（<a href="https://opentelemetry.io/docs/">opentelemetry.io</a>）、
+  Prometheus（<a href="https://prometheus.io/docs/">prometheus.io/docs</a>）、
+  OpenGitOps（<a href="https://opengitops.dev/">opengitops.dev</a>）、
+  Principles of Chaos（<a href="https://principlesofchaos.org/">principlesofchaos.org</a>）、
+  DORA（<a href="https://dora.dev/">dora.dev</a>）。</p>
+</div>
+
+</main>
+</div>
+
+<script>
+(function(){
+  // ---- Build TOC from headings ----
+  var content = document.getElementById('content');
+  var toc = document.getElementById('toc');
+  var heads = content.querySelectorAll('h2[id], h3[id]');
+  var ol = document.createElement('ol');
+  var groupLabels = {s0:'入門',s1:'基礎',s5:'核心',a1:'附錄'};
+  heads.forEach(function(h){
+    if(groupLabels[h.id]){
+      var lab = document.createElement('li');
+      lab.className='lvl0';
+      lab.textContent = groupLabels[h.id];
+      ol.appendChild(lab);
+    }
+    var li = document.createElement('li');
+    var a = document.createElement('a');
+    a.href = '#' + h.id;
+    a.textContent = (h.childNodes[0].textContent || h.textContent).trim();
+    if(h.tagName === 'H3') a.className = 'lvl2';
+    a.dataset.target = h.id;
+    li.appendChild(a); ol.appendChild(li);
+  });
+  toc.appendChild(ol);
+
+  var links = toc.querySelectorAll('a');
+  var byId = {};
+  links.forEach(function(a){ byId[a.dataset.target] = a; });
+
+  // ---- Scroll spy ----
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(a){ a.classList.remove('active'); });
+        var a = byId[e.target.id];
+        if(a){
+          a.classList.add('active');
+          var r = a.getBoundingClientRect();
+          if(r.top < 60 || r.bottom > window.innerHeight - 40){
+            a.scrollIntoView({block:'nearest'});
+          }
+        }
+      }
+    });
+  }, {rootMargin:'0px 0px -78% 0px', threshold:0});
+  heads.forEach(function(h){ obs.observe(h); });
+
+  // ---- Reading progress ----
+  var bar = document.getElementById('progress');
+  function onScroll(){
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // ---- Theme toggle ----
+  var root = document.documentElement;
+  var saved = localStorage.getItem('sre-theme');
+  if(saved) root.setAttribute('data-theme', saved);
+  document.getElementById('themeBtn').addEventListener('click', function(){
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('sre-theme', next);
+  });
+
+  // ---- Mobile menu ----
+  var sb = document.getElementById('sidebar');
+  document.getElementById('menuBtn').addEventListener('click', function(){
+    sb.classList.toggle('open');
+  });
+  toc.addEventListener('click', function(e){
+    if(e.target.tagName === 'A') sb.classList.remove('open');
+  });
+})();
+</script>
+</body>
+</html>

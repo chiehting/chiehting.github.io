@@ -1,6 +1,0 @@
-
-trivy 為資安掃描工具
-
-```bash
-./install.sh --with-trivy
-```
