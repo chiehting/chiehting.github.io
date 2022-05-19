@@ -1,8 +1,8 @@
 ---
 date: 2022-01-19 15:43:00 +0800
 title: Setup FreeIPA client on Ubuntu
-categories: [linux]
-tags: [linux,freeipa,ldap,ssh]
+categories: [ldap]
+tags: [ldap,freeipa,ssh]
 ---
 
 開發者有需求要連線至 server via ssh, 一般情況下需要在 server 中建立帳號並配置金鑰.
