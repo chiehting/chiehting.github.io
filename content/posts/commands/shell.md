@@ -28,6 +28,16 @@ ip route show table all | grep "table" | sed 's/.*\(table.*\)/\1/g' | awk '{prin
 ip route show table local 
 ```
 
+## ubuntu apt update/upgrade ip list
+
+```bash
+dig +short $(grep -Pho '^\s*[^#].*?https?://\K[^/]+(?=.*updates)' \
+    /etc/apt/sources.list /etc/apt/sources.list.d/*.list | sort -u) | sort -u
+
+dig +short $(grep -Pho '^\s*[^#].*?https?://\K[^/]+' \
+    /etc/apt/sources.list /etc/apt/sources.list.d/*.list | sort -u) | sort -u
+```
+
 ## generate password
 
 ```bash

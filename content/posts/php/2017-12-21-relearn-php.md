@@ -473,7 +473,7 @@ $a = $b += 3; // $a = ($b += 3) -> $a = 5, $b = 5
     }
     ```
 4. Properties,類別的成員.
-        ```php
+    ```php
     class SimpleClass
     {
        public $var1 = (1+2);

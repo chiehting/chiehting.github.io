@@ -32,6 +32,12 @@ helm upgrade --install -n $e --set stage=$e --set timestamp=(date +"%Y%m%d%H%M%S
 # --set nodeSelector."kubernetes\.io/hostname=ip-10-0-50-116\.ap-southeast-1\.compute\.internal"
 ```
 
+## Login private container registry
+
+```bash
+kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
+```
+
 ## install nginx ingress
 
 ```bash
@@ -89,9 +95,10 @@ helm install -n cert-manager cert-manager jetstack/cert-manager --version v1.7.1
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm search repo prometheus-community
 helm install prometheus prometheus-community/prometheus --namespace monitoring --create-namespace \
-  --version 15.8.5 \
+  --version 15.12.0 \
   --set alertmanager.persistentVolume.storageClass="gp2",server.persistentVolume.storageClass="gp2" \
-  --set alertmanager.enabled="false"
+  --set alertmanager.enabled="false" \
+  --set pushgateway.enabled="false"
 
 #helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace \
 #  --version 18.1.0 \
