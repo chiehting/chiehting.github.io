@@ -110,7 +110,7 @@ root@vpn:/opt/vpn# echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so /etc/openv
 
         <Group>
                 BaseDN          "cn=groups,cn=accounts,dc=example,dc=com"
-                SearchFilter    "(|(cn=admin)(cn=vpn))"
+                SearchFilter    "(|(cn=admin)(cn=vpn)(cn=ipausers))"
                 MemberAttribute member
         </Group>
 </Authorization>

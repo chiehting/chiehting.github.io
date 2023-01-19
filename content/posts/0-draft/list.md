@@ -1,5 +1,9 @@
 # study list
 
+## monorepo tools
+
+https://monorepo.tools/#what-is-a-monorepo
+
 ## flowchart.md
 
 ## eBPF.md
@@ -87,3 +91,9 @@ https://www.itread01.com/content/1547798053.html
 ## 流程圖
 
 時序圖、流程圖、狀態圖、協作圖之間的區別
+
+## 資安管理
+
+miter att&ck
+資安合規
+zero trust artitrture 零信任網路存取

@@ -1,7 +1,7 @@
 ---
 date: 2021-06-03 14:00:00 +0800
 title:
-categories: [elasticsearch]
+categories: [logs]
 tags: [elasticsearch]
 ---
 
