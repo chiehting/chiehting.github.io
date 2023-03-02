@@ -23,6 +23,9 @@ uid=%(user)s,cn=users,cn=accounts,dc=example,dc=com
 # LDAP GROUP TYPE
 NestedMemberDNGroupType
 
+# LDAP Start TLS
+off
+
 # LDAP USER SEARCH
 [
  "cn=groups,dc=example,dc=com",

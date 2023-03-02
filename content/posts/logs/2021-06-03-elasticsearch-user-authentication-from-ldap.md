@@ -1,6 +1,6 @@
 ---
 date: 2021-06-03 14:00:00 +0800
-title:
+title: Elasticsearch user 管理
 categories: [logs]
 tags: [elasticsearch]
 ---
@@ -53,13 +53,13 @@ xpack:
         ldap:
           ldap1:
             order: 0
-            url: "ldaps://ldap.hearts.tw:636"
-            bind_dn: "uid=admin,cn=users,cn=accounts,dc=hearts,dc=tw"
+            url: "ldaps://ldap.example.tw:636"
+            bind_dn: "uid=admin,cn=users,cn=accounts,dc=example,dc=tw"
             user_search:
-              base_dn: "cn=users,cn=accounts,dc=hearts,dc=tw"
+              base_dn: "cn=users,cn=accounts,dc=example,dc=tw"
               filter: "(memberUid={1})"
             group_search:
-              base_dn: "dc=hearts,dc=tw"
+              base_dn: "dc=example,dc=tw"
             files:
               role_mapping: "/etc/elasticsearch/role_mapping.yml"
             unmapped_groups_as_roles: false

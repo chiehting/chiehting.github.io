@@ -52,6 +52,12 @@ helm install ingress-nginx ingress-nginx/ingress-nginx -n kube-system \
 --set controller.config."ssl-redirect"="true"
 ```
 
+AWS 可以使用下面 yaml file.
+
+```bash
+wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.6.4/deploy/static/provider/aws/nlb-with-tls-termination/deploy.yaml
+```
+
 ```bash
 ## 這邊做 patch, 變更 configmap/ingress-nginx-controller, get real ip from client.
 kubectl patch configmap/ingress-nginx-controller -n kube-system --type merge \

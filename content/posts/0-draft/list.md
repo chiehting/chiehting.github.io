@@ -97,3 +97,6 @@ https://www.itread01.com/content/1547798053.html
 miter att&ck
 資安合規
 zero trust artitrture 零信任網路存取
+
+## Line report
+https://engineering.linecorp.com/zh-hant/blog/line-techpulse-2023-report
