@@ -12,6 +12,12 @@ find . -type f -exec sed -i '' 's/foo/bar/g' {} \;
 find . -type f -exec sed -i '' '/foo/d' {} \;
 ```
 
+當前目錄底下檔案名稱變更
+
+```bash
+find . -depth -name "foo-*" -execdir sh -c 'mv "$1" "$(echo "$1" | sed s/foo/bar/g)"' _ {} \;
+```
+
 確認 output 是 stdout or stderr
 
 ```bash

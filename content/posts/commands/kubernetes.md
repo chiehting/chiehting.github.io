@@ -46,6 +46,7 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
 # 安裝 ingress-nginx
 helm install ingress-nginx ingress-nginx/ingress-nginx -n kube-system \
+--version 4.6.0 \
 --set controller.service.annotations."service\.beta\.kubernetes\.io\/aws-load-balancer-type"="nlb" \
 --set controller.config."use-proxy-protocol"="true" \
 --set controller.config."proxy-body-size"="15m" \
@@ -92,7 +93,8 @@ helm install ingress-traefik --namespace kube-system stable/traefik \
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 kubectl create namespace cert-manager
-helm install -n cert-manager cert-manager jetstack/cert-manager --version v1.7.1 --set installCRDs=true
+
+helm install -n cert-manager cert-manager jetstack/cert-manager --version v1.11.0 --set installCRDs=true
 ```
 
 ## install prometheus
@@ -101,16 +103,10 @@ helm install -n cert-manager cert-manager jetstack/cert-manager --version v1.7.1
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm search repo prometheus-community
 helm install prometheus prometheus-community/prometheus --namespace monitoring --create-namespace \
-  --version 15.12.0 \
+  --version 20.2.0 \
   --set alertmanager.persistentVolume.storageClass="gp2",server.persistentVolume.storageClass="gp2" \
   --set alertmanager.enabled="false" \
   --set pushgateway.enabled="false"
-
-#helm install prometheus prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace \
-#  --version 18.1.0 \
-#  --set alertmanager.persistentVolume.storageClass="gp2",server.persistentVolume.storageClass="gp2" \
-#  --set alertmanager.enabled="false" \
-#  --set grafana.enabled="false"
 ```
 
 ## port-forward from local
