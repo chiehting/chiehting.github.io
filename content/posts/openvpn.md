@@ -1,11 +1,13 @@
 ---
-date: 2022-01-11 10:00:00 +0800
+date: 2022-01-11T10:00:00+08:00
+updated: 2023-07-03T16:16:09+08:00
 title: Create an OpenVPN server
-categories: vpn
+category: vpn
 tags: [openvpn]
+type: note
 author: chiehting
 status: 🌲
-source: 📜️
+sourceType: 📜️
 sourceURL: .
 ---
 

@@ -1,11 +1,13 @@
 ---
-date: 2023-06-26 13:38:19 +0800
+date: 2023-06-26T13:38:19+08:00
+updated: 2023-07-03T16:16:14+08:00
 title: keep it simple stupid.!
-categories: principle
+category: principle
 tags: [principle]
+type: note
 author: chiehting
 status: 🌲
-source: 📜️
+sourceType: 📜️
 sourceURL: .
 ---
 

@@ -1,11 +1,13 @@
 ---
-date: 2023-06-27 11:24:18 +0800
+date: 2023-06-27T11:24:18+08:00
+updated: 2023-07-03T16:16:00+08:00
 title: What is Markdown?
-categories: tool
+category: tool
 tags: [markdown,plugin]
+type: moc
 author: chiehting
 status: 🌤
-source: 📜️
+sourceType: 📜️
 sourceURL: .
 ---
 
@@ -15,6 +17,10 @@ Markdown 是一種輕量的標記語言, 並可以轉換為 HTML 與其他格式
 
 如果是 Markdown 的新手, 官方有提供 [Markdown 的基本語法](https://www.markdownguide.org/basic-syntax) 文件, 可以快上手.
 **文件中還分享了 Best Practices 讓用戶知道有哪些狀況是該避免的**.
+
+### Metadata
+
+Metadata([[markdown-metadata]]) 可以在文件中加入描述資料屬性(property), 達成資料檢索之目的.
 
 ### Plugins
 

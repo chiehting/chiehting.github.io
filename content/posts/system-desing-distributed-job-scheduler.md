@@ -1,11 +1,13 @@
 ---
-date: 2023-06-27 10:44:44 +0800
+date: 2023-06-27T10:44:44+08:00
+updated: 2023-07-03T16:16:03+08:00
 title: Design a distributed job scheduler
-categories: learn
-tags: [system-desing,distributed]
+category: learn
+tags: [systemDesing,distributed]
+type: note
 author: Rakshesh Shah
 status: 🌲
-source: 📰️
+sourceType: 📰️
 sourceURL: https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c
 ---
 

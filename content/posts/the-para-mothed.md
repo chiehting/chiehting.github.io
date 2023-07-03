@@ -1,11 +1,13 @@
 ---
-date: 2023-06-23 02:28:08 +0800
+date: 2023-06-23T02:28:08+08:00
+updated: 2023-07-04T01:14:15+08:00
 title: The para mothed
-categories: productivity
+category: knowledgeManagement
 tags: [para]
+type: note
 author: 朱騏
 status: 🌱
-source: 📰️
+sourceType: 📰️
 sourceURL: https://medium.com/pm%E7%9A%84%E7%94%9F%E7%94%A2%E5%8A%9B%E5%B7%A5%E5%85%B7%E7%AE%B1/%E5%A6%82%E4%BD%95%E5%88%86%E9%A1%9E%E7%AD%86%E8%A8%98-e25c4cc39dba
 ---
 

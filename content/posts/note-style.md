@@ -1,15 +1,17 @@
 ---
-date: 2023-06-26 13:55:19 +0800
+date: 2023-06-26T13:55:19+08:00
+updated: 2023-07-03T16:15:55+08:00
 title: 筆記風格
-categories: productivity
+category: productivity
 tags: [markdown,style]
+type: note
 author: chiehting
 status: 🌱
-source: 💭️
+sourceType: 💭️
 sourceURL: .
 ---
 
-筆記都是由 *Markdown([[markdown]])* 所撰寫而成的, 而 *Markdown* 有多種基本的字體呈現樣式. 這邊要定義各個樣式在文章中所代表的意義.
+筆記都是由 *[[Markdown]]([[markdown]])* 所撰寫而成的, 而 *[[Markdown]]* 有多種基本的字體呈現樣式. 這邊要定義各個樣式在文章中所代表的意義.
 
 <!--more-->
 
