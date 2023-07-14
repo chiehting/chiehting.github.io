@@ -1,7 +1,7 @@
 ---
 date: 2021-12-21 13:55:00 +0800
 title: Apache Log4j Security Vulnerabilities
-categories: [security]
+category: [security]
 tags: [security,cve]
 ---
 

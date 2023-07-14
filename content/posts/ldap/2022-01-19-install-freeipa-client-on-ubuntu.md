@@ -1,7 +1,7 @@
 ---
 date: 2022-01-19 15:43:00 +0800
 title: Setup FreeIPA client on Ubuntu
-categories: [ldap]
+category: [ldap]
 tags: [ldap,freeipa,ssh]
 ---
 

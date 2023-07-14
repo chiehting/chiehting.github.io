@@ -1,7 +1,7 @@
 ---
 date: 2019-04-02 13:00:49 +0800
 title: Know the Alpine
-categories: [linux]
+category: linux
 tags: [alpine,os]
 ---
 

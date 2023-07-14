@@ -1,7 +1,7 @@
 ---
 date: 2021-06-24 14:39:00 +0800
 title: Linux kernel 網路參數
-categories: [linux]
+category: [linux]
 tags: [linux,kernel,network]
 ---
 

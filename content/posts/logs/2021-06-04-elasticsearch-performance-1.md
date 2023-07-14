@@ -1,7 +1,7 @@
 ---
 date: 2021-06-04 15:42:00 +0800
 title: Elasticsearch 效率優化 (1)
-categories: [logs]
+category: [logs]
 tags: [elasticsearch]
 ---
 

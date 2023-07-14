@@ -1,7 +1,7 @@
 ---
 date: 2022-05-19 15:00:00 +0800
 title: FreeIPA certificate renews problem
-categories: [ldap]
+category: [ldap]
 tags: [ldap,freeipa,cert]
 ---
 

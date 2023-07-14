@@ -1,7 +1,7 @@
 ---
 date: 2023-03-01 14:27:00 +0800
 title: 比較 SSL Certificates 的驗證效率
-categories: [kubernetes]
+category: [kubernetes]
 tags: [kubernetes,ingress,ssl,cloudflare,aws,route53]
 ---
 

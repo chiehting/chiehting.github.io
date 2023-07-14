@@ -1,7 +1,7 @@
 ---
 date: 2021-03-11 11:17:00 +0800
 title: Basic types in Golang
-categories: [golang]
+category: [golang]
 tags: [golang]
 ---
 

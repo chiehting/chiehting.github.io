@@ -1,7 +1,7 @@
 ---
 date: 2021-06-02 16:12:00 +0800
 title: troubleshoot the eks creating load balancer access denied
-categories: [aws]
+category: [aws]
 tags: [aws,eks,loadBalancer,ingress]
 ---
 

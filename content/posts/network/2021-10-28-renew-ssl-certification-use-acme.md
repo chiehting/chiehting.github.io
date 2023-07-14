@@ -1,7 +1,7 @@
 ---
 date: 2021-10-28 15:24:00 +0800
 title: How to use acme to renew SSL certification
-categories: [network]
+category: [network]
 tags: [network,certbot,acme]
 ---
 

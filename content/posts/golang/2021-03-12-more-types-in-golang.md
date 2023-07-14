@@ -1,7 +1,7 @@
 ---
 date: 2021-03-12 11:00:00 +0800
 title: More types structs, slices, and maps.
-categories: [golang]
+category: [golang]
 tags: [golang]
 ---
 

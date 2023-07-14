@@ -1,7 +1,7 @@
 ---
 date: 2022-04-14 10:16:00 +0800
 title: Foundations of Project Management
-categories: [study]
+category: [study]
 tags: [study,coursera,google,pm]
 post: false
 ---

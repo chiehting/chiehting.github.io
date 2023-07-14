@@ -1,7 +1,7 @@
 ---
 date: 2021-08-16 14:55:00 +0800
 title: Cloudfloar proxy issue
-categories: [network]
+category: [network]
 tags: [network,cloudflare]
 ---
 

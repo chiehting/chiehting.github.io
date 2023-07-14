@@ -1,7 +1,7 @@
 ---
 date: 2021-05-04 10:30:00 +0800
 title: Iptables guide
-categories: [linux]
+category: [linux]
 tags: [linux,network,firewall,iptalbes]
 ---
 

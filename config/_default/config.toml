@@ -19,6 +19,6 @@ DefaultContentLanguage = "en"
   posts  = "/:sections/:filename"
 
 [taxonomies]
-category = "categories"
+category = "category"
 tag = "tags"
 series = "series"

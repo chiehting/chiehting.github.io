@@ -1,7 +1,7 @@
 ---
 date: 2021-06-21 16:46:00 +0800
 title: Understanding Docker network through iptables
-categories: [docker]
+category: [docker]
 tags: [container,docker,iptables]
 ---
 

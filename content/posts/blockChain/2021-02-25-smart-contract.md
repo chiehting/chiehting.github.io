@@ -1,7 +1,7 @@
 ---
 date: 2021-02-25 16:12:00 +0800
 title: 智能合約(smart contract)
-categories: [blockChain]
+category: [blockChain]
 tags: [blockChain]
 ---
 

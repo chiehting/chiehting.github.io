@@ -1,6 +1,6 @@
 ---
 date: 2023-07-13T15:45:24+08:00
-updated: 2023-07-14T11:18:21+08:00
+updated: 2023-07-14T14:22:45+08:00
 title: Service Level Indicator
 category: sre
 tags: [sre,sli]
@@ -13,9 +13,9 @@ sourceURL: https://www.datadoghq.com/blog/establishing-service-level-objectives/
 
 ### Evergreen Note
 
-Question :: 為什麼 SLI 這麼重要?
+Question :: 什麼是 SLI?
 
-Answer :: SLI 為 SLO 的指標數據. SLA 與 SLO 都是建立於 SLI 的數據之上, 所以很重要. SLI 為 IT 團隊跟系統間的狀態確認, 但目標與以往的監控不同, 是以用戶體驗為導向. SLI 在擷取的過程中, 要保持單純與精確, 可以參考文章的 SLI 分類.
+Answer :: SLI 為 SLO 的指標數據, SLI 為 IT 團隊跟系統間的狀態確認. 但與以往的監控不同, SLO 的目標是以用戶體驗為導向. SLI 在擷取的過程中, 要保持單純與精確, 可以參考文章的 SLI 分類.
 
 <!--more-->
 

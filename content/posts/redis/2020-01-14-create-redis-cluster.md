@@ -1,7 +1,7 @@
 ---
 date: 2020-01-14 10:56:00 +0800
 title: Creating Redis Cluster
-categories: [redis]
+category: [redis]
 tags: [redis]
 ---
 

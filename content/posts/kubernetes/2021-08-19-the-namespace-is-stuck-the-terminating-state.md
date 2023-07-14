@@ -1,7 +1,7 @@
 ---
 date: 2021-08-19 17:22:00 +0800
 title: The Namespace is stuck the terminating state 
-categories: [kubernetes]
+category: [kubernetes]
 tags: [kubernetes]
 ---
 

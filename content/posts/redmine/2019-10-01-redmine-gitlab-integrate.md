@@ -1,7 +1,7 @@
 ---
 date: 2019-10-01 11:00:00 +0800
 title: Integrate Redmine with GitLab
-categories: [redmine]
+category: [redmine]
 tags: [redmine,gitlab]
 ---
 

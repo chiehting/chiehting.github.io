@@ -1,7 +1,7 @@
 ---
 date: 2020-01-14 17:23:00 +0800
 title: 了解linux ulimit
-categories: [linux]
+category: [linux]
 tags: [linux,ulimit,performance]
 ---
 

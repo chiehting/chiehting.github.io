@@ -1,7 +1,7 @@
 ---
 date: 2019-04-02 21:45:40 +0800
 title: Install redis cluster
-categories: [redis]
+category: [redis]
 tags: [redis,cluster]
 ---
 

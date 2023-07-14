@@ -1,7 +1,7 @@
 ---
 date: 2023-01-19 12:20:00 +0800
 title: Set the record to the coredns
-categories: [network]
+category: [network]
 tags: [coredns, dns, kubernetes]
 ---
 

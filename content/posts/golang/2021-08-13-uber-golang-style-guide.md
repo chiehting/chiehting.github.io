@@ -1,7 +1,7 @@
 ---
 date: 2021-08-12 10:58:00 +0800
 title: Uber Golang style guide
-categories: [golang]
+category: [golang]
 tags: [golang,codestyle]
 ---
 

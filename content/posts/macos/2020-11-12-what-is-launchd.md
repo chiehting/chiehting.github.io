@@ -1,7 +1,7 @@
 ---
 date: 2020-11-12 17:45:00 +0800
 title: Use Launchd in macOS
-categories: [macos]
+category: [macos]
 tags: [macos,launchd]
 ---
 

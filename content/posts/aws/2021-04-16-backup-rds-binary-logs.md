@@ -1,7 +1,7 @@
 ---
 date: 2021-04-16 14:48:00 +0800
 title: rds binlog 留存機制
-categories: [aws]
+category: aws
 tags: [aws,rds,binlog]
 ---
 

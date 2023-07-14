@@ -1,7 +1,7 @@
 ---
 date: 2021-07-16 10:00:00 +0800
 title: 原子習慣讀後心得
-categories: [learn]
+category: [learn]
 tags: []
 post: false
 ---

@@ -1,7 +1,7 @@
 ---
 date: 2021-08-20 14:44:00 +0800
 title: Using SSL certificates in Kubernetes ingress via cert-manager
-categories: [kubernetes]
+category: [kubernetes]
 tags: [kubernetes,ingress,ssl,cloudflare]
 ---
 

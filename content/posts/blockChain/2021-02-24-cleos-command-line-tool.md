@@ -1,7 +1,7 @@
 ---
 date: 2021-02-24 16:12:00 +0800
 title: cleos command line tool
-categories: [blockChain]
+category: [blockChain]
 tags: [cleos,command,tool]
 ---
 

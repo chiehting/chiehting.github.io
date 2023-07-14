@@ -1,7 +1,7 @@
 ---
 date: 2021-03-17 11:28:00 +0800
 title: Concept of MySQL transaction
-categories: [mysql]
+category: [mysql]
 tags: [mysql,transaction]
 ---
 

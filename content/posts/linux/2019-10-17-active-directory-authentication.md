@@ -1,7 +1,7 @@
 ---
 date: 2019-10-17 18:05:00 +0800
 title: Active Directory authentication on centos 7
-categories: [linux]
+category: [linux]
 tags: [linux,centos,ldap]
 ---
 

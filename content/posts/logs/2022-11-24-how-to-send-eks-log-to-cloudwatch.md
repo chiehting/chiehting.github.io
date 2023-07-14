@@ -1,7 +1,7 @@
 ---
 date: 2022-11-24 10:00:00 +0800
 title: How to send log from AWS eks to cloudwatch.
-categories: [logs]
+category: [logs]
 tags: [aws, eks, kubernetes, elk, elasticsearch, cloudwatch]
 ---
 

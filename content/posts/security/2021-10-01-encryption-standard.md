@@ -1,7 +1,7 @@
 ---
 date: 2021-10-01 16:35:00 +0800
 title: 淺談加密標準
-categories: [security]
+category: [security]
 tags: [security,cryptography,encryption]
 ---
 

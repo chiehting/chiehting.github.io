@@ -1,7 +1,7 @@
 ---
 date: 2019-04-02 13:00:49 +0800
 title: Create a Self-Signed SSL Certificate for Nginx
-categories: [nginx]
+category: [nginx]
 tags: [nginx,ssl]
 ---
 

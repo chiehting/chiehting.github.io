@@ -1,7 +1,7 @@
 ---
 date: 2021-09-01 14:44:00 +0800
 title: 使用 Helm 建立 AWS network load balancer
-categories: [kubernetes]
+category: [kubernetes]
 tags: [kubernetes,aws,ingress,loadbalancer]
 ---
 

@@ -1,7 +1,7 @@
 ---
 date: 2020-04-27 12:21:00 +0800
 title: 設定 macOS 的 open files 上限
-categories: [macos]
+category: [macos]
 tags: [macos,ulimit]
 ---
 

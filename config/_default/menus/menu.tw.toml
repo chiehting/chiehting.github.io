@@ -5,7 +5,7 @@
 
 [[main]]
   name = "分類"
-  url = "/categories/"
+  url = "/category/"
   weight = -109
 
 # Submenus are done this way: parent -> identifier

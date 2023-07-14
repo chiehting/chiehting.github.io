@@ -1,7 +1,7 @@
 ---
 date: 2021-03-03 14:00:00 +0800
 title: block chain guide
-categories: [blockChain]
+category: [blockChain]
 tags: [blockChain]
 ---
 

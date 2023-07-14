@@ -1,7 +1,7 @@
 ---
 date: 2019-04-07 00:38:19 +0800
 title: redis-trib.rb reshard problem
-categories: [redis]
+category: [redis]
 tags: [redis]
 ---
 

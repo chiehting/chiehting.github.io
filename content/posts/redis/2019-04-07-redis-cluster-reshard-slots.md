@@ -1,7 +1,7 @@
 ---
 date: 2019-04-07 00:49:24 +0800
 title: redis cluster reshard slots
-categories: [redis]
+category: [redis]
 tags: [redis]
 ---
 
