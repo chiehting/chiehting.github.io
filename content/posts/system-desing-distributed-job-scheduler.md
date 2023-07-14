@@ -1,8 +1,8 @@
 ---
 date: 2023-06-27T10:44:44+08:00
-updated: 2023-07-03T16:16:03+08:00
+updated: 2023-07-14T10:58:19+08:00
 title: Design a distributed job scheduler
-category: learn
+category: systemDesing
 tags: [systemDesing,distributed]
 type: note
 author: Rakshesh Shah
@@ -10,9 +10,6 @@ status: 🌲
 sourceType: 📰️
 sourceURL: https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c
 ---
-
-
-閱讀文章 :: [System Design - Design a distributed job scheduler (KISS Interview series)](https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c)
 
 ### Evergreen Note
 
@@ -39,6 +36,8 @@ Answer :: 文章主要在做系統設計, 使用排成系統做範例來設計�
  - 檔案系統採用 S3 做異地儲存.
 
 ### Note
+
+原文 :: [System Design - Design a distributed job scheduler (KISS Interview series)](https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c)
 
 #### Introduction
 
@@ -81,7 +80,9 @@ Job scheduling is a well known system design interview question. Below are some 
 >\# of machines needed to run 1000 QPS = 1000/0.10 = **10000** (wow 😮 !)
 
 也就是每一次可以執行 32 個 jobs, 且每個 job 執行 300 秒. 上面的公式等式如下.
-$$ (16 * 2) * (24 * 60^2) / (5 * 60) = 9216 $$**Memory 限制**
+$$ (16 * 2) * (24 * 60^2) / (5 * 60) = 9216 $$
+
+**Memory 限制**
 
 假設使用 16 GB 的記憶體, 假設每個任務使用 5 MB 的記憶體
 

@@ -1,8 +1,8 @@
 ---
 date: 2023-06-26T13:55:19+08:00
-updated: 2023-07-03T16:15:55+08:00
+updated: 2023-07-06T14:59:48+08:00
 title: 筆記風格
-category: productivity
+category: style
 tags: [markdown,style]
 type: note
 author: chiehting

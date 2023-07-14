@@ -1,8 +1,8 @@
 ---
 date: 2023-07-03T10:25:14+08:00
-updated: 2023-07-03T16:15:57+08:00
+updated: 2023-07-10T13:51:53+08:00
 title: Metadata of the Markdown
-category: productivity
+category: tool
 tags: [markdown,metadata]
 type: note
 author: 朱騏
@@ -17,7 +17,7 @@ sourceURL: https://medium.com/pm%E7%9A%84%E7%94%9F%E7%94%A2%E5%8A%9B%E5%B7%A5%E5
 
 ### Metadata
 
-什麼是 Metadata([[para2-areas/computer-science/metadata]])? 用於定義資的資料.
+什麼是 Metadata([[metadata]])? 用於定義資的資料.
 在 Markdown 中, 欄位可以自定義, 以我個人目前所需要的資料如下.
 
 #### date

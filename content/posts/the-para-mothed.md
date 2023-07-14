@@ -1,9 +1,9 @@
 ---
 date: 2023-06-23T02:28:08+08:00
-updated: 2023-07-04T01:14:15+08:00
+updated: 2023-07-06T15:00:59+08:00
 title: The para mothed
 category: knowledgeManagement
-tags: [para]
+tags: [knowledgeManagement,para]
 type: note
 author: 朱騏
 status: 🌱

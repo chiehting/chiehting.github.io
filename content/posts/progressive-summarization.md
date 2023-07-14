@@ -1,9 +1,9 @@
 ---
 date: 2023-07-03T13:55:10+08:00
-updated: 2023-07-04T01:32:06+08:00
+updated: 2023-07-06T15:00:08+08:00
 title: 漸進式總結法
 category: knowledgeManagement
-tags: [noteFirst,system]
+tags: [knowledgeManagement]
 type: note
 author: Tiago Forte
 status: 🌱
@@ -42,7 +42,7 @@ Answer :: 闡述一種知識管理辦法, 透過 5 個 Layer 來將數位資訊�
 
 Modern digital tools make it easy to “capture” information from a wide variety of sources. We know how to snap a picture, type out some notes, record a video, or scan a document. Getting this content from the outside world into the digital world is trivial.
 
-What is difficult is not transferring content from place to place, but **transferring it through time**.
+<span style="background-color:yellow;color:red">What is difficult is not transferring content from place to place, but **transferring it through time**.</span>
 
 You read a book, investing hours of mental labor in understanding the ideas it presents. You finish the book with a feeling of triumph that you’ve gained a valuable body of knowledge.
 
@@ -52,7 +52,7 @@ But then what?
 
 At this point, people take different paths. Some give up, labeling all "self-help" books a waste of time. Others decide it’s just a problem of remembering everything they read, and invest in fancy memorization techniques. And many people become "infovores," force-feeding themselves endless books, articles, and courses, in the hope that something will stick.
 
-At that future point, when you’re applying that knowledge directly to a real-world challenge, you won’t have to worry about memorizing it, integrating it, or even fully understanding it. You will only have to apply it, and any gaps in your understanding will very quickly reveal themselves. **By the time you’re done solving a real problem with it, book knowledge has become experiential knowledge.** And experiential knowledge is something you carry with you forever.
+At that future point, when you’re applying that knowledge directly to a real-world challenge, you won’t have to worry about memorizing it, integrating it, or even fully understanding it. You will only have to apply it, and any gaps in your understanding will very quickly reveal themselves. <span style="background-color:yellow;color:red">**By the time you’re done solving a real problem with it, book knowledge has become experiential knowledge.** And experiential knowledge is something you carry with you forever.</span>
 
 This is the job of a "second brain" -  an external, integrated digital repository for the things you learn and the resources from which they come. It is a storage and retrieval system, packaging bits of knowledge into discrete packets that can be forwarded to various points in time to be reviewed, utilized, or deleted.
 
@@ -66,7 +66,7 @@ There are two primary schools of thought on how to organize a note-taking progra
 
 The second conventional approach to organizing notes is **notebook-first**. This basically translates how we organize things in the physical world — in a series of discrete containers — into the digital world.
 
-I propose we make the **design of individual notes** the primary factor, instead of tags or notebooks. With a note-first approach, your notes become like individual **atoms** — each with its own unique properties, but ready to be assembled into **elements, molecules, and compounds** that are far more powerful.
+I propose we make the **design of individual notes** the primary factor, instead of tags or notebooks. <span style="background-color:yellow;color:red">With a note-first approach, your notes become like individual **atoms** — each with its own unique properties, but ready to be assembled into **elements, molecules, and compounds** that are far more powerful.</span>
 
 #### DESIGNING DISCOVERABLE NOTES
 
@@ -84,12 +84,12 @@ There’s a natural tension between the two, compression and context.
 
 Progressive Summarization works in “layers” of summarization. Layer 0 is the original, full-length source text.
 
-Layer 1 is the content that I initially bring into my note-taking program. I don’t have an explicit set of criteria on what to keep. I just capture anything that feels insightful, interesting, or useful.
+Layer 1 is the content that I initially bring into my note-taking program. I don’t have an explicit set of criteria on what to keep. <span style="background-color:yellow;color:red">I just capture anything that feels insightful, interesting, or useful.</span>
 
-Layer 2 is the first round of true summarization, in which I bold only the best parts of the passages I’ve imported. Again, I have no explicit criteria. I look for keywords, key phrases, and key sentences that I feel represent the core or essence of the idea being discussed.
+Layer 2 is the first round of true summarization, <span style="background-color:yellow;color:red">in which I bold only the best parts of the passages I’ve imported.</span> Again, I have no explicit criteria. I look for keywords, key phrases, and key sentences that I feel represent the core or essence of the idea being discussed.
 
-For Layer 3, I switch to highlighting, so I can make out the smaller number of highlighted passages among all the bolded ones. This time, I’m looking for the “best of the best,” only highlighting something if it is truly unique or valuable. And again, I’m only adding this third layer when I’m already reviewing the note anyway.
+For Layer 3, <span style="background-color:yellow;color:red">I switch to highlighting</span>, so I can make out the smaller number of highlighted passages among all the bolded ones. This time, I’m looking for the “best of the best,” only highlighting something if it is truly unique or valuable. And again, I’m only adding this third layer when I’m already reviewing the note anyway.
 
-For Layer 4, I’m still summarizing, but going beyond highlighting the words of others, to recording my own. For a small number of notes that are the most insightful, I summarize layers 2 and 3 in an informal executive summary at the top of the note, restating the key points in my own words.
+For Layer 4, I’m still summarizing, but going beyond highlighting the words of others, to recording my own. For a small number of notes that are the most insightful, I summarize layers 2 and 3 in an informal executive summary at the top of the note, <span style="background-color:yellow;color:red">restating the key points in my own words.</span>
 
-And finally , for a tiny minority of sources, the ones that are so powerful and exciting I want them to become part of how I think and work_ __immediately___, I remix them. After pulling them apart and dissecting them from every angle in layers 1–4, I add my own personality and creativity and turn them into something else.
+And finally , for a tiny minority of sources, the ones that are so powerful and exciting I want them to become part of how I think and work _immediately_, I remix them. After pulling them apart and dissecting them from every angle in layers 1–4, <span style="background-color:yellow;color:red">I add my own personality and creativity and turn them into something else.</span>

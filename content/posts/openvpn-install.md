@@ -1,7 +1,7 @@
 ---
 date: 2022-01-11T10:00:00+08:00
-updated: 2023-07-03T16:16:09+08:00
-title: Create an OpenVPN server
+updated: 2023-07-06T14:56:50+08:00
+title: Create an OpenVPN service
 category: vpn
 tags: [openvpn]
 type: note
@@ -13,7 +13,7 @@ sourceURL: .
 
 Question :: 這篇文章目的是什麼?
 
-Answer :: 原本使用 *Wireless Access Points* 內建的 VPN 連到內部服務,  但隨著公司人數增加 AP 負載量過大,  導致硬體無法負荷和效率變差,  所以這邊改使用 *OpenVPN* 做取代.
+Answer :: 原本使用 *Wireless Access Points* 內建的 VPN 連到內部服務,  但隨著公司人數增加 AP 負載量過大,  導致硬體無法負荷和效率變差,  所以這邊改使用 *OpenVPN* 做替換.
 
 <!--more-->
 
