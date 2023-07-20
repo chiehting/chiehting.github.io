@@ -1,6 +1,6 @@
 ---
 date: 2023-07-06T15:57:40+08:00
-updated: 2023-07-14T11:09:34+08:00
+updated: 2023-07-14T14:35:57+08:00
 title: Google 所定義的 SRE 角色
 category: roles 
 tags: [sre,google]
@@ -30,6 +30,8 @@ Answer :: Google SRE 的定義是將運維(operations)視為軟體問題. 而運
 延伸閱讀, [Google 訪談 Ben Treynor](https://sre.google/in-conversation/)
 
 ### Note
+
+原文 :: [What is Site Reliability Engineering (SRE)?](https://sre.google/)
 
 ##### What is Site Reliability Engineering (SRE)?
 

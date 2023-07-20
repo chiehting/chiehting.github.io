@@ -1,6 +1,6 @@
 ---
 date: 2023-07-10T18:02:11+08:00
-updated: 2023-07-14T11:01:57+08:00
+updated: 2023-07-14T17:02:04+08:00
 title: Service Level Agreement
 category: sre
 tags: [sre,sla]
@@ -30,7 +30,7 @@ $$ SLA = SLO + written\ and\ signed\ consequences $$
 
 當然水準也不會亂承諾 100% 的事情, 因爲總是會有例外狀況. 所以會設立 error budget 來應對意外的發生. 
 
-下面為產業的 SAL 範例:
+下面為產業的 SLA 範例:
 
 * [AWS](https://aws.amazon.com/tw/legal/service-level-agreements/)
 * [GCP](https://cloud.google.com/terms/sla?hl=zh-tw)

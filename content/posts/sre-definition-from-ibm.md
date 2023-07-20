@@ -1,6 +1,6 @@
 ---
 date: 2023-07-07T14:46:24+08:00
-updated: 2023-07-10T17:50:09+08:00
+updated: 2023-07-14T14:35:20+08:00
 title: IBM 所定義的 SRE 角色
 category: roles 
 tags: [sre,ibm]
@@ -31,6 +31,8 @@ Answer :: 透過 IBM 文件來理解 SRE. 觀點跟 Google 所提倡的相差不
 文章還有提到 SRE 可以減少開發團隊跟運維團隊的摩擦, 這邊是引用 DevOps 文化的概念. **DevOps 的概念是使用流程跟軟體來縮短服務開發的生命週期, 這是所有團隊之的責任; SRE 的概念是使用軟體工程來做運維.** 兩者的概念上有交集, 但個人認爲不能混淆.
 
 ### Note
+
+原文 :: [What is site reliability engineering?](https://www.ibm.com/topics/site-reliability-engineering)
 
 #### What is site reliability engineering?
 

@@ -1,6 +1,6 @@
 ---
 date: 2023-07-10T10:23:37+08:00
-updated: 2023-07-10T11:17:57+08:00
+updated: 2023-07-14T16:11:10+08:00
 title: Red Hat 所定義的 SRE 角色
 category: roles
 tags: [sre,redhat]
@@ -30,6 +30,8 @@ Answer :: 透過 *Red Hat* 文件來理解什麼是 SRE, 其闡述與 Google 所
 2. 自動化: 自動化模型旨在利用軟體工程和自動化技術來自動執行運維任務, 減少手動操作和人為錯誤的風險. 通過自動化, SRE團隊可以自動化許多重複性、繁瑣的運維任務，從而節省時間和資源. 例如, SRE 可以開發腳本或工具來自動監控系統的健康狀態、自動擴展資源、自動備份數據等. 這樣一來, SRE團隊可以專注於解決更具挑戰性的問題, 並提高系統的穩定性和可靠性.
 
 ### Note
+
+原文 :: [What is SRE (site reliability engineering)?](https://www.redhat.com/en/topics/devops/what-is-sre)
 
 **<span style="background-color: #ffffcc; color: red">*Site reliability engineering* (SRE) is a software engineering approach to IT operations. SRE teams use software as a tool to manage systems, solve problems, and automate operations tasks.</span>**
 
