@@ -1,11 +1,11 @@
 ---
 date: 2022-01-11T10:13:00+08:00
-updated: 2023-07-11T13:37:02+08:00
+updated: 2023-07-24T17:22:42+08:00
 title: Authenticate OpenVPN using LDAP
 category: vpn
 tags: [openvpn,ldap]
 type: note
-author: chiehting
+author: Chiehting
 status: 🌲
 sourceType: 📰️
 sourceURL: .

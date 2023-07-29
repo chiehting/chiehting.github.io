@@ -5,8 +5,8 @@ title: Relearn PHP
 category: php
 tags: [php, programmingLanguage]
 type: note
-author: 
-status: 🌱,🌤,🌲
+author: Chiehting
+status: 🌲
 sourceType: 📜️
 sourceURL: https://www.php.net/manual/en/
 ---

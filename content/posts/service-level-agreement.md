@@ -1,11 +1,11 @@
 ---
 date: 2023-07-10T18:02:11+08:00
-updated: 2023-07-14T17:02:04+08:00
+updated: 2023-07-25T16:49:23+08:00
 title: Service Level Agreement
 category: sre
-tags: [sre,sla]
+tags: [sla]
 type: note
-author: atlassian
+author: Atlassian
 status: 🌱
 sourceType: 📰️
 sourceURL: https://www.atlassian.com/itsm/service-request-management/slas

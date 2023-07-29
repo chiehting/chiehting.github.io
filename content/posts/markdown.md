@@ -1,11 +1,11 @@
 ---
 date: 2023-06-27T11:24:18+08:00
-updated: 2023-07-03T16:16:00+08:00
+updated: 2023-07-24T17:22:27+08:00
 title: What is Markdown?
 category: tool
 tags: [markdown,plugin]
 type: moc
-author: chiehting
+author: Chiehting
 status: 🌤
 sourceType: 📜️
 sourceURL: .

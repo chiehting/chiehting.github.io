@@ -1,11 +1,11 @@
 ---
 date: 2023-07-10T11:34:49+08:00
-updated: 2023-07-10T12:15:09+08:00
+updated: 2023-07-29T20:03:32+08:00
 title: 什麼是 Metadata
-category: data
+category: learn
 tags: [metadata]
 type: note
-author: chiehting
+author: Chiehting
 status: 🌱
 sourceType: 📜️
 sourceURL: https://atlan.com/what-is-metadata/

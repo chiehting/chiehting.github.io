@@ -1,11 +1,11 @@
 ---
 date: 2023-06-26T13:55:19+08:00
-updated: 2023-07-14T17:48:03+08:00
+updated: 2023-07-24T17:22:37+08:00
 title: 筆記風格
 category: style
 tags: [markdown,style]
 type: note
-author: chiehting
+author: Chiehting
 status: 🌱
 sourceType: 💭️
 sourceURL: .
