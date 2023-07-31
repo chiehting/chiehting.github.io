@@ -1,6 +1,6 @@
 ---
 date: 2023-07-19T16:57:00+08:00
-updated: 2023-07-29T19:57:17+08:00
+updated: 2023-07-31T11:20:57+08:00
 title: AWS 指令集筆記
 category: commands
 tags: [aws,commands]

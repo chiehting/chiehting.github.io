@@ -22,13 +22,13 @@ Docker 為主流的容器化技術之一，而 Docker 則是使用 iptables 做 
 
 > On Linux, Docker manipulates `iptables` rules to provide network isolation. While this is an implementation detail and you should not modify the rules Docker inserts into your `iptables` policies, it does have some implications on what you need to do if you want to have your own policies in addition to those managed by Docker.
 
-#### 思路
+### 思路
 
 1. 建立虛擬機，確認初始 network interface 與 iptables
 1. 安裝 Docker 並確認 network interface 與 iptables
 1. 建置 nginx 容器，測試封包走向
 
-#### 環境與版本
+### 環境與版本
 
 OS：
 
@@ -64,7 +64,7 @@ Server: Docker Engine - Community
   GitCommit:        de40ad0
 ```
 
-#### 確認初始的 iptables rules
+### 確認初始的 iptables rules
 
 在一個新的虛擬機中，一開始的網路介面有 lo 跟 eth0。
 其中 lo 為這虛擬機的 LOOPBACK 使用; 而 eth0 則為可廣播的網路介面使用。
@@ -114,9 +114,9 @@ Chain OUTPUT (policy ACCEPT 48 packets, 6066 bytes)
 num   pkts bytes target     prot opt in     out     source               destination
 ```
 
-#### 安裝 Docker 並且確認 iptables rules
+### 安裝 Docker 並且確認 iptables rules
 
-##### 確認網路介面
+#### 確認網路介面
 
 Docker 安裝完成後，看到新增了一個網路介面 docker0。
 其 docker0 的網路介面 ip 位置可以看到被分配到 172.17.0.1/16 的 private ip。而 router 部分則看到 172.17.0.0/16 網段都 link src 172.17.0.1。
@@ -151,7 +151,7 @@ local 172.31.37.164 dev eth0 proto kernel scope host src 172.31.37.164
 broadcast 172.31.47.255 dev eth0 proto kernel scope link src 172.31.37.164
 ```
 
-##### 確認 iptables 的 NAT Table
+#### 確認 iptables 的 NAT Table
 
 下面列出了 nat table 的 Chain。看到新增了多個 Chain `DOCKER`，而這 Chain 被 references 在 PREROUTING、OUTPUT 中。
 而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。
@@ -186,7 +186,7 @@ num   pkts bytes target     prot opt in     out     source               destina
 1       19  1140 RETURN     all  --  docker0 *       0.0.0.0/0            0.0.0.0/0
 ```
 
-##### 確認 iptables 的 Filter Table
+#### 確認 iptables 的 Filter Table
 
 可以看到新增了多個 Chain `DOCKER`、`DOCKER-ISOLATION-STAGE-1`、`DOCKER-ISOLATION-STAGE-2`、`DOCKER-USER`，而這些 Chain 都被 references 在 FORWARD 中。
 可以看到 Chain FORWARD 的預設 policy 已經被改為 DROP，而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。
@@ -241,7 +241,7 @@ num   pkts bytes target     prot opt in     out     source               destina
 1        0     0 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0
 ```
 
-#### 建置 nginx 容器，測試封包走向
+### 建置 nginx 容器，測試封包走向
 
 啟動 container nginx
 
@@ -249,7 +249,7 @@ num   pkts bytes target     prot opt in     out     source               destina
 docker run --name nginx -p 80:80  -d nginx
 ```
 
-##### 查看本機 listen port
+#### 查看本機 listen port
 
 看到 port 80 被 docker-proxy 監聽著
 
@@ -264,7 +264,7 @@ tcp6       0      0 :::80                   :::*                    LISTEN      
 tcp6       0      0 :::22                   :::*                    LISTEN      576/sshd: /usr/sbin
 ```
 
-##### 確認網路變化
+#### 確認網路變化
 
 網路介面新增了 `veth3ce1bed`
 
@@ -313,7 +313,7 @@ num   pkts bytes target     prot opt in     out     source               destina
 1      123  6692 ACCEPT     tcp  --  !docker0 docker0  0.0.0.0/0            172.17.0.2           tcp dpt:80
 ```
 
-##### 測試封包走向
+#### 測試封包走向
 
 在不同 client 端嘗試連上 nginx 服務，觀察封包所經過的網路規則。
 

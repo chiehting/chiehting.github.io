@@ -1,6 +1,6 @@
 ---
 date: 2023-06-26T13:35:17+08:00
-updated: 2023-07-29T20:05:49+08:00
+updated: 2023-07-31T13:06:53+08:00
 title: 電腦科學裡的專有名詞
 category: learn
 tags: [noun]
@@ -16,19 +16,21 @@ post: false
 
 <!--more-->
 
-#### 資料
+### 資料
 
-- Metadata ([[metadata]]): 是定義與該文件無直接關練的資訊.
+- Metadata([[metadata]]): 是定義與該文件無直接關練的資訊.
 
-#### 程式設計
+### 程式設計
 
-- KISS ([[keep-it-simple-stupid]]): keep it simple stupid.!
-- DRY ([[dont-repeat-yourself]]): Don't repeat yourself
+- KISS([[keep-it-simple-stupid]]): keep it simple stupid.!
+- DRY([[dont-repeat-yourself]]): Don't repeat yourself
+- SOLID([[solid]])
+- YAGNI([[you-arent-gonna-need-it]]): You Aren’t Gonna Need It
 
-#### Server
+### Server
 
-- SLA ([[service-level-agreement]]): 廠商對用戶所承諾之系統的穩定度
-- SLO ([[service-level-objective]]): 廠商對系統穩定度所設定之目標
-- SLI ([[service-level-indicator]]): 廠商對目標所監控之指標
+- SLA([[service-level-agreement]]): 廠商對用戶所承諾之系統的穩定度
+- SLO([[service-level-objective]]): 廠商對系統穩定度所設定之目標
+- SLI([[service-level-indicator]]): 廠商對目標所監控之指標
 - ICMP([[internet-control-message-protocol]]): 網際網路控制訊息協定
 - IPAM([[ip-address-management]]): IP 地址管理

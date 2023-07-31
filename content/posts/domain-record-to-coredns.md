@@ -15,7 +15,7 @@ sourceURL: .
 
 <!--more-->
 
-#### 多配置 DNS Server
+### 多配置 DNS Server
 
 下面為配置 db.example.com.tw 的範例
 
@@ -46,7 +46,7 @@ db.example.com.tw:53 {
 }
 ```
 
-#### 配置 hosts
+### 配置 hosts
 
 ```yaml
 .:53 {
@@ -71,6 +71,6 @@ db.example.com.tw:53 {
 }
 ```
 
-#### 同時配置時
+### 同時配置時
 
 若同時配置時, 則會以 DNS Server 為優先.

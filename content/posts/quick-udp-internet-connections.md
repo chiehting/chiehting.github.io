@@ -35,7 +35,7 @@ of this specification.
 然後 HTTP/2.0 是基於 TCP/IP 協議，所以只要某個 tcp package 遺失就會觸發 Retransmission Timer（重傳計時器）重傳封包進而造成隊頭阻塞（head of line blocking），在未收到該 ack 之前，所有 stream 都須等待。
 而在極端的網路環境之下，HTTP/2.0 可能比 HTTP/1.1 之效率來得差。
 
-#### QUIC
+### QUIC
 
 QUIC（Quick UDP Internet Connections） 是由 Google 所提出的設計，是一種新的傳輸層協議。而這協議是在端點間建立數個 Multiplexing 的 UDP 連線。
 
@@ -49,7 +49,7 @@ QUIC（Quick UDP Internet Connections） 是由 Google 所提出的設計，是�
 * 實現了 HTTP/2.0 的多路復用（multiplexed），但相較於 HTTP/2.0 協議 QUIC 每個 stream 間沒有依賴關係，也就是說大幅減少隊頭阻塞
 * 實現了 TLS 的安全性
 
-#### References
+### References
 
 * [What is http/3](https://javascript.plainenglish.io/what-is-http-3-and-why-does-it-matter-cb7d7b4b600f)
 * [技术分享之http2和quic的那些事儿](http://xiaorui.cc/archives/6117)

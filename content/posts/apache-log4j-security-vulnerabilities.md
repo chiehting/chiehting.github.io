@@ -15,7 +15,7 @@ sourceURL: .
 
 <!--more-->
 
-## Apache Log4j Security Vulnerabilities
+### Apache Log4j Security Vulnerabilities
 
 2021 年的 12 月 10 號發布了 public disclosure of the Apache Log4j vulnerability [CVE-2021-44228](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228), 且風險分數為 CVSS 3.1 的滿分 10 分. 攻擊者若可以控制 log messages or log message parameters 就有機會在 LDAP 或 JNDI（Java Naming and Directory Interface）有關的服務加載任意程式碼. Log4j 在 2.15.0 版本中預設關閉了 message lookup substitution 功能; 在 2.16.0 版本中則完全移除了此功能.
 
@@ -23,7 +23,7 @@ sourceURL: .
 
 2021 年的 12 月 18 號發布了 [CVE-2021-45105](https://nvd.nist.gov/vuln/detail/CVE-2021-45105), 且風險分數為 CVSS 3.1 的 7.5 分. 再 2.16.0 版本沒有保護自身的遞迴查找, 所以攻擊者還能透過設計過的字串進行攻擊. 再 Log4j 2.17.0 and 2.12.3 中有修復此問題.
 
-## 應對
+### 應對
 
 依據 CVE 報告, 服務需將 Log4j 升級到 2.17.0 的版本. 所以這邊目標是盤查系統是否有使用到 Log4j, 如果有就做升級.
 
@@ -39,11 +39,11 @@ sourceURL: .
 
 盤查完後, 得知只有 Elasticsearch and Kibana 有使用到 log4j 的套件.
 
-## Elasticsearch and Kibana
+### Elasticsearch and Kibana
 
 我之前是使用 Ansible 透過 apt-get 安裝 Elasitcsearch, 所以這邊更新 Elasticsearch role 版本參數為 7.16.2 並執行 playbook, 完成後 Elasticsearch 就升級完畢. 至於 Kibana 是使用 docker compose 執行, 更新 Kibana 的 container image 至 7.16.2 就可以了.
 
-### 更新時碰到的問題
+#### 更新時碰到的問題
 
 無法重新啟動 Elasticsearch 服務, 因為 ingest-attachment 版本是舊的. 這邊做重新安裝 ingest-attachment 來排除異常.
 

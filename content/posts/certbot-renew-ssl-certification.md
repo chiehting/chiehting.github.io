@@ -2,7 +2,7 @@
 date: 2021-10-28T15:24:00+0800
 updated: 2023-07-29T19:44:30+08:00
 title: How to use certbot to renew SSL certification
-category: network
+category: tools
 tags: [security,ssl,certbot,acme]
 type: note
 author: Chiehting
@@ -15,7 +15,7 @@ sourceURL: .
 
 <!--more-->
 
-## 安裝套件
+### 安裝套件
 
 ubuntu 20.04 上安裝套件
 
@@ -29,7 +29,7 @@ Centos 7 上安裝套件
 bash$ sudo yum -y install epel-release mod_ssl certbot
 ```
 
-## 使用 dns challenges 申請憑證
+### 使用 dns challenges 申請憑證
 
 完成後憑證會在 /etc/letsencrypt/live/harbor.example.com 底下, 這邊要注意檔案是軟連結.
 

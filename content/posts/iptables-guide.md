@@ -19,12 +19,12 @@ Linux 核心 [Netfilter] 模組提供了網路的框架, 用於管理 Linux 主�
 
 iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 `Chain`、`Target`、`Table`、`Match`, 而規則方面有 `PREROUTING`、`INPUT`、`FORWARD`、`OUTPUT`、`POSTROUTIONG`.
 
-#### Packet flow
+### Packet flow
 
 引用 wiki [netfilter packet flow](https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg
 ) 的圖, 可以看到封包在主機中的流量.
 
-#### Tables 與 chain
+### Tables 與 chain
 
 下面列出 `tables` 內建 `chain` 關係
 
@@ -35,7 +35,7 @@ iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 `Chain`、`Targe
 |nat|o|x|x|o|o|
 |filter|x|o|o|o|x|
 
-##### Tables
+#### Tables
 
 優先層級為 `raw` -> `mangle` -> `nat` -> `filter`.
 
@@ -44,7 +44,7 @@ iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 `Chain`、`Targe
 * nat(network address translation): IP 轉發; port 轉發.
 * filter: 封包過濾 (此為預設表).
 
-##### Chain
+#### Chain
 
 * PREROUTING: 數據包進入路由表之前.
 * INPUT: 通過路由表後目的地為本機.
@@ -52,7 +52,7 @@ iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 `Chain`、`Targe
 * OUTPUT: 由本機產生, 向外轉發.
 * POSTROUTIONG: 發送到網卡接口之前.
 
-##### State
+#### State
 
 * NEW: 一個新的連線封包 (建立新連線後的第一個封包).
 * ESTABLISHED: 成功建立的連線, 即建立追蹤連線後所有封包狀態 (跟在 NEW 封包後面的所有封包).
@@ -60,7 +60,7 @@ iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 `Chain`、`Targe
 * INVALID: 非法連線狀態的封包 (DROP 封包).
 * UNKOWN: 不明連線狀態的封包.
 
-##### Policy and target
+#### Policy and target
 
 * ACCEPT: 允許封包移動至目的地或另一個 chain.
 * DROP: 丟棄封包,不回應要求,不傳送失敗訊息.
@@ -73,7 +73,7 @@ iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 `Chain`、`Targe
 * QUEUE: 封包排隊等待處理.
 * LOG: 記錄指定的規則封包 (/etc/syslog.conf , default /var/log/messges).
 
-#### iptables 輸出格式說明
+### iptables 輸出格式說明
 
 下面指令可以列出表 `filter` 的規則清單, 可以看到有三條 `Chain`, 有九個欄位, 說明如下:
 
@@ -99,9 +99,9 @@ Chain OUTPUT (policy ACCEPT)
  pkts bytes target     prot opt in     out     source               destination
 ```
 
-#### iptables 應用
+### iptables 應用
 
-##### 參數說明
+#### 參數說明
 
 * -P chain target: 變更 chain 的預設政策.
 * -A chain: 加入規則至 chain 的最後.
@@ -117,17 +117,17 @@ Chain OUTPUT (policy ACCEPT)
 
 其中 rulenum 是從上至下順序執行，直至匹配的的規則為止，否則執行預設政策。
 
-##### 狀況題
+#### 狀況題
 
 測試主機有網路介面有 `lo` and `eth0`.
 
-###### 查看 table filter 的規則
+##### 查看 table filter 的規則
 
 ```bash
 root@server:~ iptables -L -n -v --line-numbers -t filter
 ```
 
-###### 修改 chain 的預設政策
+##### 修改 chain 的預設政策
 
 先將 22 port 打開, 以免被擋在家門外. INPUT 預設政策為 DROP.
 
@@ -155,7 +155,7 @@ root@server:~ iptables -D INPUT 1
 root@server:~ iptables -D OUTPUT 1
 ```
 
-###### 封鎖 INPUT chain 指定的 port
+##### 封鎖 INPUT chain 指定的 port
 
 ```bash
 ＃ 拒絕由網卡 eth0 進來的 tcp port 80 所有封包
@@ -165,20 +165,19 @@ iptables -A INPUT -p tcp -dport 80 -i eth0 -j REJECT
 iptables -A INPUT -p tcp -sport 7000:7005 -i eth0 -j REJECT
 ```
 
-###### 封鎖 INPUT chain 指定的 來源
+##### 封鎖 INPUT chain 指定的 來源
 
 ```bash
 iptables -I INPUT -p tcp --dport 80 -s 1.34.113.121/32 -m state --state ESTABLISHED -j REJECT
 ```
 
-###### 刪除 INPUT chain 所有的規則
+##### 刪除 INPUT chain 所有的規則
 
 ```bash
 iptables -F INPUT
 ```
 
-#### Rafances
+### Rafances
 
-[iptables 的表格 (table) 與鏈 (chain)](http://linux.vbird.org/linux_server/0250simple_firewall.php#netfilter_chain)
-
-[Netfilter]: https://www.netfilter.org/
+- [iptables 的表格 (table) 與鏈 (chain)](http://linux.vbird.org/linux_server/0250simple_firewall.php#netfilter_chain)
+- [Netfilter]: https://www.netfilter.org/

@@ -1,6 +1,6 @@
 ---
 date: 2023-07-19T17:23:07+08:00
-updated: 2023-07-29T19:57:19+08:00
+updated: 2023-07-31T14:46:38+08:00
 title: Git 指令集筆記
 category: commands
 tags: [git,commands]
@@ -15,7 +15,7 @@ post: false
 #### 從 commit list 中找大檔案
 
 ```bash
-export size=10240000 # bytes
+export size=10240000 # bytes = 10.24mb
 git rev-list --objects --all | git cat-file --batch-check='%(objecttype) %(objectname) %(objectsize) %(rest)'|awk '/^blob/ {if ($3>'$size') print substr($0,6)}'| sort --numeric-sort --key=3
 ```
 

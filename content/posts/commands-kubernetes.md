@@ -1,6 +1,6 @@
 ---
 date: 2023-07-19T16:53:41+08:00
-updated: 2023-07-29T19:57:21+08:00
+updated: 2023-07-31T11:20:51+08:00
 title: Kubernetes 指令集筆記
 category: commands
 tags: [kubernetes,commands]

@@ -2,8 +2,8 @@
 date: 2019-10-01T11:00:00+0800
 updated: 2023-07-25T16:49:44+08:00
 title: Integrate Redmine with GitLab
-category: management
-tags: [management,redmine,gitlab]
+category: projectManagement
+tags: [projectManagement,redmine,gitlab]
 type: note
 author: 
 status: 🌲
@@ -15,16 +15,16 @@ sourceURL:
 
 <!--more-->
 
-## 測試環境
+### 測試環境
 
-### 使用docker建立測試環境
+#### 使用docker建立測試環境
 
 先啟動Redmine在啟動Gitlab
 
 * [Redmine](https://github.com/chiehting/docker-redmine)
 * [Gitlab](https://github.com/chiehting/docker-gitlab)
 
-### 網段配置
+#### 網段配置
 
 在docker-gitlab/docker-compose.yml中新增下面設定,為了將兩個服務在同一網段下.
 
@@ -42,21 +42,21 @@ networks:
       name: docker-redmine_default
 ```
 
-#### 本次測試服務IP位置
+##### 本次測試服務IP位置
 
 * gitlab: 172.30.0.4
 * redmine: 172.30.0.3
 
-#### 設定hosts,透過域名互通
+##### 設定hosts,透過域名互通
 
 ```bash
 sudo echo '172.30.0.4 gitlab.example.com' >> /etc/hosts
 sudo echo '172.30.0.3 redmine.example.com' >> /etc/hosts
 ```
 
-## 設定redmine
+### 設定redmine
 
-### 安裝plugin
+#### 安裝plugin
 
 希望 git push 時觸發 Redmine, 所以要加入此 plugin. git clone [redmine_gitlba_hook](https://github.com/phlegx/redmine_gitlab_hook)到 plugins 的資料夾中.
 再來可以在`Administration » Plugins » GitLab Authentication`中做設定,目前設定如下.
@@ -70,20 +70,20 @@ sudo echo '172.30.0.3 redmine.example.com' >> /etc/hosts
 |Git command prefix|||
 |Fetch updates from repository|v||
 
-### 設定API Key
+#### 設定API Key
 
 在`Administration » Settings » Repositories`中Enable WS for repository management再Generate a key.
 這裡取得了`Key:rYtIYdc2zR9ZvZ8M24L8`
 
-### 建立專案
+#### 建立專案
 
 建立一個專案叫做DevOps
 
-### 建立議題
+#### 建立議題
 
 需要先設定trackers,在建立一筆Issue,建立完成後index應該是#1.
 
-### 設定專案
+#### 設定專案
 
 建立一個叫做DevOps的專案,設定專案下的`integrations » redmine`.
 
