@@ -3,12 +3,13 @@ date: 2019-04-02T13:00:49+0800
 updated: 2023-07-30T01:01:45+08:00
 title: Know the Alpine
 category: linux
-tags: [alpine,os]
+tags: [linux]
 type: note
 author: Chiehting
 status: 🌤
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 Alpine Linux is a security-oriented, lightweight Linux distribution based on musl libc and busybox.

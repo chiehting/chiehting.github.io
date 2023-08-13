@@ -3,12 +3,13 @@ date: 2021-03-17T11:28:00+0800
 updated: 2023-07-30T24:28:04+08:00
 title: Concept of MySQL transaction
 category: databases
-tags: [databases,mysql,transaction]
+tags: [databases]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 在處理事務時, 一件事務通常是由多個的 sql 來操作完成. 為了不讓同時執行多件事情造成資料互相干擾, 所以就會採用事務 (transaction) 功能來維護資料的準確性. 但是要注意的是 MYISAM not supports transaction, 所以要使用 transaction 必須採用 InnoDB.

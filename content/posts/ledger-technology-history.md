@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 記帳技術的演化可分為四個階段.

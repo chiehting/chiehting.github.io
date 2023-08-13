@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 後端服務需要使用 Redis Cluster, 此篇紀錄在 Centos 7 安裝 Redis Cluster 的過程.

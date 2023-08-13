@@ -1,14 +1,15 @@
 ---
 date: 2023-07-24T11:27:29+08:00
-updated: 2023-07-24T17:00:20+08:00
+updated: 2023-08-10T16:20:34+08:00
 title: What is electronic wallet
-category: ewallet 
-tags: [finance,ewallet]
+category: finance 
+tags: [finance]
 type: note
 author: Wistek
 status: 🌲
 sourceType: 📰️
 sourceURL: https://www.mypay.com.tw/main_article2.html
+post: true
 ---
 
 ### Evergreen Note

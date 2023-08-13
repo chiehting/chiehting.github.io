@@ -3,12 +3,13 @@ date: 2021-12-21T13:55:00+0800
 updated: 2023-07-25T16:37:18+08:00
 title: Apache Log4j Security Vulnerabilities
 category: security
-tags: [security,cve]
+tags: [security]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 在 2021 年 12 月 CVE 發布了一系列有關 Apache Log4j 的漏洞. 這邊初步了解 Log4j 的漏洞狀況跟應對.

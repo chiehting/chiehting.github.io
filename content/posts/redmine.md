@@ -3,12 +3,13 @@ date: 2019-10-01T11:00:00+0800
 updated: 2023-07-25T16:49:44+08:00
 title: Integrate Redmine with GitLab
 category: projectManagement
-tags: [projectManagement,redmine,gitlab]
+tags: [projectManagement]
 type: note
 author: 
 status: 🌲
 sourceType: 📜️
-sourceURL: 
+sourceURL: .
+post: true
 ---
 
 部門選用了 *Redmine* 當作我們的專案管理系統.想要規範 `git commit` 的訊息,並將這些訊息自動發佈到 GitLab 上, 來節省開發人員的時間.

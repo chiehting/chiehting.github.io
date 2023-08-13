@@ -3,12 +3,13 @@ date: 2021-10-28T15:24:00+0800
 updated: 2023-07-29T19:44:30+08:00
 title: How to use certbot to renew SSL certification
 category: tools
-tags: [security,ssl,certbot,acme]
+tags: [tools]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📰️
 sourceURL: .
+post: true
 ---
 
 使用 Certbot 來申請 Web Site 的 SSL 憑證. Certbot 是一個開源軟體, 可以自動(手動)執行域名的驗證與透過憑證頒發機構 [Let’s Encrypt](https://letsencrypt.org/) 來取得憑證.

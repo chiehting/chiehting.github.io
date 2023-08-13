@@ -3,12 +3,13 @@ date: 2021-08-16T14:55:00+0800
 updated: 2023-07-25T17:49:00+08:00
 title: Cloudfloar proxy slow
 category: network
-tags: [cloudflare,proxy]
+tags: [network]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📰️
 sourceURL: .
+post: true
 ---
 
 今天收到反應說服務 API 的反應速度有變慢, 盤查結果發現目前使用的 Cloudflare 中的 proxy 功能造成的, 這邊紀錄盤查過程.

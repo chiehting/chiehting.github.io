@@ -3,12 +3,13 @@ date: 2021-10-01T16:35:00+0800
 updated: 2023-07-25T16:32:44+08:00
 title: 淺談加密標準
 category: security
-tags: [security,cryptography,encryption]
+tags: [security]
 type: note
 author: Chiehting
 status: 🌱,🌤,🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 在開發上常會用到資料加密，例如雜湊函式（MD5、SHA-2）、對稱式加密（AES、DES、3DES)、非對稱式加密（RSA演算法）等方式，這篇就來研究一下這些加密方式之差異。

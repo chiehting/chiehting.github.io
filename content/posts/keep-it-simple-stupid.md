@@ -1,14 +1,15 @@
 ---
 date: 2023-06-26T13:38:19+08:00
-updated: 2023-07-29T19:58:19+08:00
+updated: 2023-08-10T16:22:30+08:00
 title: keep it simple stupid.!
 category: principle
-tags: [principle,kiss]
+tags: [principle]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 *KISS* 全名為 `Keep it simple, stupid!`, 在 [Wiki](https://en.wikipedia.org/wiki/KISS_principle) 上寫說為一種 **設計原則**, 但個人體悟也為一種思考模式, 目的在於 "化繁為簡". 這邊的 stupid 不是貶義詞, 是表示易於理解.

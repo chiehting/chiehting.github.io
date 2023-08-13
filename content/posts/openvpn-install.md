@@ -1,14 +1,15 @@
 ---
 date: 2022-01-11T10:00:00+08:00
-updated: 2023-07-24T17:22:43+08:00
+updated: 2023-08-10T16:29:08+08:00
 title: Create an OpenVPN service
-category: vpn
-tags: [openvpn]
+category: network
+tags: [network]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 Question :: 這篇文章目的是什麼?

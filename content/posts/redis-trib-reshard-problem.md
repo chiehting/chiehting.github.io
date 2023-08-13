@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 Redis 跟 redis-trib.rb 遷移工具有版本不相容, 這邊紀錄解決過程.

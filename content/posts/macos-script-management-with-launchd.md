@@ -3,7 +3,7 @@ date: 2020-11-12T17:45:00+0800
 updated: 2023-07-31T16:07:18+08:00
 title: Script management with launchd in Terminal on Mac
 category: macos
-tags: [macos,launchd]
+tags: [macos]
 type: note
 author: Chiehting
 status: 🌲

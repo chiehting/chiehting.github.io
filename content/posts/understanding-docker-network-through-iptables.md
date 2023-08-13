@@ -2,13 +2,14 @@
 date: 2021-06-21T16:46:00+0800
 updated: 2023-07-30T24:41:18+08:00
 title: Understanding Docker network through iptables
-category: docker
-tags: [container,docker,iptables]
+category: network
+tags: [network]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 Docker 為主流的容器化技術之一，而 Docker 則是使用 iptables 做 provide network isolation。

@@ -3,12 +3,13 @@ date: 2021-07-16T10:00:00+0800
 updated: 2023-07-24T17:35:36+08:00
 title: Supply chain Levels for Software Artifacts
 category: security
-tags: [security,google]
+tags: [security]
 type: note
 author: Google
 status: 🌲
 sourceType: 📰️
 sourceURL: https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html
+post: true
 ---
 
 ### Evergreen Note

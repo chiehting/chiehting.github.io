@@ -1,14 +1,15 @@
 ---
 date: 2023-07-12T16:14:50+08:00
-updated: 2023-07-25T16:49:35+08:00
+updated: 2023-08-10T16:28:04+08:00
 title: Service Level Ojbective
 category: sre
-tags: [slo]
+tags: [sre]
 type: note
 author: Atlassian
 status: 🌱
 sourceType: 📰️
 sourceURL: https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives
+post: true
 ---
 
 ### Evergreen Note

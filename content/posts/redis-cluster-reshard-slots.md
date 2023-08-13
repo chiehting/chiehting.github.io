@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 修復 Redis cluster 節點異常過程紀錄.

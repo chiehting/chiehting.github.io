@@ -2,13 +2,14 @@
 date: 2019-04-02T13:00:49+0800
 updated: 2023-07-25T17:43:27+08:00
 title: Create a Self-Signed SSL Certificate for Nginx
-category: nginx
-tags: [nginx,openssl,ssl]
+category: network
+tags: [network]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 紀錄在 Nginx 安裝自簽的 SSL 憑證.

@@ -3,12 +3,13 @@ date: 2021-02-24T16:12:00+0800
 updated: 2023-07-31T11:31:48+08:00
 title: cleos command tool
 category: blockchain
-tags: [cleos,blockchain,commands,tools]
+tags: [blockchain,tools]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 cleos 是個公開工具, 使用 command line 請求 nodeos 做部署或測試智能合約. 

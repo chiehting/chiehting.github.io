@@ -1,14 +1,15 @@
 ---
 date: 2023-07-06T16:42:36+08:00
-updated: 2023-07-25T16:48:58+08:00
+updated: 2023-08-14T00:35:57+08:00
 title: 什麼是運維(Operations)?
 category: roles
-tags: [operations]
+tags: [roles]
 type: note
 author: Indeed
 status: 🌱
 sourceType: 📰️
 sourceURL: https://www.ibm.com/topics/it-operations,https://asana.com/zh-tw/resources/operations-management
+post: true
 ---
 
 ### Evergreen Note
@@ -16,6 +17,8 @@ sourceURL: https://www.ibm.com/topics/it-operations,https://asana.com/zh-tw/reso
 Question :: 這篇文章主要在說什麼?
 
 Answer :: 根據軟體業來定義運維. 而運維之核心價值在於維持系統的穩定度, 其手段根據不同公司會有不同的方式.
+
+<!--more-->
 
 ### Summary
 

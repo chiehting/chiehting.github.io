@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌤
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 區塊鏈是一種共享, 且不可變的帳本(ledger). 有助於紀錄交易和追蹤網路業務的資產交易過程, 資產可以是 汽車、房子、專利、版權、NFT 等等.

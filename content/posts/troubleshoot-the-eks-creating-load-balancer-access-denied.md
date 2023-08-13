@@ -3,12 +3,13 @@ date: 2021-06-02T16:12:00+0800
 updated: 2023-07-30T01:07:49+08:00
 title: Troubleshoot the eks creating load balancer access denied
 category: aws
-tags: [aws,eks,loadBalancer,ingress]
+tags: [aws]
 type: note
 author: AWS
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 排除 ingress-nginx 的 `Error syncing load balancer: failed to ensure load balancer: error creating load balancer: "AccessDenied:` 異常.

@@ -3,12 +3,13 @@ date: 2023-01-19T12:20:00+0800
 updated: 2023-07-30T24:43:27+08:00
 title: Set the Domain's record to the CoreDNS
 category: network
-tags: [coredns,dns,kubernetes]
+tags: [network,kubernetes]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 這兩天在處理 DNS 的問題, 看到可以直接在 CoreDNS 中塞 record. 這邊做個紀錄

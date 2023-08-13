@@ -3,12 +3,13 @@ date: 2021-07-21T13:55:00+0800
 updated: 2023-07-30T24:18:07+08:00
 title: 什麼是 QUIC
 category: network
-tags: [network,quic]
+tags: [network]
 type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 HTTP/3 是個新的 HTTP 版本，與 HTTP/1.1、HTTP/2.0 不同之處是 HTTP/3 傳輸層使用（transport layer）QUIC 協議。相較於 HTTP/2.0 的 TCP 協議；QUIC 提高了網路效能。

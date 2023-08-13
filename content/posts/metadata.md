@@ -1,6 +1,6 @@
 ---
 date: 2023-07-10T11:34:49+08:00
-updated: 2023-07-29T20:03:32+08:00
+updated: 2023-07-31T17:36:58+08:00
 title: 什麼是 Metadata
 category: learn
 tags: [metadata]
@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌱
 sourceType: 📜️
 sourceURL: https://atlan.com/what-is-metadata/
+post: true
 ---
 
 ### Evergreen Note

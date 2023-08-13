@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 區塊鏈是採用去中心化的設計，且人人都可參加成為節點，當完節點完成紀錄工作時需要分配獎勵，此時就要透過共識機制來分配獎勵，下面列出幾種不同的機制。

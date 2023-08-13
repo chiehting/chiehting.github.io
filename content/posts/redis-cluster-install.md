@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 在 Ubuntu 上安裝 Redis cluster 過程紀錄.

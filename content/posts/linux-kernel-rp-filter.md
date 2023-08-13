@@ -3,7 +3,7 @@ date: 2021-06-24T14:39:00+0800
 updated: 2023-07-31T17:07:25+08:00
 title: Linux kernel 的網路參數 rp_filter
 category: linux
-tags: [linux,kernel,network]
+tags: [linux,network]
 type: note
 author: Chiehting
 status: 🌲

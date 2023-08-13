@@ -9,6 +9,7 @@ author: Chiehting
 status: 🌲
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 智能合約是 [Nick Szabo](https://en.wikipedia.org/wiki/Nick_Szabo) 在 1990 年代提出用語及概念. 是透過網際網路與他人互動的一種概念與協議

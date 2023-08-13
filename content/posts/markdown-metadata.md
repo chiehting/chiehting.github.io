@@ -1,6 +1,6 @@
 ---
 date: 2023-07-03T10:25:14+08:00
-updated: 2023-07-10T13:51:53+08:00
+updated: 2023-07-31T17:38:37+08:00
 title: Metadata of the Markdown
 category: tool
 tags: [markdown,metadata]
@@ -9,6 +9,7 @@ author: 朱騏
 status: 🌱
 sourceType: 💭️
 sourceURL: https://medium.com/pm%E7%9A%84%E7%94%9F%E7%94%A2%E5%8A%9B%E5%B7%A5%E5%85%B7%E7%AE%B1/obsidian-%E4%BD%BF%E7%94%A8%E6%95%99%E5%AD%B8-%E7%AD%86%E8%A8%98%E7%AF%87-01-%E4%BA%86%E8%A7%A3-obsidian-%E7%9A%84-metadata-f8602bbddade
+post: true
 ---
 
 *[[Markdown]]([[markdown]])* 支援 YAML 格式的 metadata, 可以提供進階的描述資料屬性(property).

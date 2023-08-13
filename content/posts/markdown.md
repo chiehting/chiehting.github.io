@@ -1,14 +1,15 @@
 ---
 date: 2023-06-27T11:24:18+08:00
-updated: 2023-07-24T17:22:27+08:00
+updated: 2023-08-10T16:27:11+08:00
 title: What is Markdown?
-category: tool
-tags: [markdown,plugin]
+category: markdown
+tags: [markdown]
 type: moc
 author: Chiehting
 status: 🌤
 sourceType: 📜️
 sourceURL: .
+post: true
 ---
 
 Markdown 是一種輕量的標記語言, 並可以轉換為 HTML 與其他格式. 在軟體工程領域中不少平台也支持使用 Markdown, 如: *Github*, *Notion*, *Slite*, etc.
