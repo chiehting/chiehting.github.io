@@ -28,7 +28,7 @@ other = "Voltar"
 [translations]
 other = "Traduções"
 
-[categories]
+[category]
 other = "Categorias"
 
 [tags]
@@ -37,7 +37,7 @@ other = "Etiquetas"
 [series]
 other = "Séries"
 
-[all_categories]
+[all_category]
 other = "Todas as Categorias"
 
 [all_tags]

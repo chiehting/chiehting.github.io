@@ -28,7 +28,7 @@ other = "Geri Git"
 [translations]
 other = "Çeviriler"
 
-[categories]
+[category]
 other = "Kategoriler"
 
 [tags]
@@ -37,7 +37,7 @@ other = "Etiketler"
 [series]
 other = "Seriler"
 
-[all_categories]
+[all_category]
 other = "Tüm Kategoriler"
 
 [all_tags]

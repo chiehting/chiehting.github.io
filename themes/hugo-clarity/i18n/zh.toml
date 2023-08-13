@@ -28,7 +28,7 @@ other = "返回"
 [translations]
 other = "翻译"
 
-[categories]
+[category]
 other = "分类"
 
 [tags]
@@ -37,7 +37,7 @@ other = "标签"
 [series]
 other = "专栏"
 
-[all_categories]
+[all_category]
 other = "所有分类"
 
 [all_tags]

@@ -28,7 +28,7 @@ other = "Retour arrière"
 [translations]
 other = "Traductions"
 
-[categories]
+[category]
 other = "Catégories"
 
 [tags]
@@ -37,7 +37,7 @@ other = "Tags"
 [series]
 other = "Séries"
 
-[all_categories]
+[all_category]
 other = "Toutes les catégories"
 
 [all_tags]
