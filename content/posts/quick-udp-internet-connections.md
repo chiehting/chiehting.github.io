@@ -8,21 +8,23 @@ type: note
 author: Chiehting
 status: 🌲
 sourceType: 📜️
-sourceURL: .
+sourceURL: https://datatracker.ietf.org/doc/html/rfc9000
 post: true
 ---
 
-HTTP/3 是個新的 HTTP 版本，與 HTTP/1.1、HTTP/2.0 不同之處是 HTTP/3 傳輸層使用（transport layer）QUIC 協議。相較於 HTTP/2.0 的 TCP 協議；QUIC 提高了網路效能。
+QUIC(Quick UDP Internet Connections) 為 OSI model 中 "傳輸層" 和 "應用層" 之間的一個新的協議層. 是基於 UDP 之上的, 但它在傳輸層和應用層之間引入了自己的協議層, 用於處理連接、可靠性、流控制和安全性等問題. 所以 QUIC 不好用 OSI model 去區分, 而是稱為 "安全的通用傳輸協議(secure general-purpose transport protocol)".
 
 <!--more-->
 
-HTTP 是網際網路上重要的網路協議之一，至今已經發行了多個版本。這個 [demo](https://http2.akamai.com/demo) 可以看到 HTTP/1.1 與 HTTP/2.0 的差異。
+HTTP/3 是個新的 HTTP 版本，使用 QUIC 作為傳輸協議，與 HTTP/1.1、HTTP/2.0 使用的 TCP/IP 不同。相較於 TCP/IP 協議；QUIC 提高了網路效能。
+
+HTTP 是網際網路上重要的網路協議之一，至今已經發行了多個版本。這個 [demo1](https://http2.akamai.com/demo)、[demo2](http://www.http2demo.io/) 可以看到 HTTP/1.1 與 HTTP/2.0 的差異。
 
 * HTTP/1.0
 * HTTP/1.1
 * HTTP/2.0
 
-而 HTTP（Hypertext Transfer Protocol）協議是 application-level protocol (OSI model: layer 7)，而在 RFC 2616 中描述 HTTP 傳輸層預設是使用 TCP/IP 作為連線，原因是因為要基於可靠的傳輸方式，但不排除 HTTP 也可以使用在其他協議上，前提是需要可靠的傳輸。
+HTTP（Hypertext Transfer Protocol）協議是 application-level protocol (OSI model: layer 7)，在 RFC 2616 中描述 HTTP 傳輸層預設是使用 TCP/IP 作為連線，原因是因為要基於可靠的傳輸方式，但不排除 HTTP 也可以使用在其他協議上，前提是需要可靠的傳輸。
 
 >HTTP communication usually takes place over TCP/IP connections. The
 default port is TCP 80 [19], but other ports can be used. This does
@@ -38,7 +40,7 @@ of this specification.
 
 ### QUIC
 
-QUIC（Quick UDP Internet Connections） 是由 Google 所提出的設計，是一種新的傳輸層協議。而這協議是在端點間建立數個 Multiplexing 的 UDP 連線。
+[QUIC, a multiplexed transport over UDP](https://www.chromium.org/quic/) 是由 Google 所提出的設計，後來演變為一個 IETF 標準化的協議（RFC 9000）。而這協議是在端點間建立數個 Multiplexing 的 UDP 連線。
 
 >QUIC is a new multiplexed transport built on top of UDP.  HTTP/3 is designed to take advantage of QUIC's features, including lack of Head-Of-Line blocking between streams.
 
@@ -47,7 +49,7 @@ QUIC（Quick UDP Internet Connections） 是由 Google 所提出的設計，是�
 * 使用 UDP 連線，所以減少了三次握手的效能消耗
 * 封包遺失只會影響到對應的 stream，
 * 實現了 TCP 的可靠性，使用 Packet Number 來代替 TCP 的 sequence number
-* 實現了 HTTP/2.0 的多路復用（multiplexed），但相較於 HTTP/2.0 協議 QUIC 每個 stream 間沒有依賴關係，也就是說大幅減少隊頭阻塞
+* 實現了 HTTP/2.0 的多路復用（multiplexed），但相較於 HTTP/2.0 協議 QUIC 每個 stream 間沒有依賴關係，也就是說大幅減少隊頭阻塞(lack of Head-Of-Line)
 * 實現了 TLS 的安全性
 
 ### References
