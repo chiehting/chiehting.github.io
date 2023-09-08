@@ -1,12 +1,12 @@
 ---
 date: 2023-07-31T17:58:32+08:00
-updated: 2023-08-14T01:28:31+08:00
+updated: 2023-08-17T14:50:47+08:00
 title: What is the DIKW Pyramid?
 category: concept
 tags: [concept]
 type: note
 author: ontotext
-status: 🌲
+status: 長青期
 sourceType: 📰️
 sourceURL: https://www.ontotext.com/knowledgehub/fundamentals/dikw-pyramid/
 post: true

@@ -6,7 +6,7 @@ category: golang
 tags: [golang]
 type: note
 author: Golang
-status: 🌲
+status: 長青期
 sourceType: 📰️
 sourceURL: https://go.dev/tour/basics/11
 post: true

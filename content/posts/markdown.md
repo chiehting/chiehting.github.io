@@ -1,12 +1,12 @@
 ---
 date: 2023-06-27T11:24:18+08:00
-updated: 2023-08-10T16:27:11+08:00
+updated: 2023-08-17T14:50:46+08:00
 title: What is Markdown?
 category: markdown
 tags: [markdown]
 type: moc
 author: Chiehting
-status: 🌤
+status: 培育期
 sourceType: 📜️
 sourceURL: .
 post: true

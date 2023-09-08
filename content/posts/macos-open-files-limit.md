@@ -6,7 +6,7 @@ category: macos
 tags: [macos]
 type: note
 author: Chiehting
-status: 🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: .
 post: true

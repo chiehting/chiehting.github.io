@@ -1,12 +1,12 @@
 ---
 date: 2023-07-13T15:45:24+08:00
-updated: 2023-08-10T16:28:00+08:00
+updated: 2023-08-17T14:50:45+08:00
 title: Service Level Indicator
 category: sre
 tags: [sre]
 type: note
 author: Atlassian
-status: 🌱
+status: 發芽期
 sourceType: 📰️
 sourceURL: https://www.datadoghq.com/blog/establishing-service-level-objectives/#getting-from-slis-to-slos
 post: true

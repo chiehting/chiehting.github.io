@@ -1,12 +1,12 @@
 ---
 date: 2023-06-26T13:38:19+08:00
-updated: 2023-08-10T16:22:30+08:00
+updated: 2023-08-17T14:50:45+08:00
 title: keep it simple stupid.!
 category: principle
 tags: [principle]
 type: note
 author: Chiehting
-status: 🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: .
 post: true

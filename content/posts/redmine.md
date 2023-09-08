@@ -6,7 +6,7 @@ category: projectManagement
 tags: [projectManagement]
 type: note
 author: 
-status: 🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: .
 post: true

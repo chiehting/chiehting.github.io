@@ -1,12 +1,12 @@
 ---
 date: 2023-08-10T17:51:21+08:00
-updated: 2023-08-14T14:50:27+08:00
+updated: 2023-08-17T14:50:45+08:00
 title: Adelson-Velsky and Landis tree
 category: algorithm
 tags: [algorithm]
 type: note
 author: Krahets
-status: 🌤
+status: 培育期
 sourceType: 📰️
 sourceURL: https://github.com/krahets/hello-algo
 post: true

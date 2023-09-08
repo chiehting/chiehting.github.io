@@ -1,12 +1,12 @@
 ---
 date: 2023-07-06T16:42:36+08:00
-updated: 2023-08-14T00:35:57+08:00
+updated: 2023-08-17T14:50:46+08:00
 title: 什麼是運維(Operations)?
 category: roles
 tags: [roles]
 type: note
 author: Indeed
-status: 🌱
+status: 發芽期
 sourceType: 📰️
 sourceURL: https://www.ibm.com/topics/it-operations,https://asana.com/zh-tw/resources/operations-management
 post: true

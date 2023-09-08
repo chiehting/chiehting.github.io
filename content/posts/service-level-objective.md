@@ -1,12 +1,12 @@
 ---
 date: 2023-07-12T16:14:50+08:00
-updated: 2023-08-10T16:28:04+08:00
+updated: 2023-08-17T14:50:45+08:00
 title: Service Level Ojbective
 category: sre
 tags: [sre]
 type: note
 author: Atlassian
-status: 🌱
+status: 發芽期
 sourceType: 📰️
 sourceURL: https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives
 post: true

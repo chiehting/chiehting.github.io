@@ -1,12 +1,12 @@
 ---
 date: 2023-07-07T14:46:24+08:00
-updated: 2023-08-10T16:22:11+08:00
+updated: 2023-08-17T14:50:46+08:00
 title: IBM 所定義的 SRE 角色
 category: sre 
 tags: [sre]
 type: note
 author: IBM
-status: 🌱
+status: 發芽期
 sourceType: 📜️
 sourceURL: https://www.ibm.com/topics/site-reliability-engineering
 post: true

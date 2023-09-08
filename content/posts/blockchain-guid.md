@@ -6,7 +6,7 @@ category: blockchain
 tags: [blockchain]
 type: moc
 author: Chiehting
-status: 🌤
+status: 培育期
 sourceType: 📜️
 sourceURL: .
 post: true

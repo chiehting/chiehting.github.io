@@ -6,7 +6,7 @@ category: php
 tags: [php]
 type: note
 author: Chiehting
-status: 🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: https://www.php.net/manual/en/
 post: true

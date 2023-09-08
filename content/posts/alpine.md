@@ -6,7 +6,7 @@ category: linux
 tags: [linux]
 type: note
 author: Chiehting
-status: 🌤
+status: 培育期
 sourceType: 📜️
 sourceURL: .
 post: true

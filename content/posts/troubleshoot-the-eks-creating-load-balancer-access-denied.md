@@ -6,7 +6,7 @@ category: aws
 tags: [aws]
 type: note
 author: AWS
-status: 🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: .
 post: true

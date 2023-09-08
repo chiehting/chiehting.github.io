@@ -6,7 +6,7 @@ category: network
 tags: [network]
 type: note
 author: Chiehting
-status: 🌲
+status: 長青期
 sourceType: 📰️
 sourceURL: .
 post: true

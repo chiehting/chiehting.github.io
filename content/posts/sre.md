@@ -1,12 +1,12 @@
 ---
 date: 2023-07-06T10:43:58+08:00
-updated: 2023-08-10T16:24:31+08:00
+updated: 2023-08-17T14:50:46+08:00
 title: What is Site Reliability Engineering (SRE)?
 category: roles
 tags: [roles,sre]
 type: moc
 author: Chiehting
-status: 🌱
+status: 發芽期
 sourceType: 📜️
 sourceURL: .
 post: true

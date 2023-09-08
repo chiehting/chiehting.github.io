@@ -8,4 +8,4 @@ help:
 update-posts: ## 更新文章
 	@find "./content/posts" -type f -d 1 -exec rm -f {} \;
 	@# @find "${HOME}/Documents/Obsidian Vault" -type f -name '*.md' | grep para | grep -v weeklist | xargs -I '{}' cp -f "{}" ./content/posts/
-	@ rg 'post: true' "${HOME}/Documents/Obsidian Vault" -l | grep para | grep -v weeklist | xargs -I '{}' cp -f "{}" ./content/posts/
+	@rg 'post: true' "${HOME}/Google Drive/Other computers/My MacBook Pro/Obsidian Vault" -l | grep para | grep -v weeklist | xargs -I '{}' cp -f "{}" ./content/posts/

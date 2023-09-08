@@ -1,12 +1,12 @@
 ---
 date: 2023-08-10T01:01:00+08:00
-updated: 2023-08-16T14:49:04+08:00
+updated: 2023-08-17T14:50:46+08:00
 title: DevOps 面試問題
 category: devops
 tags: [devops]
 type: note
 author: Chiehting
-status: 🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: .
 post: true

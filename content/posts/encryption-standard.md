@@ -6,7 +6,7 @@ category: security
 tags: [security]
 type: note
 author: Chiehting
-status: 🌱,🌤,🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: .
 post: true

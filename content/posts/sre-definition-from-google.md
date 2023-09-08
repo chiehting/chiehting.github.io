@@ -1,12 +1,12 @@
 ---
 date: 2023-07-06T15:57:40+08:00
-updated: 2023-07-31T17:38:55+08:00
+updated: 2023-08-17T14:50:46+08:00
 title: Google 所定義的 SRE 角色
 category: roles 
 tags: [sre,google]
 type: note
 author: Google
-status: 🌱
+status: 發芽期
 sourceType: 📜️
 sourceURL: https://sre.google/
 post: true

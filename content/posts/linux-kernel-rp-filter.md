@@ -6,7 +6,7 @@ category: linux
 tags: [linux,network]
 type: note
 author: Chiehting
-status: 🌲
+status: 長青期
 sourceType: 📜️
 sourceURL: https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
 post: true

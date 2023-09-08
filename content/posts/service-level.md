@@ -1,12 +1,12 @@
 ---
 date: 2020-11-04T17:22:00+08:00
-updated: 2023-07-31T17:37:40+08:00
+updated: 2023-08-17T14:50:44+08:00
 title: SLA、SLO、SLI的概念
 category: sre
 tags: [sre]
 type: note
 author: Atlassian
-status: 🌱
+status: 發芽期
 sourceType: 📰️
 sourceURL: https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli
 post: true

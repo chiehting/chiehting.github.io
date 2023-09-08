@@ -1,12 +1,12 @@
 ---
 date: 2023-07-27T17:02:44+08:00
-updated: 2023-08-14T00:35:28+08:00
+updated: 2023-08-17T14:50:44+08:00
 title: Laravel 框架產生的 cookie XSRF-TOKEN 需不需要使用 HttpOnly
 category: php
 tags: [php,security]
 type: note
 author: Chiehting
-status: 🌲
+status: 長青期
 sourceType: 📰️
 sourceURL: https://security.stackexchange.com/questions/175536/does-a-csrf-cookie-need-to-be-httponly
 post: true

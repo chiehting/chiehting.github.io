@@ -5,8 +5,8 @@ title: 使用 Helm 建立 AWS network load balancer
 category: kubernetes
 tags: [kubernetes]
 type: note
-author: Chiehging
-status: 🌲
+author: Chiehting
+status: 長青期
 sourceType: 📰️
 sourceURL: .
 post: true

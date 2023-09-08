@@ -6,7 +6,7 @@ category: security
 tags: [security]
 type: note
 author: Google
-status: 🌲
+status: 長青期
 sourceType: 📰️
 sourceURL: https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html
 post: true

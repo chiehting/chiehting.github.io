@@ -1,12 +1,12 @@
 ---
 date: 2023-06-26T13:55:19+08:00
-updated: 2023-07-31T17:38:42+08:00
+updated: 2023-08-17T14:50:46+08:00
 title: 筆記風格
 category: style
 tags: [markdown,style]
 type: note
 author: Chiehting
-status: 🌱
+status: 發芽期
 sourceType: 💭️
 sourceURL: .
 post: true
