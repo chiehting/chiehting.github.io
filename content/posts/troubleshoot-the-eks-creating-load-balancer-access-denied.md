@@ -2,8 +2,10 @@
 date: 2021-06-02T16:12:00+0800
 updated: 2023-07-30T01:07:49+08:00
 title: Troubleshoot the eks creating load balancer access denied
-category: aws
-tags: [aws]
+category: cloud
+tags:
+  - cloud
+  - aws
 type: note
 author: AWS
 status: 長青期

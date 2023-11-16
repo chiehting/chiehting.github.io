@@ -1,9 +1,9 @@
 ---
 date: 2021-02-24T16:12:00+0800
 updated: 2023-07-31T11:31:48+08:00
-title: cleos command tool
+title: eosio 節點操作工具 cleos
 category: blockchain
-tags: [blockchain,tools]
+tags: [blockchain]
 type: note
 author: Chiehting
 status: 長青期

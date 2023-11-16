@@ -2,8 +2,10 @@
 date: 2023-07-10T11:34:49+08:00
 updated: 2023-08-17T14:50:45+08:00
 title: 什麼是 Metadata
-category: learn
-tags: [metadata]
+category: system-design
+tags:
+  - system-design
+  - metadata
 type: note
 author: Chiehting
 status: 發芽期

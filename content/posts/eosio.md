@@ -12,16 +12,16 @@ sourceURL: .
 post: true
 ---
 
-EOS.IO 為區塊列操作平台,透過 EOS.IO 發行的加密貨幣就叫做 EOS.而 EOS 採用的 **共識機制** 為 Delegated Proof-of-Stake (DPoS, 權益委託證明).
+EOS.IO 為區塊列操作平台,透過 EOS.IO 發行的加密貨幣就叫做 EOS。而 EOS 採用的 **共識機制** 為 Delegated Proof-of-Stake (DPoS, 權益委託證明)。
 
 <!--more-->
 
-開發者透過**智能合約(smart contract)**的協議,來訂定對區塊鏈的互動、決策、儲存資料及傳送虛擬幣等功能.
+開發者透過 **智能合約(smart contract)** 的協議，來訂定對區塊鏈的互動、決策、儲存資料及傳送虛擬幣等功能。
 
 共識機制([[blockchain-consensus]])
 智能合約([[blockchain-smart-contract]])
 
-區塊鏈應用的要求:
+區塊鏈應用的要求：
 
 * 支持成百上千的用戶
 * 免費的使用
@@ -29,6 +29,10 @@ EOS.IO 為區塊列操作平台,透過 EOS.IO 發行的加密貨幣就叫做 EOS
 * 低延遲
 * 初步性能
 * 並發性能
+
+### Blockchain 的鏈節點
+
+選用 [[cleos]] 工具，透過 command line 請求 nodeos 做部署或測試智能合約。 
 
 ## References
 

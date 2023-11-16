@@ -2,8 +2,10 @@
 date: 2021-08-20T14:44:00+0800
 updated: 2023-07-31T15:15:42+08:00
 title: Using SSL certificates in Kubernetes ingress via cert-manager
-category: kubernetes
-tags: [kubernetes]
+category: software-system
+tags:
+  - software-system
+  - kubernetes
 type: note
 author: Chiehting
 status: 長青期

@@ -3,7 +3,7 @@ date: 2023-06-26T13:55:19+08:00
 updated: 2023-08-17T14:50:46+08:00
 title: 筆記風格
 category: style
-tags: [markdown,style]
+tags: [markdown]
 type: note
 author: Chiehting
 status: 發芽期
@@ -12,7 +12,7 @@ sourceURL: .
 post: true
 ---
 
-筆記都是由 *[[Markdown]]([[markdown]])* 所撰寫而成的, 而 *[[Markdown]]* 有多種基本的字體呈現樣式. 這邊要定義各個樣式在文章中所代表的意義.
+筆記都是由 *[[moc-markdown]]([[moc-markdown]])* 所撰寫而成的, 而 *[[moc-markdown]]* 有多種基本的字體呈現樣式. 這邊要定義各個樣式在文章中所代表的意義.
 
 <!--more-->
 

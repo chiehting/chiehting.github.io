@@ -22,7 +22,7 @@ Answer :: 拜讀 Atlassian 的文章, 暸解如何訂定服務的穩定性, 以�
 
 ### Summary
 
-SRE ([[sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 *Atlassian* 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:
+SRE ([[moc-sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 *Atlassian* 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:
 
 - 系統可以使用多久?
 - 系統出現故障, 維護團隊多久可以給出回饋?

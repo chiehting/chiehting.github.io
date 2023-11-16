@@ -5,7 +5,7 @@ title: What is the DIKW Pyramid?
 category: concept
 tags: [concept]
 type: note
-author: ontotext
+author: Ontotext
 status: 長青期
 sourceType: 📰️
 sourceURL: https://www.ontotext.com/knowledgehub/fundamentals/dikw-pyramid/

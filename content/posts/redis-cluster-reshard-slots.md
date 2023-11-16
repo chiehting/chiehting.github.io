@@ -2,8 +2,10 @@
 date: 2019-04-07T00:49:24T+0800
 updated: 2023-07-25T17:21:28+08:00
 title: Redis cluster reshard slots
-category: redis
-tags: [redis]
+category: software-system
+tags:
+  - software-system
+  - redis
 type: note
 author: Chiehting
 status: 長青期

@@ -2,8 +2,9 @@
 date: 2023-07-24T11:27:29+08:00
 updated: 2023-08-17T14:50:47+08:00
 title: What is electronic wallet
-category: finance 
-tags: [finance]
+category: finance
+tags:
+  - finance
 type: note
 author: Wistek
 status: 長青期
@@ -55,7 +56,7 @@ Answer :: 電子錢包可以分成幾種類型, 一種是給金融機構使用�
 這類型的錢包目前主要透過使用QRcode掃碼交易，如街口支付、Pi行動錢包、支付寶及微信支付等。<br>
 商店閉鎖模式，這種電子錢包服務對象是以各別商家為中心，電子錢包系統是做為支持商家收款的工具。舉例來說，星巴克電子錢包App中的儲值卡，只能在星巴克使用。
 
-#### 兩種錢包 營收來源大不同
+#### 兩種錢包營收來源大不同
 
 「開放式」和 「閉鎖式」兩種模式的電子錢包，營收對象不同：
 

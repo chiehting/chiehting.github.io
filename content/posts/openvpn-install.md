@@ -1,9 +1,11 @@
 ---
 date: 2022-01-11T10:00:00+08:00
-updated: 2023-08-17T14:50:44+08:00
+updated: 2023-10-13T16:25:43+08:00
 title: Create an OpenVPN service
-category: network
-tags: [network]
+category: software-system
+tags:
+  - software-system
+  - vpn
 type: note
 author: Chiehting
 status: 長青期
@@ -33,6 +35,7 @@ root@vpn:/opt/vpn# curl -O https://raw.githubusercontent.com/angristan/openvpn-i
 root@vpn:/opt/vpn# chmod +x openvpn-install.sh
 root@vpn:/opt/vpn# ./openvpn-install.sh
 ```
+
 
 再執行一次腳本, 可以執行其他公能.
 

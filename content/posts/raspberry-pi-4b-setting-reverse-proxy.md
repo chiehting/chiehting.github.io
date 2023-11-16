@@ -2,9 +2,10 @@
 date: 2023-09-08T17:35:51+08:00
 updated: 2023-09-08T22:00:17+08:00
 title: 使用 Raspberry Pi 4 Model B 做反向代理伺服器
-category: devops
+category: system-design
 tags:
-  - network
+  - system-design
+  - devops
 type: note
 author: Chiehting
 status: 培育期

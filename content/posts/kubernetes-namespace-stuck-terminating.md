@@ -1,9 +1,11 @@
 ---
 date: 2021-08-19T17:22:00+0800
 updated: 2023-07-31T15:08:23+08:00
-title: The Namespace is stuck the terminating state 
-category: kubernetes
-tags: [kubernetes]
+title: The Namespace is stuck the terminating state
+category: software-system
+tags:
+  - software-system
+  - kubernetes
 type: note
 author: Chiehting
 status: 長青期

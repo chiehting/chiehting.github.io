@@ -2,8 +2,10 @@
 date: 2019-04-07T00:38:19+0800
 updated: 2023-07-25T17:26:39+08:00
 title: redis-trib.rb reshard problem
-category: redis
-tags: [redis]
+category: software-system
+tags:
+  - software-system
+  - redis
 type: note
 author: Chiehting
 status: 長青期

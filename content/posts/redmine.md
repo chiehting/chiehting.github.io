@@ -2,8 +2,10 @@
 date: 2019-10-01T11:00:00+0800
 updated: 2023-07-25T16:49:44+08:00
 title: Integrate Redmine with GitLab
-category: projectManagement
-tags: [projectManagement]
+category: software-system
+tags:
+  - software-system
+  - redmine
 type: note
 author: 
 status: 長青期

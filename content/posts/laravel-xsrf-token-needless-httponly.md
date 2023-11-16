@@ -2,8 +2,10 @@
 date: 2023-07-27T17:02:44+08:00
 updated: 2023-08-17T14:50:44+08:00
 title: Laravel 框架產生的 cookie XSRF-TOKEN 需不需要使用 HttpOnly
-category: php
-tags: [php,security]
+category: system-design
+tags:
+  - system-design
+  - php
 type: note
 author: Chiehting
 status: 長青期
@@ -16,7 +18,7 @@ post: true
 
 Question :: Does a CSRF cookie need to be HttpOnly such as XSRF-TOKEN cookie from Laravel.
 
-Answer :: CSRF cookie 可以不用使用 HttpOnly flag, 因為 HttpOnly flag 保護的前提下已經是被 XSS([[security-cross-site-scripting]]) 攻擊, 同域的狀況下 CSRF cookie 已經失去其保護作用. 而且 XSS is a much bigger hole than CSRF. 所以 Laravel 產生的 XSRF-TOKEN cookie 可以不使用 HttpOnly flag.
+Answer :: CSRF cookie 可以不用使用 HttpOnly flag, 因為 HttpOnly flag 保護的前提下已經是被 XSS([[cross-site-scripting]]) 攻擊, 同域的狀況下 CSRF cookie 已經失去其保護作用. 而且 XSS is a much bigger hole than CSRF. 所以 Laravel 產生的 XSRF-TOKEN cookie 可以不使用 HttpOnly flag.
 
 <!--more-->
 

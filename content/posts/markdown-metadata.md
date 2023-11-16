@@ -12,7 +12,7 @@ sourceURL: https://medium.com/pm%E7%9A%84%E7%94%9F%E7%94%A2%E5%8A%9B%E5%B7%A5%E5
 post: true
 ---
 
-*[[Markdown]]([[markdown]])* 支援 YAML 格式的 metadata, 可以提供進階的描述資料屬性(property).
+*[[moc-markdown]]([[moc-markdown]])* 支援 YAML 格式的 metadata, 可以提供進階的描述資料屬性(property).
 
 <!--more-->
 
@@ -35,9 +35,8 @@ post: true
 
 #### tags
 
-使用英文, 採用小駝峰格式, 標籤會有多個使用陣列表示, 陣列不留空白.
-例如: [systemDesing,distributed].
-
+使用英文, 採用蛇行格式, 標籤會有多個使用陣列表示, 陣列不留空白.
+例如: [system-desing,distributed].
 
 #### author
 

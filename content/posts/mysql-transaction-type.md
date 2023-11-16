@@ -3,7 +3,9 @@ date: 2021-03-17T11:28:00+0800
 updated: 2023-07-30T24:28:04+08:00
 title: Concept of MySQL transaction
 category: databases
-tags: [databases]
+tags:
+  - databases
+  - mysql
 type: note
 author: Chiehting
 status: 長青期

@@ -2,8 +2,10 @@
 date: 2020-04-27T12:21:00+0800
 updated: 2023-07-31T15:55:51+08:00
 title: 設定 macOS 的 open files 上限
-category: macos
-tags: [macos]
+category: operating-system
+tags:
+  - operating-system
+  - macos
 type: note
 author: Chiehting
 status: 長青期

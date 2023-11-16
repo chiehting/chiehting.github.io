@@ -3,7 +3,9 @@ date: 2023-01-19T12:20:00+0800
 updated: 2023-07-30T24:43:27+08:00
 title: Set the Domain's record to the CoreDNS
 category: network
-tags: [network,kubernetes]
+tags:
+  - network
+  - dns
 type: note
 author: Chiehting
 status: 長青期
@@ -17,6 +19,10 @@ post: true
 <!--more-->
 
 ### 多配置 DNS Server
+
+```shell
+kubectl edit configmap coredns -n kube-system
+```
 
 下面為配置 db.example.com.tw 的範例
 

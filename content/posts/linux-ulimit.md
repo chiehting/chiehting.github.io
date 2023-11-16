@@ -2,8 +2,10 @@
 date: 2020-01-14T17:23:00+0800
 updated: 2023-07-31T17:04:29+08:00
 title: 了解 linux ulimit
-category: linux
-tags: [linux]
+category: operating-system
+tags:
+  - operating-system
+  - linux
 type: note
 author: Chiehting
 status: 長青期

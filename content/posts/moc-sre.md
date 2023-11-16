@@ -32,6 +32,10 @@ Google SRE 的定義是將運維(operations)視為軟體問題. 而運維之核�
 
 透過 IBM 文件來理解 SRE. 觀點跟 Google 所提倡的相差不遠. 此外, 還有講到 SRE 跟 DevOps 相輔相成的關係 , 並強調 SRE 可在 DevOps 中發揮重要的作用.
 
-### SRE 跟 DevOps 的差別
+### 服務等級
 
-([[sre-devops-difference]])
+- [[service-level]]
+
+### DevOps
+
+- [[sre-devops-difference]]

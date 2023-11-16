@@ -2,8 +2,8 @@
 date: 2023-06-23T02:28:08+08:00
 updated: 2023-08-17T14:50:46+08:00
 title: The para mothed
-category: knowledgeManagement
-tags: [knowledgeManagement]
+category: knowledge-management
+tags: [knowledge-management]
 type: note
 author: 朱騏
 status: 發芽期
@@ -39,7 +39,7 @@ PARA 是能夠提升行動力與產出成果的筆記分類架構 ，分別是�
 - **Resources**: Topics or interests that may be useful in the future
 - **Archives**: Inactive items from the other three categories
 
-上面為  [The PARA Method](https://fortelabs.com/blog/para/) 中對於架構分類的定義, 文件中也有給些範例, 如下
+上面為  [The PARA Method](https://fortelabs.com/blog/para/) 中對於架構分類的定義, 文件中也有給些範例, 如下:
 
 Projects
 

@@ -2,8 +2,9 @@
 date: 2023-06-27T10:44:44+08:00
 updated: 2023-08-17T14:50:44+08:00
 title: Design a distributed job scheduler
-category: systemDesing
-tags: [systemDesing]
+category: system-design
+tags:
+  - system-design
 type: note
 author: Rakshesh Shah
 status: 長青期

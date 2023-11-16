@@ -2,8 +2,10 @@
 date: 2019-04-02T21:45:40+0800
 updated: 2023-07-25T17:02:57+08:00
 title: Install Redis Cluster
-category: redis
-tags: [redis]
+category: software-system
+tags:
+  - software-system
+  - redis
 type: note
 author: Chiehting
 status: 長青期

@@ -2,8 +2,10 @@
 date: 2022-11-24T10:00:00+0800
 updated: 2023-07-31T16:42:48+08:00
 title: How to send log from AWS eks to cloudwatch.
-category: kubernetes
-tags: [kubernetes]
+category: software-system
+tags:
+  - software-system
+  - kubernetes
 type: note
 author: Chiehting
 status: 長青期
@@ -22,10 +24,10 @@ post: true
 
 原架構為 Elasticsearch + Filebeat + Kibana, 基於下述狀況決定改架構, 來減少維護成本.
 
-- 目前開發使用情境, 之需要查看 log 且可以搜尋, 不需要做 log 分析. 殺雞用牛刀了.
+- 目前開發使用情境, 之需要查看 log 且可以搜尋, 不需要做資料探勘. 殺雞用牛刀了.
 - Elasticsearch 在 Basic License 下, 無法使用 LDAP, PKI3, Active Directory authentication 功能.
-- Elasticsearch 硬體需求較高, 為 t2.large (2 vCPU, 8 Mem).
-- Elasticsearch 能維護的人員不多, 維護上困難.
+- Elasticsearch [硬體需求](https://www.elastic.co/guide/en/cloud-enterprise/current/ece-hardware-prereq.html)較高, 最低的硬體需求為 t2.large (2 vCPU, 8 Mem).
+- Elasticsearch 使用門檻較高, 能維護的人員不多, 維護上困難.
 
 ### 日誌蒐集狀況
 
@@ -133,22 +135,14 @@ kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch
 ##### 執行 fluent-bit.yaml
 
 ```bash
-ClusterName=dev
-RegionName=ap-southeast-1
+ClusterName=production
+RegionName=us-east-1
 FluentBitHttpPort='2020'
 FluentBitReadFromHead='Off'
 [[ ${FluentBitReadFromHead} = 'On' ]] && FluentBitReadFromTail='Off'|| FluentBitReadFromTail='On'
 [[ -z ${FluentBitHttpPort} ]] && FluentBitHttpServer='Off' || FluentBitHttpServer='On'
 
-kubectl create configmap fluent-bit-cluster-info \
---from-literal=cluster.name=${ClusterName} \
---from-literal=http.server=${FluentBitHttpServer} \
---from-literal=http.port=${FluentBitHttpPort} \
---from-literal=read.head=${FluentBitReadFromHead} \
---from-literal=read.tail=${FluentBitReadFromTail} \
---from-literal=logs.region=${RegionName} -n amazon-cloudwatch
-
-kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/fluent-bit/fluent-bit.yaml
+curl https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/quickstart/cwagent-fluent-bit-quickstart.yaml | sed 's/{{cluster_name}}/'${ClusterName}'/;s/{{region_name}}/'${RegionName}'/;s/{{http_server_toggle}}/"'${FluentBitHttpServer}'"/;s/{{http_server_port}}/"'${FluentBitHttpPort}'"/;s/{{read_from_head}}/"'${FluentBitReadFromHead}'"/;s/{{read_from_tail}}/"'${FluentBitReadFromTail}'"/' | kubectl apply -f - 
 ```
 
 ##### 調整 application-log.conf

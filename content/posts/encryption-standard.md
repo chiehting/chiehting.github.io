@@ -2,8 +2,10 @@
 date: 2021-10-01T16:35:00+0800
 updated: 2023-07-25T16:32:44+08:00
 title: 淺談加密標準
-category: security
-tags: [security]
+category: system-design
+tags:
+  - system-design
+  - cryptography
 type: note
 author: Chiehting
 status: 長青期

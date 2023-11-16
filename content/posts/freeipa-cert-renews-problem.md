@@ -2,8 +2,10 @@
 date: 2022-05-19T15:00:00+0800
 updated: 2023-07-31T17:25:07+08:00
 title: FreeIPA certificate renews problem
-category: ldap
-tags: [ldap]
+category: software-system
+tags:
+  - software-system
+  - ldap
 type: note
 author: Chiehting
 status: 長青期

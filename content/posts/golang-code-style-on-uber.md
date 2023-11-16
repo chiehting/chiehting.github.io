@@ -2,8 +2,10 @@
 date: 2021-08-12T10:58:00+0800
 updated: 2023-07-31T14:49:06+08:00
 title: Uber's Golang code style guide
-category: golang
-tags: [golang,style]
+category: programming-language
+tags:
+  - programming-language
+  - golang
 type: note
 author: Uber
 status: 長青期

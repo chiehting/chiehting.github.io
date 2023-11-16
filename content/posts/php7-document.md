@@ -2,8 +2,10 @@
 date: 2017-12-21 00:00:00 +0800
 updated: 2023-07-14T11:25:49+08:00
 title: Relearn PHP
-category: php
-tags: [php]
+category: programming-language
+tags:
+  - programming-language
+  - php
 type: note
 author: Chiehting
 status: 長青期
