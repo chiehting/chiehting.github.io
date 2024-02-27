@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>project-management on Chiehting</title><link>https://chiehting.com/tags/project-management/</link><description>Recent content in project-management on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 12 Sep 2023 10:00:34 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/project-management/index.xml" rel="self" type="application/rss+xml"/><item><title>比較專案管理系統</title><link>https://chiehting.com/posts/compare-project-management/</link><pubDate>Tue, 12 Sep 2023 10:00:34 +0800</pubDate><guid>https://chiehting.com/posts/compare-project-management/</guid><description>
+&lt;p>本篇目標再評估三套專案管理系統 &lt;code>Redmine&lt;/code>、&lt;code>OpenProject&lt;/code> 和 &lt;code>禪道&lt;/code>。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>名稱&lt;/th>
+&lt;th>開源&lt;/th>
+&lt;th>版本/維護時間&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;a href="https://www.redmine.org/">Redmine&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://github.com/redmine/redmine">Redmine GitHub&lt;/a>&lt;/td>
+&lt;td>5.0.5/20230305&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;a href="https://www.openproject.org/">OpenProejct&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://github.com/opf/openproject">OpenProject GitHub&lt;/a>&lt;/td>
+&lt;td>13.0.1/20230829&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;a href="https://www.zentao.net">禪道&lt;/a> [[moc-zentao]]&lt;/td>
+&lt;td>&lt;a href="https://github.com/easysoft/zentaopms">禪道 GitHub&lt;/a>&lt;/td>
+&lt;td>18.5/20230715&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="總結">總結&lt;/h3>
+&lt;ul>
+&lt;li>禪道原生就有豐富的功能，如果起初的專案管理流程有明確的定義，且需有功能豐富的專案管理系統，可以優先考慮；若是只是簡單的任務管理，則會太多用不到之功能，介面複雜增加學習成本。&lt;/li>
+&lt;li>OpenProject 原生的含有基本功能，且原生有結合敏捷開發。有著社群的插件支持，未來也可隨著需求做功能擴展。介面使用起來有點像 Asana。&lt;/li>
+&lt;li>Redmine 為老牌的專案管理工具已經是個穩定的工具，且簡單上手較快。有社群的插件支持，未來也可隨著需求做功能擴展。外觀生硬醜。&lt;/li>
+&lt;/ul>
+&lt;h3 id="特點比較">特點比較&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>特點&lt;/th>
+&lt;th>禪道&lt;/th>
+&lt;th>OpenProject&lt;/th>
+&lt;th>Redmine&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>原生功能&lt;/td>
+&lt;td>較多&lt;/td>
+&lt;td>一般&lt;/td>
+&lt;td>一般&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>使用介面&lt;/td>
+&lt;td>複雜&lt;/td>
+&lt;td>一般&lt;/td>
+&lt;td>醜&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>使用難易度&lt;/td>
+&lt;td>偏高&lt;/td>
+&lt;td>適中&lt;/td>
+&lt;td>適中&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>流程整合度&lt;/td>
+&lt;td>高&lt;/td>
+&lt;td>高&lt;/td>
+&lt;td>高&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>插件數量&lt;/td>
+&lt;td>中等&lt;/td>
+&lt;td>多&lt;/td>
+&lt;td>多&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>支持社群&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>開發程式&lt;/td>
+&lt;td>PHP&lt;/td>
+&lt;td>Ruby on Rails&lt;/td>
+&lt;td>Ruby on Rails&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>多語系&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>文檔管理&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>時間追蹤&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>圖表和報告&lt;/td>
+&lt;td>一般&lt;/td>
+&lt;td>較多&lt;/td>
+&lt;td>一般&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>整合性&lt;/td>
+&lt;td>高(原生)&lt;/td>
+&lt;td>高(插件)&lt;/td>
+&lt;td>高(插件)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>支持 Scrum&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是&lt;/td>
+&lt;td>是(插件)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>插件&lt;/td>
+&lt;td>較少&lt;/td>
+&lt;td>較多&lt;/td>
+&lt;td>較多(需注意插件的相容性)&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table></description></item></channel></rss>
