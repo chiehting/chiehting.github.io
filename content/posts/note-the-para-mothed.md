@@ -1,9 +1,10 @@
 ---
 date: 2023-06-23T02:28:08+08:00
-updated: 2023-08-17T14:50:46+08:00
+updated: 2024-02-27T17:42:26+08:00
 title: The para mothed
-category: knowledge-management
-tags: [knowledge-management]
+category: productivity
+tags:
+  - productivity
 type: note
 author: 朱騏
 status: 發芽期

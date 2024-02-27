@@ -2,9 +2,9 @@
 date: 2021-03-17T11:28:00+0800
 updated: 2023-07-30T24:28:04+08:00
 title: Concept of MySQL transaction
-category: databases
+category: mysql
 tags:
-  - databases
+  - database
   - mysql
 type: note
 author: Chiehting

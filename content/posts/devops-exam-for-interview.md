@@ -1,9 +1,10 @@
 ---
 date: 2023-08-10T01:01:00+08:00
-updated: 2023-08-17T14:50:46+08:00
+updated: 2023-12-04T13:25:47+08:00
 title: DevOps 面試問題
 category: devops
-tags: [devops]
+tags:
+  - devops
 type: note
 author: Chiehting
 status: 長青期
@@ -14,9 +15,9 @@ post: true
 
 ### Evergreen Note
 
-Question :: 為什麼要做 DevOps 面試問題?
+Question :: 為什麼要做 DevOps 面試問題？
 
-Answer :: 定期更新與準備 DevOps 面試問題, 可有助於面試人或者被面試的能力.
+Answer :: 可有助於面試人或者被面試的能力，不定期更新 DevOps 面試問題。
 
 <!--more-->
 

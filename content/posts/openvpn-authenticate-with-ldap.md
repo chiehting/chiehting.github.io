@@ -1,11 +1,11 @@
 ---
 date: 2022-01-11T10:13:00+08:00
-updated: 2023-08-17T14:50:44+08:00
+updated: 2024-02-27T17:18:31+08:00
 title: Authenticate OpenVPN using LDAP
-category: software-system
+category: openvpn
 tags:
-  - software-system
   - vpn
+  - openvpn
 type: note
 author: Chiehting
 status: 長青期

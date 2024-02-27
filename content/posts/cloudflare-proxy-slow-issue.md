@@ -2,8 +2,9 @@
 date: 2021-08-16T14:55:00+0800
 updated: 2023-07-25T17:49:00+08:00
 title: Cloudfloar proxy slow
-category: network
-tags: [network]
+category: internet
+tags:
+  - internet
 type: note
 author: Chiehting
 status: 長青期

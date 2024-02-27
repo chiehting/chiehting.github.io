@@ -1,9 +1,11 @@
 ---
 date: 2023-07-03T10:25:14+08:00
-updated: 2023-08-17T14:54:09+08:00
+updated: 2023-12-11T01:14:17+08:00
 title: Metadata of the Markdown
-category: tool
-tags: [markdown,metadata]
+category: markdown
+tags:
+  - markdown
+  - metadata
 type: note
 author: 朱騏
 status: 培育期

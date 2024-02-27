@@ -3,7 +3,8 @@ date: 2020-11-04T17:22:00+08:00
 updated: 2023-08-17T14:50:44+08:00
 title: SLA、SLO、SLI的概念
 category: sre
-tags: [sre]
+tags:
+  - sre
 type: note
 author: Atlassian
 status: 發芽期

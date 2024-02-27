@@ -2,9 +2,8 @@
 date: 2019-04-07T00:49:24T+0800
 updated: 2023-07-25T17:21:28+08:00
 title: Redis cluster reshard slots
-category: software-system
+category: redis
 tags:
-  - software-system
   - redis
 type: note
 author: Chiehting

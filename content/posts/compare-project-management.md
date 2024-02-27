@@ -1,6 +1,6 @@
 ---
 date: 2023-09-12T10:00:34+08:00
-updated: 2023-10-06T22:10:59+08:00
+updated: 2024-02-25T22:11:59+08:00
 title: 比較專案管理系統
 category: project-management
 tags:
@@ -13,13 +13,15 @@ sourceURL: .
 post: true
 ---
 
-比較市面上的專案管理軟體，
+本篇目標再評估三套專案管理系統 `Redmine`、`OpenProject` 和 `禪道`。
 
-| 名稱             | 開源                 | 版本/維護時間   |
-| ---------------- | -------------------- | --------------- |
-| [Redmine]        | [Redmine GitHub]     | 5.0.5/20230305  |
-| [OpenProejct]    | [OpenProject GitHub] | 13.0.1/20230829 |
-| [禪道] [[zentao]] | [禪道 GitHub]        | 18.5/20230715   |
+<!--more-->
+
+| 名稱                  | 開源                 | 版本/維護時間   |
+| --------------------- | -------------------- | --------------- |
+| [Redmine]             | [Redmine GitHub]     | 5.0.5/20230305  |
+| [OpenProejct]         | [OpenProject GitHub] | 13.0.1/20230829 |
+| [禪道] [[moc-zentao]] | [禪道 GitHub]        | 18.5/20230715   |
 
 [Redmine]: https://www.redmine.org/
 [Redmine GitHub]: https://github.com/redmine/redmine

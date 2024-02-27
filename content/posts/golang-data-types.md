@@ -2,9 +2,8 @@
 date: 2021-03-11T11:17:00+0800
 updated: 2023-07-31T14:49:06+08:00
 title: Basic types in Golang
-category: programming-language
+category: golang
 tags:
-  - programming-language
   - golang
 type: note
 author: Golang

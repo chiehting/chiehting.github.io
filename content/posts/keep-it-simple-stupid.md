@@ -1,6 +1,6 @@
 ---
 date: 2023-06-26T13:38:19+08:00
-updated: 2023-08-17T14:50:45+08:00
+updated: 2024-02-27T17:01:31+08:00
 title: keep it simple stupid.!
 category: system-design
 tags:

@@ -2,9 +2,8 @@
 date: 2021-07-16T10:00:00+0800
 updated: 2023-07-24T17:35:36+08:00
 title: Supply chain Levels for Software Artifacts
-category: system-design
+category: security
 tags:
-  - system-design
   - security
 type: note
 author: Google

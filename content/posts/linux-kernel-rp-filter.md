@@ -6,7 +6,7 @@ category: operating-system
 tags:
   - operating-system
   - linux
-  - network
+  - internet
 type: note
 author: Chiehting
 status: 長青期

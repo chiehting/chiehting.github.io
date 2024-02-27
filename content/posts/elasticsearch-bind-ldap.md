@@ -2,9 +2,8 @@
 date: 2021-06-03T14:00:00+0800
 updated: 2023-07-31T16:25:27+08:00
 title: Elasticsearch 用戶管理
-category: software-system
+category: elasticsearch
 tags:
-  - software-system
   - elasticsearch
 type: note
 author: Chiehting

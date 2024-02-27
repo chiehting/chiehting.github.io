@@ -2,8 +2,9 @@
 date: 2021-07-21T13:55:00+0800
 updated: 2023-07-30T24:18:07+08:00
 title: 什麼是 QUIC
-category: network
-tags: [network]
+category: internet
+tags:
+   - internet
 type: note
 author: Chiehting
 status: 長青期

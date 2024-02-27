@@ -1,9 +1,10 @@
 ---
 date: 2023-06-26T13:55:19+08:00
-updated: 2023-08-17T14:50:46+08:00
+updated: 2024-02-27T17:36:48+08:00
 title: 筆記風格
-category: style
-tags: [markdown]
+category: markdown
+tags:
+  - markdown
 type: note
 author: Chiehting
 status: 發芽期

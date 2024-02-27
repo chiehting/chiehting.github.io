@@ -2,10 +2,10 @@
 date: 2023-03-01T14:27:00+0800
 updated: 2023-07-31T15:37:22+08:00
 title: 比較 SSL Certificates 的驗證效率
-category: network
+category: kubernetes
 tags:
-  - network
   - kubernetes
+  - internet
 type: note
 author: Chiehting
 status: 長青期

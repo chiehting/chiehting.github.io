@@ -3,7 +3,8 @@ date: 2023-07-13T15:45:24+08:00
 updated: 2023-08-17T14:50:45+08:00
 title: Service Level Indicator
 category: sre
-tags: [sre]
+tags:
+  - sre
 type: note
 author: Atlassian
 status: 發芽期

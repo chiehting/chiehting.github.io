@@ -2,9 +2,8 @@
 date: 2022-11-24T10:00:00+0800
 updated: 2023-07-31T16:42:48+08:00
 title: How to send log from AWS eks to cloudwatch.
-category: software-system
+category: kubernetes
 tags:
-  - software-system
   - kubernetes
 type: note
 author: Chiehting

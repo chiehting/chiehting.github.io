@@ -1,10 +1,10 @@
 ---
 date: 2023-07-10T11:34:49+08:00
-updated: 2023-08-17T14:50:45+08:00
+updated: 2024-02-26T01:51:11+08:00
 title: 什麼是 Metadata
-category: system-design
+category: markdown
 tags:
-  - system-design
+  - markdown
   - metadata
 type: note
 author: Chiehting

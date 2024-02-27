@@ -3,7 +3,8 @@ date: 2023-07-12T16:14:50+08:00
 updated: 2023-08-17T14:50:45+08:00
 title: Service Level Ojbective
 category: sre
-tags: [sre]
+tags:
+  - sre
 type: note
 author: Atlassian
 status: 發芽期

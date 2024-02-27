@@ -2,9 +2,8 @@
 date: 2019-04-02T21:45:40+0800
 updated: 2023-07-25T17:02:57+08:00
 title: Install Redis Cluster
-category: software-system
+category: redis
 tags:
-  - software-system
   - redis
 type: note
 author: Chiehting

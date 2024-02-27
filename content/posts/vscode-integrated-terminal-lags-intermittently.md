@@ -1,12 +1,13 @@
 ---
 date: 2020-11-21T14:28:50+08:00
-updated: 2023-08-17T14:50:44+08:00
+updated: 2024-02-27T17:00:09+08:00
 title: Visual Studio Code 使用 Terminal 時, 隨機性的停頓問題
-category: ter
+category: editor
 tags:
+  - editor
   - vscode
 type: note
-author: 
+author: Chiehting
 status: 長青期
 sourceType: 📰️
 sourceURL: .

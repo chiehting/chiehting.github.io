@@ -2,9 +2,8 @@
 date: 2020-01-14T10:56:00+0800
 updated: 2023-07-25T17:34:36+08:00
 title: Creating Redis Cluster
-category: software-system
+category: redis
 tags:
-  - software-system
   - redis
 type: note
 author: Chiehting

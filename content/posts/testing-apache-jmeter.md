@@ -1,12 +1,15 @@
 ---
 date: 2023-11-16T10:30:51+08:00
-updated: 2023-11-16T14:07:20+08:00
+updated: 2024-02-26T01:26:58+08:00
 title: Apache Jmeter
-category: 
-tags: []
-type: note、moc
-author: 
-status: 發芽期,培育期,長青期
+category: testing
+tags:
+  - testing
+  - jmeter
+  - apache
+type: note
+author: Chiehting
+status: 發芽期
 sourceType: 📰️
 sourceURL: .
 post: true
@@ -26,7 +29,7 @@ Answer :: 紀錄 Apache Jmeter 的使用筆記。
 
 ### Note
 
-Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 Java([[java]]) 編譯好的應用程式。
+Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 Java([[moc-java]]) 編譯好的應用程式。
 
 #### Install
 
@@ -34,7 +37,7 @@ Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 J
 
 ##### Required
 
-1. 由於是 Java 編譯，所以需要先配置好 Jar([[java#Jar]]) 環境。
+1. 由於是 Java 編譯，所以需要先配置好 Jar([[moc-java#Jar]]) 環境。
 
 ##### Download Jmeter
 

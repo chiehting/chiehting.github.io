@@ -1,9 +1,10 @@
 ---
 date: 2023-07-06T16:42:36+08:00
-updated: 2023-08-17T14:50:46+08:00
+updated: 2024-02-27T16:55:31+08:00
 title: 什麼是運維(Operations)?
-category: roles
-tags: [roles]
+category: sre
+tags:
+  - sre
 type: note
 author: Indeed
 status: 發芽期

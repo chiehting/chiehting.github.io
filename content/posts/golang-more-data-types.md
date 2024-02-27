@@ -2,9 +2,8 @@
 date: 2021-03-12T11:00:00+0800
 updated: 2023-07-31T15:01:12+08:00
 title: More types structs, slices, and maps.
-category: programming-language
+category: golang
 tags:
-  - programming-language
   - golang
 type: note
 author: Golang

@@ -2,10 +2,10 @@
 date: 2022-01-11T10:00:00+08:00
 updated: 2023-10-13T16:25:43+08:00
 title: Create an OpenVPN service
-category: software-system
+category: openvpn
 tags:
-  - software-system
   - vpn
+  - openvpn
 type: note
 author: Chiehting
 status: 長青期

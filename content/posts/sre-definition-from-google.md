@@ -1,9 +1,10 @@
 ---
 date: 2023-07-06T15:57:40+08:00
-updated: 2023-08-17T14:50:46+08:00
+updated: 2024-02-27T16:56:13+08:00
 title: Google 所定義的 SRE 角色
-category: roles 
-tags: [sre,google]
+category: sre
+tags:
+  - sre
 type: note
 author: Google
 status: 發芽期
@@ -24,7 +25,7 @@ Answer :: Google SRE 的定義是將運維(operations)視為軟體問題. 而運
 
 此篇原文來源於 [Google Site Reliability Engineering](https://sre.google/) 其中提供了許多值得一看的 [Resources](https://sre.google/resources/).
 
-其內容節錄至  [Google Site Reliability Engineering](https://sre.google/) 的網站首頁, 簡要介紹了什麼是 SRE. **其中的核心概念為 "當我們將運維[[operations]]視為軟體問題時就是 SRE"**. 這句話我理解為將**運維任務視為軟體工程的一部分來處理**, 意指要制定運維任務的標準流程, 將其流程使用軟體或自動化來進行, 以確保系統的可靠性和穩定性.
+其內容節錄至  [Google Site Reliability Engineering](https://sre.google/) 的網站首頁, 簡要介紹了什麼是 SRE. **其中的核心概念為 "當我們將運維[[operations-what-it]]視為軟體問題時就是 SRE"**. 這句話我理解為將**運維任務視為軟體工程的一部分來處理**, 意指要制定運維任務的標準流程, 將其流程使用軟體或自動化來進行, 以確保系統的可靠性和穩定性.
 
 在傳統的運維觀念中, 系統運維和軟體開發通常視為兩個獨立的領域, 這可能導致隔閡存在. 因此提倡 DevOps 的文化, 旨在促進開發團隊和運維團隊之間的合作與溝通. 然而, SRE 與 DevOps 在本質上有所不同, 市場上也容易將兩個混為一談.
 

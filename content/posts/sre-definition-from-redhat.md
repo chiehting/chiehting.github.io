@@ -1,9 +1,10 @@
 ---
 date: 2023-07-10T10:23:37+08:00
-updated: 2023-08-17T14:50:46+08:00
+updated: 2023-12-04T13:30:36+08:00
 title: Red Hat 所定義的 SRE 角色
 category: sre
-tags: [sre]
+tags:
+  - sre
 type: note
 author: Red Hat
 status: 發芽期

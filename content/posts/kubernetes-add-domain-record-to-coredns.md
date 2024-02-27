@@ -2,10 +2,10 @@
 date: 2023-01-19T12:20:00+0800
 updated: 2023-07-30T24:43:27+08:00
 title: Set the Domain's record to the CoreDNS
-category: network
+category: kubernetes
 tags:
-  - network
-  - dns
+  - kubernetes
+  - internet
 type: note
 author: Chiehting
 status: 長青期
@@ -18,13 +18,15 @@ post: true
 
 <!--more-->
 
+Kubernetes 官方文件 [dns custom nemeservers](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/) 有寫到配置方式
+
 ### 多配置 DNS Server
 
 ```shell
 kubectl edit configmap coredns -n kube-system
 ```
 
-下面為配置 db.example.com.tw 的範例
+下面為配置 db.example.com.tw 的 dns 範例
 
 ```yaml
 .:53 {
@@ -45,10 +47,7 @@ kubectl edit configmap coredns -n kube-system
 db.example.com.tw:53 {
     errors
     cache 30
-    hosts {
-      10.1.2.3 abc.example.com
-      fallthrough
-    }
+    forward . 192.168.1.130
     reload
 }
 ```
@@ -67,7 +66,7 @@ db.example.com.tw:53 {
       127.0.0.1    localhost
       ::1          localhost
       10.1.2.3 abc.example.com
-      fallthrough
+      fallthrough # If you want to pass the request to the rest of the plugin chain if there is no match in the _hosts_ plugin, you must specify the `fallthrough` option.
     }
     prometheus :9153
     forward . /etc/resolv.conf

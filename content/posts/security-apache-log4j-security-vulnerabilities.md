@@ -3,7 +3,10 @@ date: 2021-12-21T13:55:00+0800
 updated: 2023-07-25T16:37:18+08:00
 title: Apache Log4j Security Vulnerabilities
 category: security
-tags: [security]
+tags:
+  - security
+  - cve
+  - apache
 type: note
 author: Chiehting
 status: 長青期

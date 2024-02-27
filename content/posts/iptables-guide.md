@@ -2,9 +2,9 @@
 date: 2021-05-04T10:30:00+0800
 updated: 2023-07-30T24:49:57+08:00
 title: Iptables guide
-category: network
+category: internet
 tags:
-  - network
+  - internet
   - linux
 type: note
 author: Chiehting

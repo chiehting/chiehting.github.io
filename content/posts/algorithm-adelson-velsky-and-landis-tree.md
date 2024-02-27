@@ -1,9 +1,10 @@
 ---
 date: 2023-08-10T17:51:21+08:00
-updated: 2023-08-17T14:50:45+08:00
+updated: 2024-02-25T22:09:14+08:00
 title: Adelson-Velsky and Landis tree
 category: algorithm
-tags: [algorithm]
+tags:
+  - algorithm
 type: note
 author: Krahets
 status: 培育期

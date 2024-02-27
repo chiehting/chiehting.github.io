@@ -1,9 +1,10 @@
 ---
 date: 2023-07-10T18:02:11+08:00
-updated: 2023-08-17T14:50:45+08:00
+updated: 2024-02-27T17:27:03+08:00
 title: Service Level Agreement
 category: sre
-tags: [sre]
+tags:
+  - sre
 type: note
 author: Atlassian
 status: 發芽期

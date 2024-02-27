@@ -2,9 +2,8 @@
 date: 2019-04-02T13:00:49+0800
 updated: 2023-07-25T17:43:27+08:00
 title: Create a Self-Signed SSL Certificate for Nginx
-category: software-system
+category: nginx
 tags:
-  - software-system
   - nginx
 type: note
 author: Chiehting
