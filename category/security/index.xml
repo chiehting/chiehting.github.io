@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>security on Chiehting</title><link>https://chiehting.com/category/security/</link><description>Recent content in security on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 16 Feb 2024 11:28:57 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/security/index.xml" rel="self" type="application/rss+xml"/><item><title>資安團隊的建議回饋</title><link>https://chiehting.com/posts/security-session-and-cookise/</link><pubDate>Fri, 16 Feb 2024 11:28:57 +0800</pubDate><guid>https://chiehting.com/posts/security-session-and-cookise/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 資安小組回饋了些建議，讓我們可以強化安全線。&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>專案被回饋資安 issue，資安回饋的建議大致如下：&lt;/p>
+&lt;ol>
+&lt;li>檢視認證 Session 的資料長度，64bit 以上為安全線。 若 Session ID 的長度、複雜度不夠， 可 能被攻擊者猜測 、利用 。&lt;/li>
+&lt;li>檢視 Cookie Flag 相關設定 Host Only、Secure、HTTP Only。
+&lt;ol>
+&lt;li>Host Only：Cookie 只能傳送至 Domain 屬性完全對應的網域 ，不傳送至子網域。&lt;/li>
+&lt;li>Secure：只在 HTTPS 連線中傳遞 Cookie 。&lt;/li>
+&lt;li>HTTP Only：防止 Cookie 被 Ja v aScript 存取。&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ol>
+&lt;p>上面的問題，通常可以透過瀏覽器的開發工具來檢視是否符合，通常服務都會有配置可以設定。回報的內容是建議可以開啟 Cookies 的配置，例如 HTTP only、Secure，其定義在文章 [[internet-rfc-6265]]。&lt;/p></description></item><item><title>Apache Log4j Security Vulnerabilities</title><link>https://chiehting.com/posts/security-apache-log4j-security-vulnerabilities/</link><pubDate>Tue, 21 Dec 2021 13:55:00 +0800</pubDate><guid>https://chiehting.com/posts/security-apache-log4j-security-vulnerabilities/</guid><description>
+&lt;p>在 2021 年 12 月 CVE 發布了一系列有關 Apache Log4j 的漏洞. 這邊初步了解 Log4j 的漏洞狀況跟應對.&lt;/p>
+&lt;h3 id="apache-log4j-security-vulnerabilities">Apache Log4j Security Vulnerabilities&lt;/h3>
+&lt;p>2021 年的 12 月 10 號發布了 public disclosure of the Apache Log4j vulnerability &lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-44228">CVE-2021-44228&lt;/a>, 且風險分數為 CVSS 3.1 的滿分 10 分. 攻擊者若可以控制 log messages or log message parameters 就有機會在 LDAP 或 JNDI（Java Naming and Directory Interface）有關的服務加載任意程式碼. Log4j 在 2.15.0 版本中預設關閉了 message lookup substitution 功能; 在 2.16.0 版本中則完全移除了此功能.&lt;/p>
+&lt;p>2021 年的 12 月 14 號發布了 &lt;a href="https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-45046">CVE-2021-45046&lt;/a>, 且風險分數為 CVSS 3.1 的 9.0 分. 此漏洞是 CVE-2021-44228 的延伸, 於 Apache Log4j 2.15.0 中的預設配置不完整, 攻擊者可以透過 Thread Context Map (MDC) 上下文映射功能執行遠端程式碼或本地程式碼. 再 Log4j 2.16.0 (Java 8) and 2.12.2 (Java 7) 中移除 message lookup patterns 和預設關閉 JNDI functionality.&lt;/p>
+&lt;p>2021 年的 12 月 18 號發布了 &lt;a href="https://nvd.nist.gov/vuln/detail/CVE-2021-45105">CVE-2021-45105&lt;/a>, 且風險分數為 CVSS 3.1 的 7.5 分. 再 2.16.0 版本沒有保護自身的遞迴查找, 所以攻擊者還能透過設計過的字串進行攻擊. 再 Log4j 2.17.0 and 2.12.3 中有修復此問題.&lt;/p>
+&lt;h3 id="應對">應對&lt;/h3>
+&lt;p>依據 CVE 報告, 服務需將 Log4j 升級到 2.17.0 的版本. 所以這邊目標是盤查系統是否有使用到 Log4j, 如果有就做升級.&lt;/p>
+&lt;p>確認系統.&lt;/p>
+&lt;ol>
+&lt;li>Redmine is built with Ruby on Rails. &lt;a href="https://www.redmine.org/builds/">build status&lt;/a>.&lt;/li>
+&lt;li>FreeIPA itself does not have Java components.&lt;/li>
+&lt;li>Harbor is built with Golang, and is not running or using the JVM. &lt;a href="https://github.com/goharbor/harbor/issues/16136">issues&lt;/a>&lt;/li>
+&lt;li>Grafana are chose not to use Java as a core part of our stack and have minimal dependencies on services and applications that make use of it. &lt;a href="https://grafana.com/blog/2021/12/14/grafana-labs-core-products-not-impacted-by-log4j-cve-2021-44228-and-related-vulnerabilities/">grafana blog&lt;/a>&lt;/li>
+&lt;li>GitLAB is a low impact. &lt;a href="https://about.gitlab.com/blog/2021/12/15/updates-and-actions-to-address-logj-in-gitlab/">gitlab blog&lt;/a>&lt;/li>
+&lt;li>Elasticsearch and Kibana needs to be upgrade to the 7.16.2 and 6.8.22 of Apache Log4j and address false positive concerns with some vulnerability scanners. &lt;a href="https://www.elastic.co/blog/new-elasticsearch-and-logstash-releases-upgrade-apache-log4j2">elastic blog&lt;/a>&lt;/li>
+&lt;li>Ansible AWX does not depend on log4j. &lt;a href="https://github.com/ansible/awx/issues/11457">issue&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;p>盤查完後, 得知只有 Elasticsearch and Kibana 有使用到 log4j 的套件.&lt;/p>
+&lt;h3 id="elasticsearch-and-kibana">Elasticsearch and Kibana&lt;/h3>
+&lt;p>我之前是使用 Ansible 透過 apt-get 安裝 Elasitcsearch, 所以這邊更新 Elasticsearch role 版本參數為 7.16.2 並執行 playbook, 完成後 Elasticsearch 就升級完畢. 至於 Kibana 是使用 docker compose 執行, 更新 Kibana 的 container image 至 7.16.2 就可以了.&lt;/p>
+&lt;h4 id="更新時碰到的問題">更新時碰到的問題&lt;/h4>
+&lt;p>無法重新啟動 Elasticsearch 服務, 因為 ingest-attachment 版本是舊的. 這邊做重新安裝 ingest-attachment 來排除異常.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/usr/share/elasticsearch/bin/elasticsearch-plugin remove ingest-attachment
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">/usr/share/elasticsearch/bin/elasticsearch-plugin install ingest-attachment
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>啟動 Kibana 時偵測到 .kibana 的 indexes 已經存在. 這邊做移除所有 .kibana* 的 indexes, 讓 Kibana 重新建立 indexes.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># Elasticsearch 服務地址為 127.0.0.1:9200&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">curl --user &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="nv">$account&lt;/span>&lt;span class="s2">:&lt;/span>&lt;span class="nv">$password&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span> -XDELETE http://127.0.0.1:9200/.kibana*
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Supply chain Levels for Software Artifacts</title><link>https://chiehting.com/posts/supply-chain-levels-for-software-artifacts/</link><pubDate>Fri, 16 Jul 2021 10:00:00 +0800</pubDate><guid>https://chiehting.com/posts/supply-chain-levels-for-software-artifacts/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 講闡述目前供應鏈攻擊的嚴重性, 文中也有指出目前大多 CI 的流程中存在著弱點, 並提出 SLSA 框架來避免被攻擊.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>&lt;a href="https://docs.microsoft.com/zh-tw/windows/security/threat-protection/intelligence/supply-chain-malware">Supply chain integrity attacks&lt;/a>（供應鏈攻擊），在 source ➞ build ➞ publish 的 workflow 中存在著許多威脅，此手法為在使用 software package 的時候被注入惡意的行為，進而去感染用戶端，而且此方法在近幾年中也被證實可行性。&lt;/p>
+&lt;p>在近幾個月也數以百萬的攻擊(e.g. &lt;a href="https://www.solarwinds.com/sa-overview/securityadvisory">SolarWinds&lt;/a>, &lt;a href="https://about.codecov.io/security-update/">Codecov&lt;/a>)。目前就很需要一個架構讓開發者們使用，來阻擋這些惡意攻擊。&lt;/p>
+&lt;p>而 Google 就提出一個解決方案 &lt;a href="https://github.com/slsa-framework/slsa">Supply chain Levels for Software Artifacts&lt;/a> (SLSA, pronounced “salsa”)，此方案為 end-to-end 的框架，來確軟體供應鏈的安全。&lt;/p>
+&lt;p>SLSA 主要增強目前軟體安全性的狀況，特別是針對 open source，來防止威脅。
+在文中有張圖在講解軟體流程中的攻擊環節, 也有列出各個環節產生的問題以及解決方案.&lt;/p>
+&lt;h2 id="what-is-slsa">What is SLSA&lt;/h2>
+&lt;p>SLSA 的框架是由 4 個階段所組成。&lt;/p>
+&lt;ul>
+&lt;li>SLSA 1 要求構建過程完全腳本化 / 自動化並標示編譯出處.&lt;/li>
+&lt;li>SLSA 2 需要使用版本控制和編譯後的識別碼.&lt;/li>
+&lt;li>SLSA 3 進一步要求源和構建平台滿足特定標準, 以分別保證來源的可審計性和出處的完整性.&lt;/li>
+&lt;li>SLSA 4 是目前最高級別, 需要兩個人審查所有更改和密封、可重複的構建過程.&lt;/li>
+&lt;/ul>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html">Introducing SLSA, an End-to-End Framework for Supply Chain Integrity&lt;/a>&lt;/p>
+&lt;p>Supply chain integrity attacks—unauthorized modifications to software packages—have been &lt;a href="https://www.sonatype.com/hubfs/Corporate/Software%20Supply%20Chain/2020/SON_SSSC-Report-2020_final_aug11.pdf#page=7">on the rise&lt;/a> in the past two years, and are proving to be common and reliable attack vectors that affect all consumers of software. &lt;strong>&lt;span style="background-color: #ffffcc; color: red">The software development and deployment supply chain is quite complicated, with numerous threats along the source ➞ build ➞ publish workflow.&lt;/span> While point solutions do exist for some specific vulnerabilities, there is no comprehensive end-to-end framework that both defines how to mitigate threats across the software supply chain, and provides reasonable security guarantees.&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Our proposed solution is &lt;a href="https://github.com/slsa-framework/slsa">Supply chain Levels for Software Artifacts&lt;/a> (SLSA, pronounced “salsa”), an end-to-end framework for ensuring the integrity of software artifacts throughout the software supply chain.&lt;/span>&lt;/strong> It is inspired by Google’s internal “&lt;a href="https://cloud.google.com/security/binary-authorization-for-borg">Binary Authorization for Borg&lt;/a>” which has been in use for the past 8+ years and is mandatory for all of Google's production workloads.&lt;/p>
+&lt;p>&lt;strong>How SLSA helps&lt;/strong>&lt;/p>
+&lt;p>SLSA helps to protect against common supply chain attacks. The following image illustrates a typical software supply chain and includes examples of attacks that can occur at every link in the chain. Each type of attack has occurred over the past several years and, unfortunately, is increasing as time goes on.&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiuGpVbHMZ5-LDbnSMAQ-yTIyD-ghWpj_J3eQGamf2BrgSHm5VsrHZmTkXTaJtWTFycMnALI5d-8wRRxtfgOvtuHByRXUqVONyZYZicxP8g14pNTYpZrco-ZBxy5lYvBBoXLUBg1DFhmhZNxYiRYWznXwLc84AKYK3nHFehxQIBS3QRFpIHyxXe9IKi/s690/slsa%20threas.png" alt="">&lt;/p>
+&lt;/blockquote>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>環節&lt;/th>
+&lt;th>問題&lt;/th>
+&lt;th>改善&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>A&lt;/td>
+&lt;td>推了有漏洞的 code 上 SCM&lt;/td>
+&lt;td>找 2 人以上做 code review,但無法確保找出全部漏洞&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>B&lt;/td>
+&lt;td>軟弱的 SCM,被推送惡意代碼&lt;/td>
+&lt;td>更好的保護 SCM 讓攻擊變困難&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>C&lt;/td>
+&lt;td>SCM 上的 CICD 代碼被修改&lt;/td>
+&lt;td>SLSA產生鑑定代碼,提供使用者查明來源&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>D&lt;/td>
+&lt;td>Build platform 被安裝惡意行為的代碼,隨後將惡意代碼植入到被編譯的軟體上&lt;/td>
+&lt;td>Build platform 進行更有效的安全機制,使攻擊變困難&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>E&lt;/td>
+&lt;td>攻擊者注入無害的相依套件, 隨後修改其套件加入惡意行為&lt;/td>
+&lt;td>檢查所有相依套件,檢查是否有參照其他來源&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>F&lt;/td>
+&lt;td>攻擊者獲取 bucket 上傳密鑰,並上傳檔案到 GCS bucket。檔案上傳並非 CICD 流程的產出物&lt;/td>
+&lt;td>GCS bucket上的檔案必須顯示檔案來源是否為 CICD 產出物&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>G&lt;/td>
+&lt;td>軟弱的軟體庫,研究顯示流行的鏡像軟體庫,使用有惡意的軟體套件&lt;/td>
+&lt;td>惡意套件顯示不是按照預期的流程與來源建構的&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>H&lt;/td>
+&lt;td>攻擊者上傳名稱與流行套件很像的惡意套件,欺騙開發者使用&lt;/td>
+&lt;td>SLSA不解決這問題,但可以增強代碼控制或其他解決方案&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>What is SLSA&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>SLSA 1&lt;/strong> &lt;strong>&lt;span style="background-color: #ffffcc; color: red">requires that the build process be fully scripted/automated and generate provenance. Provenance is metadata about how an artifact was built, including the build process, top-level source, and dependencies.&lt;/span> Knowing the provenance allows software consumers to make risk-based security decisions.&lt;/strong> Though provenance at SLSA 1 does not protect against tampering, it offers a basic level of code source identification and may aid in vulnerability management.&lt;/p>
+&lt;p>&lt;strong>SLSA 2&lt;/strong>  &lt;strong>&lt;span style="background-color: #ffffcc; color: red">requires using version control and a hosted build service that generates authenticated provenance.&lt;/span> These additional requirements give the consumer greater confidence in the origin of the software.&lt;/strong> At this level, the provenance prevents tampering to the extent that the build service is trusted. SLSA 2 also provides an easy upgrade path to SLSA 3.&lt;/p>
+&lt;p>&lt;strong>SLSA 3&lt;/strong> &lt;strong>&lt;span style="background-color: #ffffcc; color: red">further requires that the source and build platforms meet specific standards to guarantee the auditability of the source and the integrity of the provenance, respectively.&lt;/span> We envision an accreditation process whereby auditors certify that platforms meet the requirements, which consumers can then rely on.&lt;/strong> SLSA 3 provides much stronger protections against tampering than earlier levels by preventing specific classes of threats, such as cross-build contamination.&lt;/p>
+&lt;p>&lt;strong>SLSA 4&lt;/strong> &lt;strong>&lt;span style="background-color: #ffffcc; color: red">is currently the highest level, requiring two-person review of all changes and a hermetic, reproducible build process. Two-person review is an industry best practice for catching mistakes and deterring bad behavior.&lt;/span> Hermetic builds guarantee that the provenance’s list of dependencies is complete. Reproducible builds, though not strictly required, provide many auditability and reliability benefits.&lt;/strong> Overall, SLSA 4 gives the consumer a high degree of confidence that the software has not been tampered with.&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://www.ithome.com.tw/news/137953">供應鏈攻擊鎖定GitHub開源軟體專案&lt;/a>&lt;/li>
+&lt;/ol></description></item></channel></rss>

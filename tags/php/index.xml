@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>php on Chiehting</title><link>https://chiehting.com/tags/php/</link><description>Recent content in php on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 27 Jul 2023 17:02:44 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/php/index.xml" rel="self" type="application/rss+xml"/><item><title>Laravel 框架產生的 cookie XSRF-TOKEN 需不需要使用 HttpOnly</title><link>https://chiehting.com/posts/laravel-xsrf-token-needless-httponly/</link><pubDate>Thu, 27 Jul 2023 17:02:44 +0800</pubDate><guid>https://chiehting.com/posts/laravel-xsrf-token-needless-httponly/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: Does a CSRF cookie need to be HttpOnly such as XSRF-TOKEN cookie from Laravel.&lt;/p>
+&lt;p>Answer :: CSRF cookie 可以不用使用 HttpOnly flag([[internet-rfc-6265-server-requirements]]), 因為 HttpOnly flag 保護的前提下已經是被 XSS([[cross-site-scripting]]) 攻擊, 同域的狀況下 CSRF cookie 已經失去其保護作用. 而且 XSS is a much bigger hole than CSRF. 所以 Laravel 產生的 XSRF-TOKEN cookie 可以不使用 HttpOnly flag.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>這篇再討論防止 Cross Site Request Forgery(CSRF) 使用的 cookie 需不需要使用 HttpOnly. 像是 Laravel 框架中的 XSRF-TOKEN. 要理解這個問題, 首先要先釐清 CSRF 與 Cookie HttpOnly 的作用.&lt;/p>
+&lt;p>CSRF 攻擊是惡意網站偽造我的網站並發送請求到我的服務, 一般情況下會透過用戶的瀏覽器發送請求, 所以儲存在用戶上的 cookie 也都會被帶上, 我的服務就會判定就是該用戶的請求. 而 CSRF token 則可以保護我的服務收到的請求都是同域, 因為跨域取不到 CSRF token.&lt;/p>
+&lt;p>Cookie 的 HttpOnly flag 其目的是防止 Javascript 可以讀寫 cookie, 透過禁用 &lt;code>document.cookie&lt;/code> 的方式防止某些攻擊, 例如 Cross-Site Scripting(XSS) 攻擊時其更難執行. XSS 會注入攻擊碼至我的服務中, 使我的服務執行攻擊腳本, 進而對用戶造成傷害.&lt;/p>
+&lt;p>現在回到 XSRF-TOKEN 需不需要使用 HttpOnly. 由於 XSRF-TOKEN 是防止跨站攻擊, HttpOnly flag 是 XSS 後防止 JS 竊取. 所以已經被 XSS 的話 XSRF-TOKEN 應該就失去保護之目的了, 因為是同域. 在被 XSS 的情況下, 攻擊者已經沒有竊取 XSRF-TOKEN 的必要, 因為每次請求用戶瀏覽器都會帶上; 攻擊者已經沒有改寫 XSRF-TOKEN 的必要, 因為改寫了用戶請求就會失敗. 所以 XSRF-TOKEN 可以不用 HttpOnly flag.&lt;/p>
+&lt;p>另外 &lt;a href="https://laravel.com/docs/10.x/csrf#csrf-x-xsrf-token">Laravel 文件&lt;/a> 也明確表明 XSRF-TOKEN 創建是為了給 JavaScript 框架或套件使用的, 用於在同域下設置表頭 X-XSRF-TOKEN, 所以理應要給 JavaScript 讀取. Laravel 框架下產生的 XSRF-TOKEN 可以不用 HttpOnly flag.&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://security.stackexchange.com/questions/175536/does-a-csrf-cookie-need-to-be-httponly">Does a CSRF cookie need to be HttpOnly?&lt;/a>&lt;/p>
+&lt;p>We were recently handed a security report containing the following:&lt;/p>
+&lt;blockquote>
+&lt;p>Cookie(s) without HttpOnly flag set&lt;/p>
+&lt;/blockquote>
+&lt;p>vulnerability, which we apparently had in one of our internal applications.&lt;/p>
+&lt;p>The applied fix was as simple as setting Django's &lt;a href="https://docs.djangoproject.com/en/2.0/ref/settings/#csrf-cookie-httponly">&lt;code>CSRF_COOKIE_HTTPONLY&lt;/code> configuration parameter&lt;/a> to &lt;code>True&lt;/code>.&lt;/p>
+&lt;p>But, this is what got me confused. The Django documentation says:&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Designating the CSRF cookie as HttpOnly doesn’t offer any practical protection because CSRF is only to protect against cross-domain attacks.&lt;/span> If an attacker can read the cookie via JavaScript, they’re already on the same domain as far as the browser knows, so they can do anything they like anyway. (XSS is a much bigger hole than CSRF.)&lt;/strong>&lt;/p>
+&lt;p>Although the setting offers little practical benefit, it’s sometimes required by security auditors.&lt;/p>
+&lt;/blockquote>
+&lt;p>Does this mean that &lt;strong>&lt;span style="background-color: #ffffcc; color: red">there is no actual vulnerability here&lt;/span> and we just have to be compliant with the security auditing rules&lt;/strong>?&lt;/p>
+&lt;h4 id="97-樓">97 樓&lt;/h4>
+&lt;p>As &lt;a href="https://security.stackexchange.com/a/175538/98538">joe says&lt;/a>, &lt;strong>there is no real security benefit to this&lt;/strong>. It is pure security theater. I'd like to highlight this from &lt;a href="https://docs.djangoproject.com/en/2.0/ref/settings/#csrf-cookie-httponly">the documentation&lt;/a>:&lt;/p>
+&lt;blockquote>
+&lt;p>If you enable this and need to send the value of the CSRF token with an AJAX request, your JavaScript must pull the value from a hidden CSRF token form input on the page instead of from the cookie.&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>The purpose of the HttpOnly flag is to make the value of the cookie unavailable from JavaScript, so that it can not be stolen if there is a XSS vulnerability. But the CSRF-token must somehow be available so it can be double submitted&lt;/strong> - thats the whole point with it, after all. So Django solves this by including the value in a hidden form field. This negates the whole benefit of HttpOnly, since an attacker can just read the value of the form field instead of the cookie.&lt;/p>
+&lt;h4 id="18-樓">18 樓&lt;/h4>
+&lt;p>I think the main point of confusion here is that the Django docs are specifically talking about the &lt;em>CSRF&lt;/em> use case for a cookie. &lt;strong>In order to understand why the &lt;code>httpOnly&lt;/code> flag adds no value in preventing CSRF, you need to understand both CSRF and how cookies work.&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">CSRF is when a 3rd party triggers your user's browser to make a request to your server, and their browser automatically sends your server's cookies along with the request, as expected&lt;/span>. What you don't want is for your server to interpret this request as actually coming from your user, so you use a &lt;a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html">CSRF mitigation&lt;/a> technique.&lt;/strong> The whole point of CSRF mitigation is &lt;strong>to be able to detect when the request didn't come from your own domain (i.e. from your user interacting with your application)&lt;/strong>.&lt;/p>
+&lt;p>Briefly, how cookies work: &lt;strong>Whenever a user's browser sends a request to your domain/server, it automatically sends all the cookies associated with your domain, regardless of the &lt;code>httpOnly&lt;/code> flag. Cookies therefore allow your client or your server to attach information to a user's browser that will be returned to your server automatically along with any follow-on requests. &lt;span style="background-color: #ffffcc; color: red">Cookies with the &lt;code>httpOnly&lt;/code> flag cannot be accessed from javascript.&lt;/span> They probably shouldn't be considered a secure place to store information, but they do provide the advertised functionality.&lt;/strong>&lt;/p>
+&lt;p>Back to CSRF implemented using a cookie — &lt;span style="background-color: #ffffcc; color: red">&lt;strong>in this case&lt;/strong> the &lt;code>httpOnly&lt;/code> flag is pointless&lt;/span> — &lt;span style="background-color: #ffffcc; color: red">the crux of CSRF is that they don't need to read your user's cookies, they just need your user's browser to send the associated cookies to your server along with the network request they forced it to send.&lt;/span> The &lt;code>httpOnly&lt;/code> flag, in general, does provide value in that it prevents client access to those cookies, and if your server returns any cookies, you should probably make them &lt;code>httpOnly&lt;/code>. If you are using a cookie for CSRF, then, you shouldn't do that, and you should spend your time rethinking that rather than making it an &lt;code>httpOnly&lt;/code> cookie. So, in general, it seems like that is a good rule of thumb — your server shouldn't send any non-&lt;code>httpOnly&lt;/code> cookies unless it is specifically intended to be accessed by the client javascript.&lt;/p></description></item><item><title>Relearn PHP</title><link>https://chiehting.com/posts/php7-document/</link><pubDate>Thu, 21 Dec 2017 00:00:00 +0800</pubDate><guid>https://chiehting.com/posts/php7-document/</guid><description>
+&lt;p>PHP7 release也一段時間了,最近在開發常會看到相關的文章,最近抽個空好好來重新學習PHP.&lt;/p>
+&lt;h2 id="preface">Preface&lt;/h2>
+&lt;p>&amp;quot;PHP: Hypertext Preprocessor&amp;quot;,官方網站表明PHP很適合做web development,但是並不局限於此,亦可做Process Control,但是依據個人經驗,PHP5.3以下的版本做浮點數的運算不是很精準.&lt;/p>
+&lt;p>另外在2015年PHP7問世,效率更是翻倍,但是有著相容性問題,系統升級前需要做好測試.&lt;/p>
+&lt;h2 id="環境建置">環境建置&lt;/h2>
+&lt;p>採用&lt;a href="https://www.virtualbox.org/">Virtualbox&lt;/a>+&lt;a href="https://www.vagrantup.com/">Vagrant&lt;/a>來架設環境,執行步驟如下:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>安裝Virtualbox與Vagrant,這邊就不講解了,幾本上下一步到底&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>下載Vagrant box&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">$ vagrant box add rasmus/php7dev
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">$ vagrant init rasmus/php7dev
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1"># 確認box list&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">$ vagrant box list
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>git clone&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">git clone https://github.com/rlerdorf/php7dev.git
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> php7dev
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>共享目錄設定,編輯php7dev.yaml檔案&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nt">folders&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>- &lt;span class="nt">map&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">www&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">to&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/var/www/default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>啟動VM、進入VM、暫停VM、註銷VM&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 啟動VM&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">$ vagrnat up
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1"># 進入VM&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">$ vagrant ssh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1"># 暫停VM&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">$ vagrant halt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 註銷VM&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">$ vagrant destroy --force
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>建立檔案&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 建立一個 index.php 檔案, 運行可以顯示 PHP 資訊&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">$ &lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;&amp;lt;?php echo phpinfo(); ?&amp;gt;&amp;#34;&lt;/span> &amp;gt; /var/www/default/index.php
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;p>環境建立完成,再來可以透過Browser輸入&lt;code>http://192.168.7.7/&lt;/code>來進入站台.&lt;/p>
+&lt;hr>
+&lt;h2 id="type">Type&lt;/h2>
+&lt;p>PHP是屬於弱型別的語言,也就是變數不用宣告就直接可以做assign,但是資料型態還是程式語言的重點基礎之一,還是要好好的認識一下.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Boolean:通常是一個常量&lt;code>true&lt;/code>或&lt;code>false&lt;/code>,不區分大小寫.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$var1&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">true&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">$var2&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">False&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Integer:是一個&lt;em>有限整數&lt;/em>((2^32)-1),集合中的某個數Z = {..., -2, -1, 0, 1, 2, ...}&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1">//自PHP5.4.0後可以採用十進制、十六進制、八進制、二進制
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">1234&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//十進制
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="mi">123&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//負數
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mo">0123&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//八進制
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mh">0x1A&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//十六進制
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b11111111&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//二進制
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Float:也就是小數,長度取決於平台. 另外不要相信浮點數結果精確到了最後一位,也永遠不要比較兩個浮點數是否相等,如果確實需要更高的精度,應該使用&lt;em>任意精度數學函數&lt;/em>或者&lt;em>gmp函數&lt;/em>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mf">1.23456789&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>String:每個字都是由一系列的character(字元)組成(字的編碼),每個字元相當於一個byte(2^8),也就是說PHP只支援到256-character,因此不支援Unicode(因為過長).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nv">$name&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;ting&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;my name is $name&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//全視為為字串
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;my name is &lt;/span>&lt;span class="si">$name&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//對$name進行解析
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1">//Heredoc結構,自PHP5.3起,會對變數進行解析
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s">&amp;lt;&amp;lt;&amp;lt;&lt;/span>&lt;span class="dl">EOT&lt;/span>&lt;span class="s">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="s">my name is $name
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="s"> &lt;/span>&lt;span class="dl">EOT&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="c1">//newcode結構,全視為字串,不對變數進行解析
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s">&amp;lt;&amp;lt;&amp;lt;&amp;#39;&lt;/span>&lt;span class="dl">EOT&lt;/span>&lt;span class="s">&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="s">my name is $name
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="s"> &lt;/span>&lt;span class="dl">EOT&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Array:是一組有序映射,官網說&amp;quot;it can be treated as an array, list (vector), hash table (an implementation of a map), dictionary, collection, stack, queue, and probably more.&amp;quot;,由此可見他的功能很廣.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$array&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;foo&amp;#34;&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="s2">&amp;#34;bar&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">// 自 PHP 5.4 起
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$array&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;foo&amp;#34;&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="s2">&amp;#34;bar&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">];&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Object:物件.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">foo&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="k">function&lt;/span> &lt;span class="nf">do_foo&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;Doing foo.&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">&lt;span class="nv">$bar&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">foo&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">&lt;span class="nv">$bar&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">do_foo&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Resource:資源,通常可能是連接資料庫、開啟文件.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>NULL:指一個變數還未被assign,或著被釋放&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">NULL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Callback&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nx">error_reporting&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">E_ALL&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="k">function&lt;/span> &lt;span class="nf">increment&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="nv">$var&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="nv">$var&lt;/span>&lt;span class="o">++&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="nx">call_user_func&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;increment&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$a&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$a&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="nx">call_user_func_array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;increment&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="o">&amp;amp;&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$a&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;hr>
+&lt;h2 id="variables">Variables&lt;/h2>
+&lt;p>變數的命名很重要,程式要寫的漂亮的重點之一就是變數的命名.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>基本變數:PHP中宣告變數是使用符號*$*後面再跟上'^[a-zA-Z][_]?[\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*',且命名是有大小寫的區別.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;Bob&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">$bar&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="nv">$var&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//$bar被assign變數$var,且記憶體位置相同
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>全域變數與區域變數&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="k">function&lt;/span> &lt;span class="nf">Test&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">global&lt;/span> &lt;span class="nv">$a&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="nv">$b&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="o">+&lt;/span>&lt;span class="nv">$b&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$b&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//Undefined variable
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">Test&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Static variable:靜態變數只會在函數中出現,當程序離開函式,其值不丟失.從下面範例可以發現,在$b被宣告時,都還是NULL的狀態,宣告後才會取回值.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">function&lt;/span> &lt;span class="nf">Test&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$b&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">static&lt;/span> &lt;span class="nv">$b&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$b&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">++&lt;/span>&lt;span class="nv">$b&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">&lt;span class="nx">Test&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Variable variables:變數的名稱也是變數,這樣的特性讓程式變得更彈性.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;hello&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">$hello&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;world&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="nv">$world&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;a&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$a&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s1">&amp;#39;&amp;lt;br/&amp;gt;&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$$a&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s1">&amp;#39;&amp;lt;br/&amp;gt;&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$$$a&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s1">&amp;#39;&amp;lt;br/&amp;gt;&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="si">$a&lt;/span>&lt;span class="s2"> &lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2"> &amp;lt;br/&amp;gt;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="si">$a&lt;/span>&lt;span class="s2"> &lt;/span>&lt;span class="si">$hello&lt;/span>&lt;span class="s2"> &amp;lt;br/&amp;gt;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="constants">Constants&lt;/h2>
+&lt;p>常量定義好後,就無法變更,且長量名稱區分大小寫.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nx">define&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;version&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="s2">&amp;#34;0.1&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1">//magic constants
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">function&lt;/span> &lt;span class="nf">a&lt;/span>&lt;span class="p">(){&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="no">__function__&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="k">function&lt;/span> &lt;span class="nf">b&lt;/span>&lt;span class="p">(){&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="no">__function__&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nx">a&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nx">b&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h2 id="operators">Operators&lt;/h2>
+&lt;p>運算子有先後順序,個人習慣將運算子拆開,一來確保程式的穩定度,二來增加程式的可讀性&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">true&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="k">true&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="mi">1&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">// (true ? 0 : true) ? 1 : 2 = 2
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="nv">$b&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nv">$b&lt;/span> &lt;span class="o">+=&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">// $a = ($b += 3) -&amp;gt; $a = 5, $b = 5
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
+&lt;li>
+&lt;p>算數運算子&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">5&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//prints 8
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">5&lt;/span> &lt;span class="o">-&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//prints 2
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">5&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//prints 15
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">15&lt;/span> &lt;span class="o">/&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//prints 5
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">5&lt;/span> &lt;span class="o">%&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//prints 2
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">5&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//prints 125
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>位元運算子&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0010&lt;/span> &lt;span class="o">&amp;amp;&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0010&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 2
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0010&lt;/span> &lt;span class="o">|&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0010&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 2
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0010&lt;/span> &lt;span class="o">^&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0011&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 1
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="o">~&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="nx">b0101&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print -6
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0010&lt;/span> &lt;span class="o">&amp;gt;&amp;gt;&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 1
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="nx">b0010&lt;/span> &lt;span class="o">&amp;lt;&amp;lt;&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 4
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>比較運算子&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">0&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;a&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//0 == 0 -&amp;gt; true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;1&amp;#34;&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;01&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//1 == 1 -&amp;gt; true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;10&amp;#34;&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;1e1&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//10 == 10 -&amp;gt; true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">100&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;1e2&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//100 == 100 -&amp;gt; true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;1e1&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//string &amp;#39;1e1&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>錯誤控制運算子&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">@&lt;/span>&lt;span class="k">include&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;./not_exist_file.php&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">$x&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="o">@&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s2">&amp;#34;name&amp;#34;&lt;/span>&lt;span class="p">];&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Execution Operators:以前都用exec(),這個好方便&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$mkdir&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="sb">`mkdir new floder`&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">$output&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="sb">`ls -al`&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;&amp;lt;pre&amp;gt;&lt;/span>&lt;span class="si">$output&lt;/span>&lt;span class="s2">&amp;lt;/pre&amp;gt;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>遞增/遞減運算子&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">5&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$a&lt;/span>&lt;span class="o">++.&lt;/span>&lt;span class="s2">&amp;#34;&amp;lt;br /&amp;gt;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 5
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="o">++&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&amp;lt;br /&amp;gt;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 7
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="nv">$a&lt;/span>&lt;span class="o">--.&lt;/span>&lt;span class="s2">&amp;#34;&amp;lt;br /&amp;gt;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 7
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="o">--&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="o">.&lt;/span>&lt;span class="s2">&amp;#34;&amp;lt;br /&amp;gt;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//print 5
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Logical Operators&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1">//&amp;#34;||&amp;#34; 比 &amp;#34;or&amp;#34; 的優先级高,&amp;#34;&amp;amp;&amp;amp;&amp;#34; 比 &amp;#34;and&amp;#34; 的優先级高
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$e&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">false&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="k">true&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//bool(true),等同于：($e = (false || true))
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$f&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">false&lt;/span> &lt;span class="k">or&lt;/span> &lt;span class="k">true&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//bool(false),等同于：(($f = false) or true)
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$g&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">true&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> &lt;span class="k">false&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//bool(false),等同于：($g = (true &amp;amp;&amp;amp; false))
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$h&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">true&lt;/span> &lt;span class="k">and&lt;/span> &lt;span class="k">false&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//bool(true),等同于：(($h = true) and false)
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>String Operators&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;Hello &amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">$b&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nv">$a&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="s2">&amp;#34;World!&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">// now $b contains &amp;#34;Hello World!&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;Hello &amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">.=&lt;/span> &lt;span class="s2">&amp;#34;World!&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">// now $a contains &amp;#34;Hello World!&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Array Operators&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;a&amp;#34;&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="s2">&amp;#34;apple&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;b&amp;#34;&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="s2">&amp;#34;banana&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">$b&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;a&amp;#34;&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="s2">&amp;#34;pear&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;b&amp;#34;&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="s2">&amp;#34;strawberry&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s2">&amp;#34;c&amp;#34;&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="s2">&amp;#34;cherry&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="nv">$c&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nv">$a&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="nv">$b&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">// Union of $a and $b
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$c&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">// print array(3) {[&amp;#34;a&amp;#34;]=&amp;gt;&amp;#34;apple&amp;#34;,[&amp;#34;b&amp;#34;]=&amp;gt;&amp;#34;banana&amp;#34;,[&amp;#34;c&amp;#34;]=&amp;gt;&amp;#34;cherry&amp;#34;}
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Type Operators&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">ParentClass&lt;/span>&lt;span class="p">{}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">MyClass&lt;/span> &lt;span class="k">extends&lt;/span> &lt;span class="nx">ParentClass&lt;/span>&lt;span class="p">{}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">MyClass&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span> &lt;span class="nx">instanceof&lt;/span> &lt;span class="nx">MyClass&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//bool(true)
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span> &lt;span class="nx">instanceof&lt;/span> &lt;span class="nx">ParentClass&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//bool(true)
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h2 id="control-structures">Control Structures&lt;/h2>
+&lt;p>通常要呈現一個商業邏輯都會透過流程控制來表示,而每種商業邏輯呈現的方法百百種,所以要築構一支好的程式,對流程控制的熟悉度不可少.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>if else&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span> &lt;span class="o">&amp;gt;&lt;/span> &lt;span class="nv">$b&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;a is bigger than b&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="k">elseif&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="nv">$b&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;a is smaller than b&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="k">else&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;a is equal b&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="k">endif&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>while:循環語法之一,在遞迴中很好用&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">while&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$i&lt;/span> &lt;span class="o">&amp;lt;=&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nv">$i&lt;/span>&lt;span class="o">++&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="k">endwhile&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>do-while:跟while很像,差異在於while在執行前做判斷,do-while在執行後做判斷.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">do&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nv">$i&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span> &lt;span class="k">while&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$i&lt;/span> &lt;span class="o">&amp;lt;=&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>for&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">for&lt;/span> &lt;span class="p">(;;)&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$i&lt;/span> &lt;span class="o">&amp;gt;&lt;/span> &lt;span class="mi">10&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="k">break&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">endif&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nv">$i&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="nv">$i&lt;/span>&lt;span class="o">++&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="k">endfor&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>foreach:用來解構array很好用&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">foreach&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="k">array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">3&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">4&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="nv">$value&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="nv">$value&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nv">$value&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="k">endforeach&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>break&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$arr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;one&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;two&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;three&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;four&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;stop&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;five&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="k">while&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="k">list&lt;/span> &lt;span class="p">(,&lt;/span> &lt;span class="nv">$val&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">each&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$arr&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$val&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s1">&amp;#39;stop&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">break&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="cm">/* You could also write &amp;#39;break 1;&amp;#39; here. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="si">$val&lt;/span>&lt;span class="s2">&amp;lt;br /&amp;gt;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>continue&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">for&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$i&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="nv">$i&lt;/span> &lt;span class="o">&amp;lt;&lt;/span> &lt;span class="mi">5&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="o">++&lt;/span>&lt;span class="nv">$i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$i&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="k">continue&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">print&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="si">$i\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>switch:在做Boolean值判斷的時候建議使用if else,若做值得判斷則可使用switch&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">switch&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$i&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="k">case&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;i equals 0&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">break&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">case&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="k">case&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;i equals to 1, 2&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">break&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">default&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;i is not equal to 0, 1 or 2&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>declare:Zend引擎每執行1條低級語句就去執行一次register_tick_function()注冊的函數&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">declare&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">ticks&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1">// A function called on each tick event
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">function&lt;/span> &lt;span class="nf">tick_handler&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;tick_handler() called&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="nx">register_tick_function&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;tick_handler&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="nv">$a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span> &lt;span class="o">&amp;gt;&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="nv">$a&lt;/span> &lt;span class="o">+=&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">print&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>return:如果在全局範圍中調用,則當前腳本文件中止運行.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>require/include/require_once/include_once&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">require&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;somefile.php&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//若找不到檔案發出E_COMPILE_ERROR级别錯誤,並終止程序
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">include&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;somefile.php&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//若找不到檔案發出E_WARNING级别錯誤,繼續程序
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">require_once&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;somefile.php&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//和require一樣,但已經包含過的檔案則不會再包含
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">include_once&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;somefile.php&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//和include一樣,但已經包含過的檔案則不會再包含
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>goto:只在PHP 5.3以上版本有效,跳轉至改文件的目標.目標位置只能位於同一個文件和作用域,也就是說無法跳出一個函數或類方法,也無法跳入到另一個函數.也無法跳入到任何循環或者switch結構中.可以跳出循環或者switch,通常的用法是用goto代替多層的break.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1">//下面結果輸出Bar
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">goto&lt;/span> &lt;span class="nx">a&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="s1">&amp;#39;Foo&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="nx">a&lt;/span>&lt;span class="o">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="s1">&amp;#39;Bar&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="function">Function&lt;/h3>
+&lt;p>這邊要注意部分預設函式是跟著extension加載的,例如mysql_connect()、imagecreatetruecolor()等,所以必須知道自己的環境是否有這些extension,可以用phpinfo()或get_loaded_extensions()來查詢.
+函數名稱的命名很重要,好的命名可以讓程式可讀性提升,更好維護.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>User-defined functions&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">function&lt;/span> &lt;span class="nf">sum&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$a&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$b&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">float&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nv">$a&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="nv">$b&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Variable functions&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">function&lt;/span> &lt;span class="nf">foo&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;In foo()&amp;lt;br /&amp;gt;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="nv">$func&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;foo&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="nv">$func&lt;/span>&lt;span class="p">();&lt;/span> &lt;span class="c1">//This calls foo()
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Anonymous functions&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nx">preg_replace_callback&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;~-([a-z])~&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$match&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nx">strtoupper&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$match&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">},&lt;/span> &lt;span class="s1">&amp;#39;hello-world&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;hr>
+&lt;h3 id="classes-and-objects">Classes and Objects&lt;/h3>
+&lt;p>自從PHP5後的版本有著較好的效能與功能&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>class:每個類別都有自己的constants、variables與function,並且可使用$this來調用自己.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">SimpleClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="c1">// property declaration
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="nv">$var&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;a default value&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="c1">// method declaration
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">displayVar&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">var&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Object Assignment:宣告物件的兩種方式.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">Class&lt;/span> &lt;span class="nc">Object&lt;/span>&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="nv">$foo&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;bar&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="p">};&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="nv">$objectVar&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">Object&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="nv">$reference&lt;/span> &lt;span class="o">=&amp;amp;&lt;/span> &lt;span class="nv">$objectVar&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="nv">$assignment&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nv">$objectVar&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="nv">$objectVar&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="k">null&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$objectVar&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//NULL
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$reference&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//NULL,指向同樣的記憶體,所以$objectVar=null被註銷時,一併註銷
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$assignment&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="c1">//object(Object),被clone
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>extends:一個class可以申明繼承另一個class的方法與屬性,不支援多個繼承.可以使用同名稱覆蓋父類別的方法,但是父類別使用final,則不能被覆蓋.被覆蓋的方法或屬性,可以透過parent::來訪問.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">ExtendClass&lt;/span> &lt;span class="k">extends&lt;/span> &lt;span class="nx">SimpleClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="c1">// Redefine the parent method
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">displayVar&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;Extending class&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> &lt;span class="k">parent&lt;/span>&lt;span class="o">::&lt;/span>&lt;span class="na">displayVar&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Properties,類別的成員.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">SimpleClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="nv">$var1&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="o">+&lt;/span>&lt;span class="mi">2&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="nv">$var2&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">myConstant&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="nv">$var3&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">true&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">false&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Class Constants:在類別中不變的值.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">MyClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="k">const&lt;/span> &lt;span class="no">constant&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;constant value&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="k">function&lt;/span> &lt;span class="nf">showConstant&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nx">self&lt;/span>&lt;span class="o">::&lt;/span>&lt;span class="na">constant&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Autoloading Classes:可以不用透過include檔案來加載類別,可以透過__autoload()或spl_autoload_register() 函数自動註冊類別.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nx">spl_autoload_register&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">function&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$class_name&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">require_once&lt;/span> &lt;span class="nv">$class_name&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="s1">&amp;#39;.php&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="nv">$obj&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">MyClass1&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="nv">$obj2&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">MyClass2&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Constructors and Destructors,在創建時會先調用__construct,註銷或程序結束時會調用__destruct.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">MyDestructableClass&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="k">function&lt;/span> &lt;span class="fm">__construct&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="k">print&lt;/span> &lt;span class="s2">&amp;#34;In constructor&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">name&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;MyDestructableClass&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="k">function&lt;/span> &lt;span class="fm">__destruct&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="k">print&lt;/span> &lt;span class="s2">&amp;#34;Destroying &amp;#34;&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">name&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="nv">$obj&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">MyDestructableClass&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="nx">unset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$obj&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Visibility:包含public、protected、private.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">MyClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="nv">$public&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;Public&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">protected&lt;/span> &lt;span class="nv">$protected&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;Protected&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="nv">$private&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;Private&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="k">function&lt;/span> &lt;span class="nf">printHello&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">public&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">protected&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">private&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="nv">$obj&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">MyClass&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">public&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//public
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">protected&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//產生錯誤
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">private&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//產生錯誤
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">printHello&lt;/span>&lt;span class="p">();&lt;/span> &lt;span class="c1">//印出Public、Protected和Private
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Scope Resolution Operator(::):用於訪問類別的靜態成員、常量或函式.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">MyClass&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="k">const&lt;/span> &lt;span class="no">CONST_VALUE&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s1">&amp;#39;A constant value&amp;#39;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nx">MyClass&lt;/span>&lt;span class="o">::&lt;/span>&lt;span class="na">CONST_VALUE&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Class Abstraction:繼承抽象類別的子類別,強制要求一定要有父類別定義的抽象函式的實作.這樣的好處是統一子類別中的實作格式.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">abstract&lt;/span> &lt;span class="k">class&lt;/span> &lt;span class="nc">AbstractClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="c1">//抽象方法僅需要定義需要的参数
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">abstract&lt;/span> &lt;span class="k">protected&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">prefixName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">ConcreteClass&lt;/span> &lt;span class="k">extends&lt;/span> &lt;span class="nx">AbstractClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="c1">//子類別可以定義父類別抽象方法中不存在的可選参数
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">prefixName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$separator&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;.&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;Pacman&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="nv">$prefix&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;Mr&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span> &lt;span class="k">elseif&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="s2">&amp;#34;Pacwoman&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="nv">$prefix&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;Mrs&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span> &lt;span class="k">else&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="nv">$prefix&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="s2">&amp;#34;&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="nv">$prefix&lt;/span>&lt;span class="si">}{&lt;/span>&lt;span class="nv">$separator&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2"> &lt;/span>&lt;span class="si">{&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="nv">$class&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">ConcreteClass&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$class&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">prefixName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;Pacman&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//Mr. Pacman
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">echo&lt;/span> &lt;span class="nv">$class&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">prefixName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s2">&amp;#34;Pacwoman&amp;#34;&lt;/span>&lt;span class="p">),&lt;/span> &lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="se">\n&lt;/span>&lt;span class="s2">&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//Mrs. Pacwoman
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Object Interfaces,透過implements導入多個介面接口,只能定義方法,但不能實作.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">interface&lt;/span> &lt;span class="nx">iTemplate&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">setVariable&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$var&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">getHtml&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$template&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">Template&lt;/span> &lt;span class="k">implements&lt;/span> &lt;span class="nx">iTemplate&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="nv">$vars&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">setVariable&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$var&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">vars&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nv">$var&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">getHtml&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$template&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="k">foreach&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">vars&lt;/span> &lt;span class="k">as&lt;/span> &lt;span class="nv">$name&lt;/span> &lt;span class="o">=&amp;gt;&lt;/span> &lt;span class="nv">$value&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="nv">$template&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">str_replace&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;{&amp;#39;&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="nv">$name&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="s1">&amp;#39;}&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$value&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$template&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nv">$template&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Class Abstraction(抽象類別)與Object Interfaces(介面)的差異性如下面表格.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align:left">&lt;/th>
+&lt;th style="text-align:center">類別(Class)&lt;/th>
+&lt;th style="text-align:center">抽象類別(Abstract Class)&lt;/th>
+&lt;th style="text-align:right">介面(Interface)&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align:left">宣告屬性(attribute)&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:right">X&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align:left">常數(const)&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:right">O&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align:left">實例化(new class)&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:center">X&lt;/td>
+&lt;td style="text-align:right">X&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align:left">抽象方法(abstract function)&lt;/td>
+&lt;td style="text-align:center">X&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:right">O&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align:left">實作方法內容(functoin())&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:center">O&lt;/td>
+&lt;td style="text-align:right">X&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td style="text-align:left">類別是否可繼承多個&lt;/td>
+&lt;td style="text-align:center">X&lt;/td>
+&lt;td style="text-align:center">X&lt;/td>
+&lt;td style="text-align:right">O&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;li>
+&lt;p>Trait:自PHP5.4.0起可使用.介於繼承與介面之間的功能,可以參考&lt;a href="http://oomusou.io/php/php-trait/">Trait&lt;/a>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">trait&lt;/span> &lt;span class="nx">PrivateTrait&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="nx">privateFunc&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">echo&lt;/span> &lt;span class="s2">&amp;#34;This is private&amp;#34;&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">PrivateClass&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">use&lt;/span> &lt;span class="nx">privateTrait&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="c1">// This is allowed.
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">public&lt;/span> &lt;span class="nx">publicFunc&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">privateFunc&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Anonymous classes.PHP7開始支持匿名類別.匿名類別可以創建一次性的簡單對象.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Overloading:動態創建成員與方法.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-php" data-lang="php">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="nx">void&lt;/span> &lt;span class="nx">__set&lt;/span> &lt;span class="p">(&lt;/span> &lt;span class="nx">string&lt;/span> &lt;span class="nv">$name&lt;/span> &lt;span class="p">,&lt;/span> &lt;span class="nx">mixed&lt;/span> &lt;span class="nv">$value&lt;/span> &lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="nx">mixed&lt;/span> &lt;span class="nx">__get&lt;/span> &lt;span class="p">(&lt;/span> &lt;span class="nx">string&lt;/span> &lt;span class="nv">$name&lt;/span> &lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="nx">bool&lt;/span> &lt;span class="nx">__isset&lt;/span> &lt;span class="p">(&lt;/span> &lt;span class="nx">string&lt;/span> &lt;span class="nv">$name&lt;/span> &lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="k">public&lt;/span> &lt;span class="nx">void&lt;/span> &lt;span class="nx">__unset&lt;/span> &lt;span class="p">(&lt;/span> &lt;span class="nx">string&lt;/span> &lt;span class="nv">$name&lt;/span> &lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="k">class&lt;/span> &lt;span class="nc">PropertyTest&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="nv">$data&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">array&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="nv">$declared&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">private&lt;/span> &lt;span class="nv">$hidden&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">2&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="fm">__set&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$value&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">data&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nv">$value&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="fm">__get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">array_key_exists&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">data&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">data&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">];&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="nv">$trace&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">debug_backtrace&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="nx">trigger_error&lt;/span>&lt;span class="p">(&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="s1">&amp;#39;Undefined property via __get(): &amp;#39;&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="nv">$name&lt;/span> &lt;span class="o">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="s1">&amp;#39; in &amp;#39;&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="nv">$trace&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">][&lt;/span>&lt;span class="s1">&amp;#39;file&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="s1">&amp;#39; on line &amp;#39;&lt;/span> &lt;span class="o">.&lt;/span> &lt;span class="nv">$trace&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">][&lt;/span>&lt;span class="s1">&amp;#39;line&amp;#39;&lt;/span>&lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="nx">E_USER_NOTICE&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="k">null&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="fm">__isset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nx">isset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">data&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="fm">__unset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> &lt;span class="nx">unset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">data&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="nv">$name&lt;/span>&lt;span class="p">]);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> &lt;span class="k">public&lt;/span> &lt;span class="k">function&lt;/span> &lt;span class="nf">getHidden&lt;/span>&lt;span class="p">()&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="nv">$this&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">hidden&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl">&lt;span class="nv">$obj&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nx">PropertyTest&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">&lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">a&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl">&lt;span class="k">echo&lt;/span> &lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">a&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="c1">//1
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">isset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">a&lt;/span>&lt;span class="p">));&lt;/span> &lt;span class="c1">//true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">unset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">a&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl">&lt;span class="nx">var_dump&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">isset&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nv">$obj&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="na">a&lt;/span>&lt;span class="p">));&lt;/span> &lt;span class="c1">//false
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Magic Methods&lt;/p>
+&lt;ul>
+&lt;li>__sleep()&lt;/li>
+&lt;li>__wakeup()&lt;/li>
+&lt;li>__construct()&lt;/li>
+&lt;li>__destruct()&lt;/li>
+&lt;li>__call()&lt;/li>
+&lt;li>__callStatic()&lt;/li>
+&lt;li>__get()&lt;/li>
+&lt;li>__set()&lt;/li>
+&lt;li>__isset()&lt;/li>
+&lt;li>__unset()&lt;/li>
+&lt;li>__sleep()&lt;/li>
+&lt;li>__wakeup()&lt;/li>
+&lt;li>__toString()&lt;/li>
+&lt;li>__invoke()&lt;/li>
+&lt;li>__set_state()&lt;/li>
+&lt;li>__clone()&lt;/li>
+&lt;li>__debugInfo()&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol></description></item></channel></rss>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>dns on Chiehting</title><link>https://chiehting.com/tags/dns/</link><description>Recent content in dns on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 19 Apr 2024 10:00:19 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/dns/index.xml" rel="self" type="application/rss+xml"/><item><title>DNS resolution takes a long time</title><link>https://chiehting.com/posts/dns-resolution-long-time/</link><pubDate>Fri, 19 Apr 2024 10:00:19 +0800</pubDate><guid>https://chiehting.com/posts/dns-resolution-long-time/</guid><description>
+&lt;p>最近發現 CI/CD 流程中一直發生異常通知，異常的失敗率達 50%，排查之後發現是 DNS 解析異常導致流程無法順利執行。由於伺服器在內地，所以最後將 DNS 服務器更換成百度的服務器，當下異常問題則排除，後續持續做觀察。&lt;/p>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 在排除 DNS 解析過慢的問題。這次的問題是阿里雲的 DNS 伺服器很慢甚至沒回應（這邊不討論阿里雲怎麼了，但...），所以要選用好的 DNS 伺服器，我通常是用 Google 的 &lt;code>8.8.8.8&lt;/code>，但是在牆內不是一個好的決定，經過一波測試後，最後選擇使用百度雲的 DNS 伺服器。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;h4 id="log-analysis">Log analysis&lt;/h4>
+&lt;p>這兩天一直發生 CI/CD 異常問題時好時壞。發生的太過頻繁近 20 筆資料的錯誤率達（10 error/20 tirgger）50%，覺得可能不是公司內部網路的問題，於是就查看了服務的 log，兩個服務的錯誤原因皆是 DNS 解析異常。&lt;/p>
+&lt;p>GitLab log 上顯示異常原因為 DNS 解析異常，下面列出一筆 log 資訊。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">curl: (6) Could not resolve host: hooks.slack.com
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Harbor log 上顯示異常原因為 DNS 解析異常，下面列出一筆 log 資訊。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">2024-04-18T02:50:02Z [ERROR] [/controller/replication/transfer/image/transfer.go:335]::: dial tcp: lookup swr.cn-east-3.myhuaweicloud.com: No address associated with hostname
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="dns-resolve">DNS resolve&lt;/h4>
+&lt;p>預設是使用阿里雲的 DNS 解析服務器 &lt;code>233.5.5.5&lt;/code>，看到解析不是超時就是過慢（約莫 1 min）。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Link 4 (eno1): 233.5.5.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">hooks.slack.com: resolve call failed: All attempts to contact name servers or networks failed
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下意識就更換了 Google 的 DNS 解析服務器 &lt;code>8.8.8.8&lt;/code>，解析時間時好時壞（約莫 25.6ms ~ 1 min），也不知道取決於什麼。但是在牆內用 Google DNS 解析可能不是好的選則。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1 8.8.8.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Link 4 (eno1): 8.8.8.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">hooks.slack.com: 52.192.46.121 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 52.196.128.139 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 35.74.58.174 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 35.73.126.78 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">-- Information acquired via protocol DNS in 25.6ms.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">-- Data is authenticated: no; Data was acquired via local or encrypted transport: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-- Data from: network
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下面更換了百度的 DNS 解析服務器 &lt;code>180.76.76.76&lt;/code>，效果就好很多，幾乎在 200 ms 內回覆，所以就決定是你了。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1 180.76.76.76
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Link 4 (eno1): 180.76.76.76
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">hooks.slack.com: 35.74.58.174 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 35.73.126.78 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 52.196.128.139 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 52.192.46.121 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">-- Information acquired via protocol DNS in 11.9ms.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">-- Data is authenticated: no; Data was acquired via local or encrypted transport: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-- Data from: cache network
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

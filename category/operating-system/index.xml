@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>operating-system on Chiehting</title><link>https://chiehting.com/category/operating-system/</link><description>Recent content in operating-system on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 24 Jun 2021 14:39:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/operating-system/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux kernel 的網路參數 rp_filter</title><link>https://chiehting.com/posts/linux-kernel-rp-filter/</link><pubDate>Thu, 24 Jun 2021 14:39:00 +0800</pubDate><guid>https://chiehting.com/posts/linux-kernel-rp-filter/</guid><description>
+&lt;p>這篇來記錄有關 Linux kernel 的 network 參數。&lt;/p>
+&lt;h3 id="rp_filter">rp_filter&lt;/h3>
+&lt;p>為逆向路徑過濾 (Reverse Path Filtering)，其作用為為過濾反向不通的封包，將其丟棄。
+而原理為由 NIC1 (network interface card) 進來的封包，reverse path filtering 模塊會將其封包的源地址（source ip）與目標地址（destination ip）做對調，然後再路由表中查找，如果出去的介面是 NIC1 則通過；反之不是 NIC1 則丟棄該封包。&lt;/p>
+&lt;p>可以從 &lt;a href="https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt">ip-sysctl&lt;/a> 文件中找到參數的用法。其中該參數為整數型，其值包括了 0：不做來源驗證；1：嚴謹認證模式；2：寬鬆認證模式。&lt;/p>
+&lt;pre>&lt;code>rp_filter - INTEGER
+0 - No source validation.
+1 - Strict mode as defined in RFC3704 Strict Reverse Path
+Each incoming packet is tested against the FIB and if the interface
+is not the best reverse path the packet check will fail.
+By default failed packets are discarded.
+2 - Loose mode as defined in RFC3704 Loose Reverse Path
+Each incoming packet's source address is also tested against the FIB
+and if the source address is not reachable via any interface
+the packet check will fail.
+Current recommended practice in RFC3704 is to enable strict mode
+to prevent IP spoofing from DDos attacks. If using asymmetric routing
+or other complicated routing, then loose mode is recommended.
+The max value from conf/{all,interface}/rp_filter is used
+when doing source validation on the {interface}.
+Default value is 0. Note that some distributions enable it
+in startup scripts.
+&lt;/code>&lt;/pre>
+&lt;h4 id="source-code">Source code&lt;/h4>
+&lt;p>可以上網找到原始碼 &lt;a href="https://elixir.bootlin.com/linux/latest/source/net/ipv4/fib_frontend.c#L419">fib_frontend.c&lt;/a>，這邊來看一下實作方法。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="cm">/* Ignore rp_filter for packets protected by IPsec. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="kt">int&lt;/span> &lt;span class="nf">fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 是否啟用反向封包過濾功能，這邊注意如果封包受 IPSec 保護則忽略反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">r&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">secpath_exists&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">IN_DEV_RPFILTER&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">fib_num_tclassid_users&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_TX_REDIRECTS&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 本地源的封包不執行反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">ok&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* with custom local routes in place, checking local addresses
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="cm"> * only will be too optimistic, with custom rules, checking
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="cm"> * local addresses only can be too strict, e.g. due to vrf
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ipv4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fib_has_custom_local_routes&lt;/span> &lt;span class="o">||&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fib4_has_custom_rules&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">full_check&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">inet_lookup_ifaddr_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="nl">ok&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="nl">full_check&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">r&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">itag&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">static&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="nf">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">rpf&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flow_keys&lt;/span> &lt;span class="n">flkeys&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">no_addr&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">fib_result&lt;/span> &lt;span class="n">res&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flowi4&lt;/span> &lt;span class="n">fl4&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="kt">bool&lt;/span> &lt;span class="n">dev_match&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">l3mdev_master_ifindex_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">LOOPBACK_IFINDEX&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 可以看到這邊做反轉了 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">daddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">saddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tos&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_scope&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">RT_SCOPE_UNIVERSE&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tun_key&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">tun_id&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_flags&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_uid&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">sock_net_uid&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_multipath_hash&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="n">no_addr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifa_list&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_mark&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">IN_DEV_SRC_VMARK&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="nl">mark&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fib4_rules_early_flow_dissect&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">flkeys&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_proto&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_sport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_dport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_inval&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl"> &lt;span class="n">fib_combine_itag&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">fib_info_nh_uses_dev&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fi&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* This is not common, loopback packets retain skb_dst so normally they
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl">&lt;span class="cm"> * would not even hit this slow path.
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl"> &lt;span class="n">dev&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">loopback_dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">48&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">dev_match&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">49&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">50&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">51&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">52&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">no_addr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">53&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">54&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">55&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">56&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">57&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">58&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">59&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">FIB_LOOKUP_IGNORE_LINKSTATE&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">60&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">61&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">62&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">63&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">64&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">65&lt;/span>&lt;span class="cl">&lt;span class="nl">last_resort&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">66&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">67&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">68&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">69&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">70&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">71&lt;/span>&lt;span class="cl">&lt;span class="nl">e_inval&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">72&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">73&lt;/span>&lt;span class="cl">&lt;span class="nl">e_rpf&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">74&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EXDEV&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">75&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>參數：&lt;/p>
+&lt;ul>
+&lt;li>struct sk_buff - socket buffer&lt;/li>
+&lt;li>__be32 src - source&lt;/li>
+&lt;li>__be32 dst - destination&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/netdevice.h#L1853">struct net_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/inetdevice.h#L25">struct in_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>saddr - start address&lt;/li>
+&lt;li>daddr - destination address&lt;/li>
+&lt;/ul>
+&lt;p>科普：&lt;/p>
+&lt;ul>
+&lt;li>__bet32 - le 與 be 分別表示 little endian 和 big endian&lt;/li>
+&lt;li>u8、u32 - 表示無符號 char 字符類型&lt;/li>
+&lt;/ul>
+&lt;h4 id="作用">作用&lt;/h4>
+&lt;p>當前RFC3704文檔建議使用嚴謹認證模式。如果網路是非對稱網路或複雜的網路 rp_filter 建議配置為 2，做寬鬆認證。
+而 rp_filter 配置作用通常為下列：&lt;/p>
+&lt;ol>
+&lt;li>減少 DDoS 攻擊，注意是減少不是防止&lt;/li>
+&lt;li>防止 IP Spoofing&lt;/li>
+&lt;/ol></description></item><item><title>Script management with launchd in Terminal on Mac</title><link>https://chiehting.com/posts/macos-script-management-with-launchd/</link><pubDate>Thu, 12 Nov 2020 17:45:00 +0800</pubDate><guid>https://chiehting.com/posts/macos-script-management-with-launchd/</guid><description>
+&lt;p>在 macOS 上使用 launchd 來管理服務與進程. 使用者不會直接與 launchd 做互動, 是透過 launchctl 指令來載入或取消載入 launchd 服務程式和代理程式.&lt;/p>
+&lt;p>例如:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 查看資源限制&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">$ launchctl limit
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 列出服務清單&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">$ launchctl list
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 列出服務說明&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">$ launchctl print system/com.apple.timed
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="plists-property-list">plists (property list)&lt;/h3>
+&lt;p>plist 檔案是用來定義服務的屬性檔案, 可分系統服務與第三方服務, 而 plist 檔案會放置在下面路徑.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>檔案夾&lt;/th>
+&lt;th>使用情況&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>/System/Library/LaunchDaemons&lt;/td>
+&lt;td>Apple 提供的系統服務程式&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/System/Library/LaunchAgents&lt;/td>
+&lt;td>Apple 提供的代理程式，適用於以使用者為基礎的所有使用者&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/Library/LaunchDaemons&lt;/td>
+&lt;td>第三方系統服務程式&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/Library/LaunchAgents&lt;/td>
+&lt;td>第三方代理程式，適用於以使用者為基礎的所有使用者&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>~/Library/LaunchAgents&lt;/td>
+&lt;td>第三方代理程式，僅適用於已登入的使用者&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>如下指令,查看 dock 服務的 plist 檔案內容. 可以看到是 DTD (Document Type Definition) 格式.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 查看 plist&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">cat /System/Library/LaunchAgents/com.apple.Dock.plist
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &amp;lt;key&amp;gt;Program&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &amp;lt;string&amp;gt;/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="references">references&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/Introduction.html#//apple_ref/doc/uid/10000172i-SW1-SW1">about daemons and services
+&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://support.apple.com/zh-tw/guide/terminal/apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac">launchd&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://support.apple.com/zh-hk/guide/terminal/apda49a1bb2-577e-4721-8f25-ffc0836f6997/mac">plist&lt;/a>&lt;/li>
+&lt;/ul></description></item><item><title>設定 macOS 的 open files 上限</title><link>https://chiehting.com/posts/macos-open-files-limit/</link><pubDate>Mon, 27 Apr 2020 12:21:00 +0800</pubDate><guid>https://chiehting.com/posts/macos-open-files-limit/</guid><description>
+&lt;p>今天在做壓力測試,使用 command line 做 websocket client connection.
+大約到250左右的連線數後回應錯誤 too many open files, 盤查後發現 macOS 預設的配置不敷使用, 需要加大 maxfiles 的限制.&lt;/p>
+&lt;h3 id="環境">環境&lt;/h3>
+&lt;p>macOS Catalina 10.15.4&lt;/p>
+&lt;h3 id="查看">查看&lt;/h3>
+&lt;p>可以看到被 LaunchDaemons([[macos-script-management-with-launchd]]) 給限制住了 maxfiles&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:30:01 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">➜ sysctl kern.maxfiles
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">kern.maxfiles: &lt;span class="m">200000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:30:08 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">➜ sysctl kern.maxfilesperproc
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">kern.maxfilesperproc: &lt;span class="m">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:30:24 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">➜ launchctl limit maxfiles
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">maxfiles &lt;span class="m">256&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:31:06 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">➜ &lt;span class="nb">ulimit&lt;/span> -n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="m">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="解決方法">解決方法&lt;/h3>
+&lt;h4 id="新增文件">新增文件&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:35:49 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ sudo vim /Library/LaunchDaemons/limit.maxfiles.plist
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="cp">&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="cp">&amp;lt;!DOCTYPE plist PUBLIC &amp;#34;-//Apple//DTD PLIST 1.0//EN&amp;#34; &amp;#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&amp;#34;&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;plist&lt;/span> &lt;span class="na">version=&lt;/span>&lt;span class="s">&amp;#34;1.0&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;dict&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>Label&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>limit.maxfiles&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>ProgramArguments&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;array&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>launchctl&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>limit&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>maxfiles&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>64000&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>200000&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;/array&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>RunAtLoad&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;true/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>ServiceIPC&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;false/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;/dict&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;/plist&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="修改權限">修改權限&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:36:34 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ sudo chown root:wheel /Library/LaunchDaemons/limit.maxfiles.plist
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:36:44 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">➜ sudo chmod &lt;span class="m">644&lt;/span> /Library/LaunchDaemons/limit.maxfiles.plist
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="重啟系統">重啟系統&lt;/h4>
+&lt;p>重啟完成後再次執行程序,問題排除&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo reboot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>了解 linux ulimit</title><link>https://chiehting.com/posts/linux-ulimit/</link><pubDate>Tue, 14 Jan 2020 17:23:00 +0800</pubDate><guid>https://chiehting.com/posts/linux-ulimit/</guid><description>
+&lt;p>有時候為了榨出主機上的效能,需要去調整linux的配置,ulimit就是其中一項可控配置.&lt;/p>
+&lt;p>參考 &lt;a href="https://man.linuxde.net/ulimit">ulimit&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;p>ulimit用於限制shell啟動進程所佔用的資源，支持以下各種類型的限制：所創建的內核文件的大小，進程數據塊的大小，Shell進程創建文件的大小，內存鎖住的大小，常駐內存 集的大小，打開文件大小的數量，分配大小的最大大小，CPU時間，單獨用戶的最大線程數，Shell進程所能使用的最大虛擬內存。同時，它支持硬資源和軟資源的限制。&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="注意">注意&lt;/h3>
+&lt;p>這邊使用配置/etc/security/limits.conf檔案,透過PAM來加載用戶的資源限制.
+但在Centos 7使用Systemd替代了之前的SysV,所以配置會對Systemd的service不生效.&lt;/p>
+&lt;h3 id="確認環境">確認環境&lt;/h3>
+&lt;p>主機資訊.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ uname -a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Linux dev-db2.solartninc.com 3.10.0-1062.9.1.el7.x86_64 &lt;span class="c1">#1 SMP Fri Dec 6 15:49:49 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ cat /etc/redhat-release
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">CentOS Linux release 7.7.1908 &lt;span class="o">(&lt;/span>Core&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ lscpu
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">Architecture: x86_64
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">CPU op-mode&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: 32-bit, 64-bit
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">Byte Order: Little Endian
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">CPU&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: &lt;span class="m">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">On-line CPU&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span> list: 0-3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">Thread&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span> per core: &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">Core&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span> per socket: &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">Socket&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: &lt;span class="m">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">NUMA node&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Vendor ID: GenuineIntel
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">CPU family: &lt;span class="m">6&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">Model: &lt;span class="m">158&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">Model name: Intel&lt;span class="o">(&lt;/span>R&lt;span class="o">)&lt;/span> Core&lt;span class="o">(&lt;/span>TM&lt;span class="o">)&lt;/span> i7-8700 CPU @ 3.20GHz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">Stepping: &lt;span class="m">10&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">CPU MHz: 3192.000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">BogoMIPS: 6384.00
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">Hypervisor vendor: VMware
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">Virtualization type: full
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">L1d cache: 32K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">L1i cache: 32K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">L2 cache: 256K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">L3 cache: 12288K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">NUMA node0 CPU&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: 0-3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">Flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon nopl xtopology tsc_reliable nonstop_tsc eagerfpu pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs ibpb stibp fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec arat spec_ctrl intel_stibp flush_l1d arch_capabilities
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ free -h
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl"> total used free shared buff/cache available
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">Mem: 3.7G 274M 3.1G 8.8M 320M 3.2G
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">Swap: 2.0G 0B 2.0G
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>預設的配置.預設linux系統的檔案描述符是1024,負載變大時有可能會造成錯誤&lt;code>open too many files&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ &lt;span class="nb">ulimit&lt;/span> -a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">core file size &lt;span class="o">(&lt;/span>blocks, -c&lt;span class="o">)&lt;/span> &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">data seg size &lt;span class="o">(&lt;/span>kbytes, -d&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">scheduling priority &lt;span class="o">(&lt;/span>-e&lt;span class="o">)&lt;/span> &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">file size &lt;span class="o">(&lt;/span>blocks, -f&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">pending signals &lt;span class="o">(&lt;/span>-i&lt;span class="o">)&lt;/span> &lt;span class="m">15064&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">max locked memory &lt;span class="o">(&lt;/span>kbytes, -l&lt;span class="o">)&lt;/span> &lt;span class="m">64&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">max memory size &lt;span class="o">(&lt;/span>kbytes, -m&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">open files &lt;span class="o">(&lt;/span>-n&lt;span class="o">)&lt;/span> &lt;span class="m">1024&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">pipe size &lt;span class="o">(&lt;/span>&lt;span class="m">512&lt;/span> bytes, -p&lt;span class="o">)&lt;/span> &lt;span class="m">8&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">POSIX message queues &lt;span class="o">(&lt;/span>bytes, -q&lt;span class="o">)&lt;/span> &lt;span class="m">819200&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">real-time priority &lt;span class="o">(&lt;/span>-r&lt;span class="o">)&lt;/span> &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">stack size &lt;span class="o">(&lt;/span>kbytes, -s&lt;span class="o">)&lt;/span> &lt;span class="m">8192&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">cpu &lt;span class="nb">time&lt;/span> &lt;span class="o">(&lt;/span>seconds, -t&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">max user processes &lt;span class="o">(&lt;/span>-u&lt;span class="o">)&lt;/span> &lt;span class="m">4096&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">virtual memory &lt;span class="o">(&lt;/span>kbytes, -v&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">file locks &lt;span class="o">(&lt;/span>-x&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="調整配置">調整配置&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>ulimit&lt;/code>有分軟限制和硬限制.而&lt;code>noproc&lt;/code>是代表最大程序數; &lt;code>nofile&lt;/code>是代表最大檔案開啟數.&lt;/li>
+&lt;li>而ulimit -n的最大值限制是1048576 (2^20).&lt;/li>
+&lt;li>網路上很多都配置為65535,這邊我還沒搞懂為什麼是這個數字.&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ sudo vim /etc/security/limits.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">* hard noproc &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">* soft noproc &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">* hard nofile &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">* soft nofile &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>上面配置好後,需要確認有引入pam的pam_limits.so模塊,在下面可以發現預設在&lt;code>/etc/pam.d/system-auth&lt;/code>檔案中有找到被required.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ cat /etc/pam.d/login
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">session optional pam_keyinit.so force revoke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">session include system-auth
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">session include postlogin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ cat /etc/pam.d/system-auth
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">session optional pam_keyinit.so revoke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">session required pam_limits.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-session optional pam_systemd.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

@@ -1,0 +1,1250 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>internet on Chiehting</title><link>https://chiehting.com/tags/internet/</link><description>Recent content in internet on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 19 Apr 2024 10:00:19 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/internet/index.xml" rel="self" type="application/rss+xml"/><item><title>DNS resolution takes a long time</title><link>https://chiehting.com/posts/dns-resolution-long-time/</link><pubDate>Fri, 19 Apr 2024 10:00:19 +0800</pubDate><guid>https://chiehting.com/posts/dns-resolution-long-time/</guid><description>
+&lt;p>最近發現 CI/CD 流程中一直發生異常通知，異常的失敗率達 50%，排查之後發現是 DNS 解析異常導致流程無法順利執行。由於伺服器在內地，所以最後將 DNS 服務器更換成百度的服務器，當下異常問題則排除，後續持續做觀察。&lt;/p>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 在排除 DNS 解析過慢的問題。這次的問題是阿里雲的 DNS 伺服器很慢甚至沒回應（這邊不討論阿里雲怎麼了，但...），所以要選用好的 DNS 伺服器，我通常是用 Google 的 &lt;code>8.8.8.8&lt;/code>，但是在牆內不是一個好的決定，經過一波測試後，最後選擇使用百度雲的 DNS 伺服器。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;h4 id="log-analysis">Log analysis&lt;/h4>
+&lt;p>這兩天一直發生 CI/CD 異常問題時好時壞。發生的太過頻繁近 20 筆資料的錯誤率達（10 error/20 tirgger）50%，覺得可能不是公司內部網路的問題，於是就查看了服務的 log，兩個服務的錯誤原因皆是 DNS 解析異常。&lt;/p>
+&lt;p>GitLab log 上顯示異常原因為 DNS 解析異常，下面列出一筆 log 資訊。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">curl: (6) Could not resolve host: hooks.slack.com
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Harbor log 上顯示異常原因為 DNS 解析異常，下面列出一筆 log 資訊。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">2024-04-18T02:50:02Z [ERROR] [/controller/replication/transfer/image/transfer.go:335]::: dial tcp: lookup swr.cn-east-3.myhuaweicloud.com: No address associated with hostname
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="dns-resolve">DNS resolve&lt;/h4>
+&lt;p>預設是使用阿里雲的 DNS 解析服務器 &lt;code>233.5.5.5&lt;/code>，看到解析不是超時就是過慢（約莫 1 min）。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Link 4 (eno1): 233.5.5.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">hooks.slack.com: resolve call failed: All attempts to contact name servers or networks failed
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下意識就更換了 Google 的 DNS 解析服務器 &lt;code>8.8.8.8&lt;/code>，解析時間時好時壞（約莫 25.6ms ~ 1 min），也不知道取決於什麼。但是在牆內用 Google DNS 解析可能不是好的選則。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1 8.8.8.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Link 4 (eno1): 8.8.8.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">hooks.slack.com: 52.192.46.121 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 52.196.128.139 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 35.74.58.174 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 35.73.126.78 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">-- Information acquired via protocol DNS in 25.6ms.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">-- Data is authenticated: no; Data was acquired via local or encrypted transport: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-- Data from: network
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下面更換了百度的 DNS 解析服務器 &lt;code>180.76.76.76&lt;/code>，效果就好很多，幾乎在 200 ms 內回覆，所以就決定是你了。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1 180.76.76.76
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Link 4 (eno1): 180.76.76.76
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">hooks.slack.com: 35.74.58.174 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 35.73.126.78 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 52.196.128.139 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 52.192.46.121 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">-- Information acquired via protocol DNS in 11.9ms.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">-- Data is authenticated: no; Data was acquired via local or encrypted transport: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-- Data from: cache network
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>rfc6265</title><link>https://chiehting.com/posts/internet-rfc-6265-server-requirements/</link><pubDate>Fri, 16 Feb 2024 11:28:57 +0800</pubDate><guid>https://chiehting.com/posts/internet-rfc-6265-server-requirements/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 文章是在導讀 Set-Cookie header fields 規範以及重要屬性。&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>第四章節是在說明 Set-Cookie 的方式，其中關鍵字為 &lt;code>Set-Cookie&lt;/code>，將 Set-Cookie 加到 response header 內容中，其格式是使用 name-value-pair，並返回給 user agent。&lt;/p>
+&lt;p>user agent 收到 Set-Cookie 後會保存其資料，如果該資料已經存在則會覆蓋。這邊也建議伺服器將資料內容做編碼，例如 base64。&lt;/p>
+&lt;p>在 4.1.2 的章節中有幾個重要的屬性，條列如下：&lt;/p>
+&lt;p>4.1.2.1. The Expires Attribute：定義 Cookies 的過期時間，過期後則不保留 cookie。&lt;/p>
+&lt;p>4.1.2.2. The Max-Age Attribute：定義 Cookies 的保留日期，過期後則不保留 cookie。&lt;/p>
+&lt;p>4.1.2.3. The Domain Attribute：定義 Cookies 的域名。&lt;/p>
+&lt;blockquote>
+&lt;p>For example, if the value of the Domain attribute is
+&amp;quot;example.com&amp;quot;, the user agent will include the cookie in the Cookie
+header when making HTTP requests to example.com, &lt;a href="https://www.example.com">www.example.com&lt;/a>, and
+&lt;a href="https://www.corp.example.com">www.corp.example.com&lt;/a>.&lt;/p>
+&lt;/blockquote>
+&lt;p>4.1.2.4. The Path Attribute：定義 Cookies 的路徑。配置 Path Attribute 後，就只會在指定的路徑中做 Cookies 的交互。&lt;/p>
+&lt;p>4.1.2.5. The Secure Attribute：限制 Cookies 只能在 &amp;quot;安全&amp;quot; 頻道中做傳輸。配置 Secure Attribute 後，就只能在 HTTPS 的請求中做 Cookies 的交互。&lt;/p>
+&lt;p>4.1.2.6. The HttpOnly Attribute：限制 Cookies 的存取方式。配置 HttpOnly Attribute 後，就只能使用 http 請求做 Cookies 的存取，否則會被省略，例如無法使用 javascript 來存取 Cookies 的內容。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.rfc-editor.org/rfc/rfc6265.html#section-4">rfc6265&lt;/a>&lt;/p>
+&lt;h4 id="4-server-requirements">4. Server Requirements&lt;/h4>
+&lt;p>This section describes the syntax and semantics of a well-behaved
+profile of the Cookie and Set-Cookie headers.&lt;/p>
+&lt;p>4.1. Set-Cookie&lt;/p>
+&lt;p>The Set-Cookie HTTP response header is used to send cookies from the
+server to the user agent.&lt;/p>
+&lt;p>4.1.1. Syntax&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red"> Informally, the Set-Cookie response header contains the header name
+&amp;quot;Set-Cookie&amp;quot; followed by a &amp;quot;:&amp;quot; and a cookie.&lt;/span> Each cookie begins with
+a name-value-pair, followed by zero or more attribute-value pairs.
+Servers SHOULD NOT send Set-Cookie headers that fail to conform to
+the following grammar:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-html" data-lang="html">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">set-cookie-header = &amp;#34;Set-Cookie:&amp;#34; SP set-cookie-string
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">set-cookie-string = cookie-pair *( &amp;#34;;&amp;#34; SP cookie-av )
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">cookie-pair = cookie-name &amp;#34;=&amp;#34; cookie-value
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">cookie-name = token
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">cookie-value = *cookie-octet / ( DQUOTE *cookie-octet DQUOTE )
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">cookie-octet = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> ; US-ASCII characters excluding CTLs,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> ; whitespace DQUOTE, comma, semicolon,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> ; and backslash
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">token = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">token&lt;/span>&lt;span class="err">,&lt;/span> &lt;span class="na">defined&lt;/span> &lt;span class="na">in&lt;/span> &lt;span class="err">[&lt;/span>&lt;span class="na">RFC2616&lt;/span>&lt;span class="err">],&lt;/span> &lt;span class="na">Section&lt;/span> &lt;span class="na">2&lt;/span>&lt;span class="err">.&lt;/span>&lt;span class="na">2&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">cookie-av = expires-av / max-age-av / domain-av /
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> path-av / secure-av / httponly-av /
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> extension-av
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">expires-av = &amp;#34;Expires=&amp;#34; sane-cookie-date
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">sane-cookie-date = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">rfc1123-date&lt;/span>&lt;span class="err">,&lt;/span> &lt;span class="na">defined&lt;/span> &lt;span class="na">in&lt;/span> &lt;span class="err">[&lt;/span>&lt;span class="na">RFC2616&lt;/span>&lt;span class="err">],&lt;/span> &lt;span class="na">Section&lt;/span> &lt;span class="na">3&lt;/span>&lt;span class="err">.&lt;/span>&lt;span class="na">3&lt;/span>&lt;span class="err">.&lt;/span>&lt;span class="na">1&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">max-age-av = &amp;#34;Max-Age=&amp;#34; non-zero-digit *DIGIT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> ; In practice, both expires-av and max-age-av
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> ; are limited to dates representable by the
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> ; user agent.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">non-zero-digit = %x31-39
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> ; digits 1 through 9
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">domain-av = &amp;#34;Domain=&amp;#34; domain-value
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">domain-value = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">subdomain&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> ; defined in [RFC1034], Section 3.5, as
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> ; enhanced by [RFC1123], Section 2.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">path-av = &amp;#34;Path=&amp;#34; path-value
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">path-value = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">any&lt;/span> &lt;span class="na">CHAR&lt;/span> &lt;span class="na">except&lt;/span> &lt;span class="na">CTLs&lt;/span> &lt;span class="na">or&lt;/span> &lt;span class="err">&amp;#34;;&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">secure-av = &amp;#34;Secure&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">httponly-av = &amp;#34;HttpOnly&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">extension-av = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">any&lt;/span> &lt;span class="na">CHAR&lt;/span> &lt;span class="na">except&lt;/span> &lt;span class="na">CTLs&lt;/span> &lt;span class="na">or&lt;/span> &lt;span class="err">&amp;#34;;&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Note that some of the grammatical terms above reference documents
+that use different grammatical notations than this document (which
+uses ABNF from [RFC5234]).&lt;/p>
+&lt;p>The semantics of the cookie-value are not defined by this document.&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">To maximize compatibility with user agents, servers that wish to
+store arbitrary data in a cookie-value SHOULD encode that data, for
+example, using Base64 [RFC4648].&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The portions of the set-cookie-string produced by the cookie-av term
+are known as attributes. To maximize compatibility with user agents,
+servers SHOULD NOT produce two attributes with the same name in the
+same set-cookie-string. (See Section 5.3 for how user agents handle
+this case.)&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">Servers SHOULD NOT include more than one Set-Cookie header field in
+the same response with the same cookie-name. (See Section 5.2 for
+how user agents handle this case.)&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">If a server sends multiple responses containing Set-Cookie headers
+concurrently to the user agent (e.g., when communicating with the
+user agent over multiple sockets), these responses create a &amp;quot;race
+condition&amp;quot; that can lead to unpredictable behavior.&lt;/span>&lt;/p>
+&lt;p>NOTE: Some existing user agents differ in their interpretation of
+two-digit years. To avoid compatibility issues, servers SHOULD use
+the rfc1123-date format, which requires a four-digit year.&lt;/p>
+&lt;p>NOTE: Some user agents store and process dates in cookies as 32-bit
+UNIX time_t values. Implementation bugs in the libraries supporting
+time_t processing on some systems might cause such user agents to
+process dates after the year 2038 incorrectly.&lt;/p>
+&lt;p>4.1.2. Semantics (Non-Normative)&lt;/p>
+&lt;p>This section describes simplified semantics of the Set-Cookie header.
+These semantics are detailed enough to be useful for understanding
+the most common uses of cookies by servers. The full semantics are
+described in Section 5.&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">When the user agent receives a Set-Cookie header, the user agent
+stores the cookie together with its attributes. Subsequently, when
+the user agent makes an HTTP request, the user agent includes the
+applicable, non-expired cookies in the Cookie header.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">If the user agent receives a new cookie with the same cookie-name,
+domain-value, and path-value as a cookie that it has already stored,
+the existing cookie is evicted and replaced with the new cookie.
+Notice that servers can delete cookies by sending the user agent a
+new cookie with an Expires attribute with a value in the past.&lt;/span>&lt;/p>
+&lt;p>Unless the cookie's attributes indicate otherwise, the cookie is
+returned only to the origin server (and not, for example, to any
+subdomains), and it expires at the end of the current session (as
+defined by the user agent). User agents ignore unrecognized cookie
+attributes (but not the entire cookie).&lt;/p>
+&lt;p>4.1.2.1. The Expires Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The Expires attribute indicates the maximum lifetime of the cookie,
+represented as the date and time at which the cookie expires. The
+user agent is not required to retain the cookie until the specified
+date has passed. In fact, user agents often evict cookies due to
+memory pressure or privacy concerns.&lt;/span>&lt;/p>
+&lt;p>4.1.2.2. The Max-Age Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red"> The Max-Age attribute indicates the maximum lifetime of the cookie,
+represented as the number of seconds until the cookie expires. The
+user agent is not required to retain the cookie for the specified
+duration. In fact, user agents often evict cookies due to memory
+pressure or privacy concerns.&lt;/span>&lt;/p>
+&lt;pre>&lt;code> NOTE: Some existing user agents do not support the Max-Age
+attribute. User agents that do not support the Max-Age attribute
+ignore the attribute.
+&lt;/code>&lt;/pre>
+&lt;p>If a cookie has both the Max-Age and the Expires attribute, the Max-
+Age attribute has precedence and controls the expiration date of the
+cookie. If a cookie has neither the Max-Age nor the Expires
+attribute, the user agent will retain the cookie until &amp;quot;the current
+session is over&amp;quot; (as defined by the user agent).&lt;/p>
+&lt;p>4.1.2.3. The Domain Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The Domain attribute specifies those hosts to which the cookie will
+be sent. For example, if the value of the Domain attribute is
+&amp;quot;example.com&amp;quot;, the user agent will include the cookie in the Cookie
+header when making HTTP requests to example.com, &lt;a href="https://www.example.com">www.example.com&lt;/a>, and
+&lt;a href="https://www.corp.example.com">www.corp.example.com&lt;/a>.&lt;/span> (Note that a leading %x2E (&amp;quot;.&amp;quot;), if present,
+is ignored even though that character is not permitted, but a
+trailing %x2E (&amp;quot;.&amp;quot;), if present, will cause the user agent to ignore
+the attribute.) If the server omits the Domain attribute, the user
+agent will return the cookie only to the origin server.&lt;/p>
+&lt;pre>&lt;code> WARNING: Some existing user agents treat an absent Domain
+attribute as if the Domain attribute were present and contained
+the current host name. For example, if example.com returns a Set-
+Cookie header without a Domain attribute, these user agents will
+erroneously send the cookie to www.example.com as well.
+&lt;/code>&lt;/pre>
+&lt;p>The user agent will reject cookies unless the Domain attribute
+specifies a scope for the cookie that would include the origin
+server. For example, the user agent will accept a cookie with a
+Domain attribute of &amp;quot;example.com&amp;quot; or of &amp;quot;foo.example.com&amp;quot; from
+foo.example.com, but the user agent will not accept a cookie with a
+Domain attribute of &amp;quot;bar.example.com&amp;quot; or of &amp;quot;baz.foo.example.com&amp;quot;.&lt;/p>
+&lt;p>NOTE: For security reasons, many user agents are configured to reject
+Domain attributes that correspond to &amp;quot;public suffixes&amp;quot;. For example,
+some user agents will reject Domain attributes of &amp;quot;com&amp;quot; or &amp;quot;co.uk&amp;quot;.
+(See Section 5.3 for more information.)&lt;/p>
+&lt;p>4.1.2.4. The Path Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The scope of each cookie is limited to a set of paths, controlled by
+the Path attribute. If the server omits the Path attribute, the user
+agent will use the &amp;quot;directory&amp;quot; of the request-uri's path component as
+the default value. (See Section 5.1.4 for more details.)&lt;/span>&lt;/p>
+&lt;p>The user agent will include the cookie in an HTTP request only if the
+path portion of the request-uri matches (or is a subdirectory of) the
+cookie's Path attribute, where the %x2F (&amp;quot;/&amp;quot;) character is
+interpreted as a directory separator.&lt;/p>
+&lt;p>Although seemingly useful for isolating cookies between different
+paths within a given host, the Path attribute cannot be relied upon
+for security (see Section 8).&lt;/p>
+&lt;p>4.1.2.5. The Secure Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The Secure attribute limits the scope of the cookie to &amp;quot;secure&amp;quot;
+channels (where &amp;quot;secure&amp;quot; is defined by the user agent). When a
+cookie has the Secure attribute, the user agent will include the
+cookie in an HTTP request only if the request is transmitted over a
+secure channel (typically HTTP over Transport Layer Security (TLS)
+[RFC2818]).&lt;/span>&lt;/p>
+&lt;p>Although seemingly useful for protecting cookies from active network
+attackers, the Secure attribute protects only the cookie's
+confidentiality. An active network attacker can overwrite Secure
+cookies from an insecure channel, disrupting their integrity (see
+Section 8.6 for more details).&lt;/p>
+&lt;p>4.1.2.6. The HttpOnly Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The HttpOnly attribute limits the scope of the cookie to HTTP
+requests. In particular, the attribute instructs the user agent to
+omit the cookie when providing access to cookies via &amp;quot;non-HTTP&amp;quot; APIs
+(such as a web browser API that exposes cookies to scripts).&lt;/span>&lt;/p>
+&lt;p>Note that the HttpOnly attribute is independent of the Secure
+attribute: a cookie can have both the HttpOnly and the Secure
+attribute.&lt;/p>
+&lt;p>4.2. Cookie&lt;/p>
+&lt;p>4.2.1. Syntax&lt;/p>
+&lt;p>The user agent sends stored cookies to the origin server in the
+Cookie header. If the server conforms to the requirements in
+Section 4.1 (and the user agent conforms to the requirements in
+Section 5), the user agent will send a Cookie header that conforms to
+the following grammar:&lt;/p>
+&lt;p>cookie-header = &amp;quot;Cookie:&amp;quot; OWS cookie-string OWS
+cookie-string = cookie-pair *( &amp;quot;;&amp;quot; SP cookie-pair )&lt;/p>
+&lt;p>4.2.2. Semantics&lt;/p>
+&lt;p>Each cookie-pair represents a cookie stored by the user agent. The
+cookie-pair contains the cookie-name and cookie-value the user agent
+received in the Set-Cookie header.&lt;/p>
+&lt;p>Notice that the cookie attributes are not returned. In particular,
+the server cannot determine from the Cookie header alone when a
+cookie will expire, for which hosts the cookie is valid, for which
+paths the cookie is valid, or whether the cookie was set with the
+Secure or HttpOnly attributes.&lt;/p>
+&lt;p>The semantics of individual cookies in the Cookie header are not
+defined by this document. Servers are expected to imbue these
+cookies with application-specific semantics.&lt;/p>
+&lt;p>Although cookies are serialized linearly in the Cookie header,
+servers SHOULD NOT rely upon the serialization order. In particular,
+if the Cookie header contains two cookies with the same name (e.g.,
+that were set with different Path or Domain attributes), servers
+SHOULD NOT rely upon the order in which these cookies appear in the
+header.&lt;/p></description></item><item><title>rfc6265</title><link>https://chiehting.com/posts/internet-rfc-6265/</link><pubDate>Fri, 16 Feb 2024 11:28:57 +0800</pubDate><guid>https://chiehting.com/posts/internet-rfc-6265/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 文章主要在研究 RFC 6265 - HTTP State Management Mechanism。文章是在定義 HTTP Cookie and Set-Cookie header fields 規範。&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>RFC 6265 - HTTP State Management Mechanism 是在定義 HTTP Cookies and Set-Cookie header fields。Cookie 是 Server / Client 資料交互的方法之一，是 developers of cookie-
+generating servers 和 developers of cookie-consuming user agents 需要關心的重要議題。&lt;/p>
+&lt;p>第四章節在說明 Set-Cookie header fields 規範以及重要屬性 ([[internet-rfc-6265-server-requirements]])。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.rfc-editor.org/info/rfc6265">rfc6265&lt;/a>&lt;/p>
+&lt;h4 id="abstract">Abstract&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">This document defines the HTTP Cookie and Set-Cookie header fields. These header fields can be used by HTTP servers to store state (called cookies) at HTTP user agents, letting the servers maintain a stateful session over the mostly stateless HTTP protocol.&lt;/span> Although cookies have many historical infelicities that degrade their security and privacy, the Cookie and Set-Cookie header fields are widely used on the Internet. This document obsoletes RFC 2965. [STANDARDS-TRACK]&lt;/p>
+&lt;p>Table of Contents&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">1. Introduction
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">2. Conventions
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> 2.1. Conformance Criteria
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> 2.2. Syntax Notation
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> 2.3. Terminology
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">3. Overview
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 3.1. Examples
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">4. Server Requirements
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> 4.1. Set-Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> 4.1.1. Syntax
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> 4.1.2. Semantics (Non-Normative)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> 4.2. Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> 4.2.1. Syntax
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> 4.2.2. Semantics
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">5. User Agent Requirements
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> 5.1. Subcomponent Algorithms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> 5.1.1. Dates
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> 5.1.2. Canonicalized Host Names
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> 5.1.3. Domain Matching
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> 5.1.4. Paths and Path-Match
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> 5.2. The Set-Cookie Header
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> 5.2.1. The Expires Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> 5.2.2. The Max-Age Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> 5.2.3. The Domain Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> 5.2.4. The Path Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> 5.2.5. The Secure Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> 5.2.6. The HttpOnly Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> 5.3. Storage Model
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> 5.4. The Cookie Header
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">6. Implementation Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> 6.1. Limits
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> 6.2. Application Programming Interfaces
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> 6.3. IDNA Dependency and Migration
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">7. Privacy Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> 7.1. Third-Party Cookies
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> 7.2. User Controls
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> 7.3. Expiration Dates
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl">8. Security Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl"> 8.1. Overview
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl"> 8.2. Ambient Authority
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl"> 8.3. Clear Text
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl"> 8.4. Session Identifiers
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl"> 8.5. Weak Confidentiality
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl"> 8.6. Weak Integrity
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl"> 8.7. Reliance on DNS
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl">9. IANA Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl"> 9.1. Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">48&lt;/span>&lt;span class="cl"> 9.2. Set-Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">49&lt;/span>&lt;span class="cl"> 9.3. Cookie2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">50&lt;/span>&lt;span class="cl"> 9.4. Set-Cookie2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">51&lt;/span>&lt;span class="cl">10. References
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">52&lt;/span>&lt;span class="cl"> 10.1. Normative References
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">53&lt;/span>&lt;span class="cl"> 10.2. Informative References
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">54&lt;/span>&lt;span class="cl">Appendix A. Acknowledgements
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="introduction">Introduction&lt;/h4>
+&lt;p>This document defines the HTTP Cookie and Set-Cookie header fields.
+&lt;span style="background-color: #ffffcc; color: red">Using the Set-Cookie header field, an HTTP server can pass name/value
+pairs and associated metadata (called cookies) to a user agent. When
+the user agent makes subsequent requests to the server, the user
+agent uses the metadata and other information to determine whether to
+return the name/value pairs in the Cookie header.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">Although simple on their surface, cookies have a number of
+complexities. For example, the server indicates a scope for each
+cookie when sending it to the user agent. The scope indicates the
+maximum amount of time in which the user agent should return the
+cookie, the servers to which the user agent should return the cookie,
+and the URI schemes for which the cookie is applicable.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">For historical reasons, cookies contain a number of security and
+privacy infelicities. For example, a server can indicate that a
+given cookie is intended for &amp;quot;secure&amp;quot; connections, but the Secure
+attribute does not provide integrity in the presence of an active
+network attacker. Similarly, cookies for a given host are shared
+across all the ports on that host, even though the usual &amp;quot;same-origin
+policy&amp;quot; used by web browsers isolates content retrieved via different
+ports.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">There are two audiences for this specification: developers of cookie-
+generating servers and developers of cookie-consuming user agents.&lt;/span>&lt;/p>
+&lt;p>To maximize interoperability with user agents, servers SHOULD limit
+themselves to the well-behaved profile defined in Section 4 when
+generating cookies.&lt;/p>
+&lt;p>User agents MUST implement the more liberal processing rules defined
+in Section 5, in order to maximize interoperability with existing
+servers that do not conform to the well-behaved profile defined in
+Section 4.&lt;/p>
+&lt;p>This document specifies the syntax and semantics of these headers as
+they are actually used on the Internet. In particular, this document
+does not create new syntax or semantics beyond those in use today.
+The recommendations for cookie generation provided in Section 4
+represent a preferred subset of current server behavior, and even the
+more liberal cookie processing algorithm provided in Section 5 does
+not recommend all of the syntactic and semantic variations in use
+today. Where some existing software differs from the recommended
+protocol in significant ways, the document contains a note explaining
+the difference.&lt;/p></description></item><item><title>資安團隊的建議回饋</title><link>https://chiehting.com/posts/security-session-and-cookise/</link><pubDate>Fri, 16 Feb 2024 11:28:57 +0800</pubDate><guid>https://chiehting.com/posts/security-session-and-cookise/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 資安小組回饋了些建議，讓我們可以強化安全線。&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>專案被回饋資安 issue，資安回饋的建議大致如下：&lt;/p>
+&lt;ol>
+&lt;li>檢視認證 Session 的資料長度，64bit 以上為安全線。 若 Session ID 的長度、複雜度不夠， 可 能被攻擊者猜測 、利用 。&lt;/li>
+&lt;li>檢視 Cookie Flag 相關設定 Host Only、Secure、HTTP Only。
+&lt;ol>
+&lt;li>Host Only：Cookie 只能傳送至 Domain 屬性完全對應的網域 ，不傳送至子網域。&lt;/li>
+&lt;li>Secure：只在 HTTPS 連線中傳遞 Cookie 。&lt;/li>
+&lt;li>HTTP Only：防止 Cookie 被 Ja v aScript 存取。&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ol>
+&lt;p>上面的問題，通常可以透過瀏覽器的開發工具來檢視是否符合，通常服務都會有配置可以設定。回報的內容是建議可以開啟 Cookies 的配置，例如 HTTP only、Secure，其定義在文章 [[internet-rfc-6265]]。&lt;/p></description></item><item><title>AWS 的 VPC</title><link>https://chiehting.com/posts/aws-virtual-private-cloud/</link><pubDate>Thu, 19 Oct 2023 11:07:27 +0800</pubDate><guid>https://chiehting.com/posts/aws-virtual-private-cloud/</guid><description>
+&lt;p>理解 AWS VPC 規範&lt;/p>
+&lt;h3 id="vpc">VPC&lt;/h3>
+&lt;p>VPC（Virtual Private Cloud）用於隔離 AWS 中的資源，在 VPC 中所建立的資源被分配到的 IP 都會在 CIDR(Classless Inter-Domain Routing) 區段中。每個 VPC 盡量保持獨立，不與其他 VPC 對接，減少橫向移動。&lt;/p>
+&lt;p>官方建議 VPC 的 IPv4 地址的範圍使用 &lt;a href="http://www.faqs.org/rfcs/rfc1918.html">RFC 1918&lt;/a> 所規範之範圍。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>RFC 1918 range&lt;/th>
+&lt;th>Example CIDR block&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>10.0.0.0 - 10.255.255.255 (10/8 prefix)&lt;/td>
+&lt;td>10.0.0.0/16&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>172.16.0.0 - 172.31.255.255 (172.16/12 prefix)&lt;/td>
+&lt;td>172.31.0.0/16&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>192.168.0.0 - 192.168.255.255 (192.168/16 prefix)&lt;/td>
+&lt;td>192.168.0.0/20&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>VPC 建立好後，預設會建立一個 Internet gateways 使 VPN 可以跟網際網路做溝通。&lt;/p>
+&lt;h3 id="subnet">Subnet&lt;/h3>
+&lt;p>VPC 的 CIDR 規劃好後，通常會是一個較大的網路區段，所以會再做子網段的切割。子網段的架構都略有不同，這邊採用 &lt;a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-example-private-subnets-nat.html">VPC with servers in private subnets and NAT&lt;/a>。&lt;/p>
+&lt;p>這種架構將子網段建立在不同 AZ 上並分成 public &amp;amp; private。實作起來比較複雜，private 需要 NAT gateways 來跟網際網路做溝通。
+但好處是可以強化資源的安全性，被放在 private 子網段中的資源不配置 public IP，也就是無法直接連線，例如 MySQL 服務。&lt;/p></description></item><item><title>Laravel 框架產生的 cookie XSRF-TOKEN 需不需要使用 HttpOnly</title><link>https://chiehting.com/posts/laravel-xsrf-token-needless-httponly/</link><pubDate>Thu, 27 Jul 2023 17:02:44 +0800</pubDate><guid>https://chiehting.com/posts/laravel-xsrf-token-needless-httponly/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: Does a CSRF cookie need to be HttpOnly such as XSRF-TOKEN cookie from Laravel.&lt;/p>
+&lt;p>Answer :: CSRF cookie 可以不用使用 HttpOnly flag([[internet-rfc-6265-server-requirements]]), 因為 HttpOnly flag 保護的前提下已經是被 XSS([[cross-site-scripting]]) 攻擊, 同域的狀況下 CSRF cookie 已經失去其保護作用. 而且 XSS is a much bigger hole than CSRF. 所以 Laravel 產生的 XSRF-TOKEN cookie 可以不使用 HttpOnly flag.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>這篇再討論防止 Cross Site Request Forgery(CSRF) 使用的 cookie 需不需要使用 HttpOnly. 像是 Laravel 框架中的 XSRF-TOKEN. 要理解這個問題, 首先要先釐清 CSRF 與 Cookie HttpOnly 的作用.&lt;/p>
+&lt;p>CSRF 攻擊是惡意網站偽造我的網站並發送請求到我的服務, 一般情況下會透過用戶的瀏覽器發送請求, 所以儲存在用戶上的 cookie 也都會被帶上, 我的服務就會判定就是該用戶的請求. 而 CSRF token 則可以保護我的服務收到的請求都是同域, 因為跨域取不到 CSRF token.&lt;/p>
+&lt;p>Cookie 的 HttpOnly flag 其目的是防止 Javascript 可以讀寫 cookie, 透過禁用 &lt;code>document.cookie&lt;/code> 的方式防止某些攻擊, 例如 Cross-Site Scripting(XSS) 攻擊時其更難執行. XSS 會注入攻擊碼至我的服務中, 使我的服務執行攻擊腳本, 進而對用戶造成傷害.&lt;/p>
+&lt;p>現在回到 XSRF-TOKEN 需不需要使用 HttpOnly. 由於 XSRF-TOKEN 是防止跨站攻擊, HttpOnly flag 是 XSS 後防止 JS 竊取. 所以已經被 XSS 的話 XSRF-TOKEN 應該就失去保護之目的了, 因為是同域. 在被 XSS 的情況下, 攻擊者已經沒有竊取 XSRF-TOKEN 的必要, 因為每次請求用戶瀏覽器都會帶上; 攻擊者已經沒有改寫 XSRF-TOKEN 的必要, 因為改寫了用戶請求就會失敗. 所以 XSRF-TOKEN 可以不用 HttpOnly flag.&lt;/p>
+&lt;p>另外 &lt;a href="https://laravel.com/docs/10.x/csrf#csrf-x-xsrf-token">Laravel 文件&lt;/a> 也明確表明 XSRF-TOKEN 創建是為了給 JavaScript 框架或套件使用的, 用於在同域下設置表頭 X-XSRF-TOKEN, 所以理應要給 JavaScript 讀取. Laravel 框架下產生的 XSRF-TOKEN 可以不用 HttpOnly flag.&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://security.stackexchange.com/questions/175536/does-a-csrf-cookie-need-to-be-httponly">Does a CSRF cookie need to be HttpOnly?&lt;/a>&lt;/p>
+&lt;p>We were recently handed a security report containing the following:&lt;/p>
+&lt;blockquote>
+&lt;p>Cookie(s) without HttpOnly flag set&lt;/p>
+&lt;/blockquote>
+&lt;p>vulnerability, which we apparently had in one of our internal applications.&lt;/p>
+&lt;p>The applied fix was as simple as setting Django's &lt;a href="https://docs.djangoproject.com/en/2.0/ref/settings/#csrf-cookie-httponly">&lt;code>CSRF_COOKIE_HTTPONLY&lt;/code> configuration parameter&lt;/a> to &lt;code>True&lt;/code>.&lt;/p>
+&lt;p>But, this is what got me confused. The Django documentation says:&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Designating the CSRF cookie as HttpOnly doesn’t offer any practical protection because CSRF is only to protect against cross-domain attacks.&lt;/span> If an attacker can read the cookie via JavaScript, they’re already on the same domain as far as the browser knows, so they can do anything they like anyway. (XSS is a much bigger hole than CSRF.)&lt;/strong>&lt;/p>
+&lt;p>Although the setting offers little practical benefit, it’s sometimes required by security auditors.&lt;/p>
+&lt;/blockquote>
+&lt;p>Does this mean that &lt;strong>&lt;span style="background-color: #ffffcc; color: red">there is no actual vulnerability here&lt;/span> and we just have to be compliant with the security auditing rules&lt;/strong>?&lt;/p>
+&lt;h4 id="97-樓">97 樓&lt;/h4>
+&lt;p>As &lt;a href="https://security.stackexchange.com/a/175538/98538">joe says&lt;/a>, &lt;strong>there is no real security benefit to this&lt;/strong>. It is pure security theater. I'd like to highlight this from &lt;a href="https://docs.djangoproject.com/en/2.0/ref/settings/#csrf-cookie-httponly">the documentation&lt;/a>:&lt;/p>
+&lt;blockquote>
+&lt;p>If you enable this and need to send the value of the CSRF token with an AJAX request, your JavaScript must pull the value from a hidden CSRF token form input on the page instead of from the cookie.&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>The purpose of the HttpOnly flag is to make the value of the cookie unavailable from JavaScript, so that it can not be stolen if there is a XSS vulnerability. But the CSRF-token must somehow be available so it can be double submitted&lt;/strong> - thats the whole point with it, after all. So Django solves this by including the value in a hidden form field. This negates the whole benefit of HttpOnly, since an attacker can just read the value of the form field instead of the cookie.&lt;/p>
+&lt;h4 id="18-樓">18 樓&lt;/h4>
+&lt;p>I think the main point of confusion here is that the Django docs are specifically talking about the &lt;em>CSRF&lt;/em> use case for a cookie. &lt;strong>In order to understand why the &lt;code>httpOnly&lt;/code> flag adds no value in preventing CSRF, you need to understand both CSRF and how cookies work.&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">CSRF is when a 3rd party triggers your user's browser to make a request to your server, and their browser automatically sends your server's cookies along with the request, as expected&lt;/span>. What you don't want is for your server to interpret this request as actually coming from your user, so you use a &lt;a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html">CSRF mitigation&lt;/a> technique.&lt;/strong> The whole point of CSRF mitigation is &lt;strong>to be able to detect when the request didn't come from your own domain (i.e. from your user interacting with your application)&lt;/strong>.&lt;/p>
+&lt;p>Briefly, how cookies work: &lt;strong>Whenever a user's browser sends a request to your domain/server, it automatically sends all the cookies associated with your domain, regardless of the &lt;code>httpOnly&lt;/code> flag. Cookies therefore allow your client or your server to attach information to a user's browser that will be returned to your server automatically along with any follow-on requests. &lt;span style="background-color: #ffffcc; color: red">Cookies with the &lt;code>httpOnly&lt;/code> flag cannot be accessed from javascript.&lt;/span> They probably shouldn't be considered a secure place to store information, but they do provide the advertised functionality.&lt;/strong>&lt;/p>
+&lt;p>Back to CSRF implemented using a cookie — &lt;span style="background-color: #ffffcc; color: red">&lt;strong>in this case&lt;/strong> the &lt;code>httpOnly&lt;/code> flag is pointless&lt;/span> — &lt;span style="background-color: #ffffcc; color: red">the crux of CSRF is that they don't need to read your user's cookies, they just need your user's browser to send the associated cookies to your server along with the network request they forced it to send.&lt;/span> The &lt;code>httpOnly&lt;/code> flag, in general, does provide value in that it prevents client access to those cookies, and if your server returns any cookies, you should probably make them &lt;code>httpOnly&lt;/code>. If you are using a cookie for CSRF, then, you shouldn't do that, and you should spend your time rethinking that rather than making it an &lt;code>httpOnly&lt;/code> cookie. So, in general, it seems like that is a good rule of thumb — your server shouldn't send any non-&lt;code>httpOnly&lt;/code> cookies unless it is specifically intended to be accessed by the client javascript.&lt;/p></description></item><item><title>比較 SSL Certificates 的驗證效率</title><link>https://chiehting.com/posts/kubernetes-compare-ssl-speed/</link><pubDate>Wed, 01 Mar 2023 14:27:00 +0800</pubDate><guid>https://chiehting.com/posts/kubernetes-compare-ssl-speed/</guid><description>
+&lt;p>由於調整 DNS namespace 由 Cloudflare 改為 Amazon Route 53，做架構調整，這將會影響到 SSL Certificates 的申請。&lt;/p>
+&lt;p>而原本就有 AWS Certificate Manager (ACM)，申請好的憑證可以跟 Amazon Route 53 做整合；
+而現有的憑證管理方式是 Cloudflare + cert-manager。&lt;/p>
+&lt;p>所以想要知道哪種架構的效率較好。&lt;/p>
+&lt;h3 id="分析結果">分析結果&lt;/h3>
+&lt;p>就分析報告來看，將 &amp;quot;SSL verifiation&amp;quot; 的工作放在 Ingress-NGINX 效率較好。&lt;/p>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2023-03-01-compare-the-authentication-efficiency-of-ssl-certificates-4.png" alt="Response Time Percentiles">&lt;/p>
+&lt;h3 id="架構變更">架構變更&lt;/h3>
+&lt;p>原本是使用 Cloudflare DNS01 challenge，透過 cert-manager([[kubernetes-install-cert-manager]]) 申請憑證；改為使用 ACM + Amazon Route 53 管理。&lt;/p>
+&lt;p>架構為調整，將 &amp;quot;SSL verifiation&amp;quot; 由 Ingress-NGINX 改到 Network Load balancers。&lt;/p>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2023-03-01-compare-the-authentication-efficiency-of-ssl-certificates-1.png" alt="architecture">&lt;/p>
+&lt;h3 id="jmeter-測試">Jmeter 測試&lt;/h3>
+&lt;p>測試條件如下為: 總共循環 20 次，間隔 10 秒；每次觸發會有 10 個 threads；每個 thread 會請求發送一次請求。&lt;/p>
+&lt;p>所以一次測試會有 &lt;code>20 * 10 = 200&lt;/code> 個取樣。&lt;/p>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2023-03-01-compare-the-authentication-efficiency-of-ssl-certificates-3.png" alt="summary">&lt;/p>
+&lt;h4 id="報告靜態檔">報告靜態檔&lt;/h4>
+&lt;p>&lt;a href="https://storage.googleapis.com/chiehting.com/blog/2023-03-01-compare-the-authentication-efficiency-of-ssl-certificates-2/index.html">jmeter report&lt;/a>&lt;/p></description></item><item><title>Set the Domain's record to the CoreDNS</title><link>https://chiehting.com/posts/kubernetes-add-domain-record-to-coredns/</link><pubDate>Thu, 19 Jan 2023 12:20:00 +0800</pubDate><guid>https://chiehting.com/posts/kubernetes-add-domain-record-to-coredns/</guid><description>
+&lt;p>這兩天在處理 DNS 的問題, 看到可以直接在 CoreDNS 中塞 record. 這邊做個紀錄&lt;/p>
+&lt;p>Kubernetes 官方文件 &lt;a href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/">dns custom nemeservers&lt;/a> 有寫到配置方式&lt;/p>
+&lt;h3 id="多配置-dns-server">多配置 DNS Server&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">kubectl edit configmap coredns -n kube-system
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下面為配置 db.example.com.tw 的 dns 範例&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="l">.:53 {&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">errors&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">health&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">kubernetes cluster.local in-addr.arpa ip6.arpa {&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">pods insecure&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">fallthrough in-addr.arpa ip6.arpa&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>}&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">prometheus :9153&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">forward . /etc/resolv.conf&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">cache 30&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">loop&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">reload&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">loadbalance&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>}&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="l">db.example.com.tw:53 {&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">errors&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">cache 30&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">forward . 192.168.1.130&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">reload&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>}&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="配置-hosts">配置 hosts&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="l">.:53 {&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">errors&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">health&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">kubernetes cluster.local in-addr.arpa ip6.arpa {&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">pods insecure&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">fallthrough in-addr.arpa ip6.arpa&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>}&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">hosts {&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="m">127.0.0.1&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">localhost&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">::&lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">localhost&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="m">10.1.2.3&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">abc.example.com&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">fallthrough&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># If you want to pass the request to the rest of the plugin chain if there is no match in the _hosts_ plugin, you must specify the `fallthrough` option.&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>}&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">prometheus :9153&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">forward . /etc/resolv.conf&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">cache 30&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">loop&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">reload&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">loadbalance&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>}&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="同時配置時">同時配置時&lt;/h3>
+&lt;p>若同時配置時, 則會以 DNS Server 為優先.&lt;/p></description></item><item><title>How to use certbot to renew SSL certification</title><link>https://chiehting.com/posts/certbot-renew-ssl-certification/</link><pubDate>Thu, 28 Oct 2021 15:24:00 +0800</pubDate><guid>https://chiehting.com/posts/certbot-renew-ssl-certification/</guid><description>
+&lt;p>使用 Certbot 來申請 Web Site 的 SSL 憑證. Certbot 是一個開源軟體, 可以自動(手動)執行域名的驗證與透過憑證頒發機構 &lt;a href="https://letsencrypt.org/">Let’s Encrypt&lt;/a> 來取得憑證.&lt;/p>
+&lt;h3 id="安裝套件">安裝套件&lt;/h3>
+&lt;p>ubuntu 20.04 上安裝套件&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">bash$ sudo apt-get install -y certbot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Centos 7 上安裝套件&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">bash$ sudo yum -y install epel-release mod_ssl certbot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="使用-dns-challenges-申請憑證">使用 dns challenges 申請憑證&lt;/h3>
+&lt;p>完成後憑證會在 /etc/letsencrypt/live/harbor.example.com 底下, 這邊要注意檔案是軟連結.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">certbot -d redmine.example.com --manual --preferred-challenges dns certonly
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">Please deploy a DNS TXT record under the name
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">_acme-challenge.harbor.example.com with the following value:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">go3M8xPHJKhOp2_Wuwnh4PaOUiOlMtiMiuRCX026WRo
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">Before continuing, verify the record is deployed.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">Press Enter to Continue
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">Waiting &lt;span class="k">for&lt;/span> verification...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">Cleaning up challenges
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">IMPORTANT NOTES:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> - Congratulations! Your certificate and chain have been saved at:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> /etc/letsencrypt/live/harbor.example.com/fullchain.pem
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> Your key file has been saved at:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> /etc/letsencrypt/live/harbor.example.com/privkey.pem
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> Your cert will expire on 2022-01-26. To obtain a new or tweaked
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> version of this certificate in the future, simply run certbot
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> again. To non-interactively renew *all* of your certificates, run
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;certbot renew&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> - Your account credentials have been saved in your Certbot
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> configuration directory at /etc/letsencrypt. You should make a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> secure backup of this folder now. This configuration directory will
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> also contain certificates and private keys obtained by Certbot so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> making regular backups of this folder is ideal.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> - If you like Certbot, please consider supporting our work by:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> Donating to ISRG / Let&lt;span class="err">&amp;#39;&lt;/span>s Encrypt: https://letsencrypt.org/donate
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> Donating to EFF: https://eff.org/donate-le
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Cloudfloar proxy slow</title><link>https://chiehting.com/posts/cloudflare-proxy-slow-issue/</link><pubDate>Mon, 16 Aug 2021 14:55:00 +0800</pubDate><guid>https://chiehting.com/posts/cloudflare-proxy-slow-issue/</guid><description>
+&lt;p>今天收到反應說服務 API 的反應速度有變慢, 盤查結果發現目前使用的 Cloudflare 中的 proxy 功能造成的, 這邊紀錄盤查過程.&lt;/p>
+&lt;p>從下圖可以看到有多支 API 變慢，這邊先分析變慢的原因。&lt;/p>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2021-08-16-cloudflare-proxy-issu-1.jpg" alt="api request is slow">&lt;/p>
+&lt;h3 id="分析">分析&lt;/h3>
+&lt;ol>
+&lt;li>測試網路節點狀況，看是否有節點異常緩慢&lt;/li>
+&lt;li>測試 API 請求狀況，查看請求是否有緩慢的階段&lt;/li>
+&lt;/ol>
+&lt;h4 id="測試網路節點狀況">測試網路節點狀況&lt;/h4>
+&lt;p>MTR 分析網路節點狀況，可以看到節點的響應速度在 200 ms 內，看起來還在可接受範圍內。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ sudo mtr --tcp --port &lt;span class="m">443&lt;/span> --report --report-cycles &lt;span class="m">5&lt;/span> api.bitwin.ai
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Start: 2021-08-13T17:28:56+0800
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">HOST: JustinLee Loss% Snt Last Avg Best Wrst StDev
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> 1.&lt;span class="p">|&lt;/span>-- rt-ac68u-2ad0 0.0% &lt;span class="m">5&lt;/span> 2.5 2.4 1.8 3.5 0.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> 2.&lt;span class="p">|&lt;/span>-- h254.s98.ts.hinet.net 0.0% &lt;span class="m">5&lt;/span> 11.7 7.9 6.1 11.7 2.3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 3.&lt;span class="p">|&lt;/span>-- tpn2-3301.hinet.net 0.0% &lt;span class="m">5&lt;/span> 20.0 11.2 5.8 20.0 6.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 4.&lt;span class="p">|&lt;/span>-- tpdb-3031.hinet.net 40.0% &lt;span class="m">5&lt;/span> 9.9 9.5 9.1 9.9 0.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 5.&lt;span class="p">|&lt;/span>-- 220-128-8-121.hinet-ip.hi 0.0% &lt;span class="m">5&lt;/span> 8.5 10.7 7.5 18.5 4.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> 6.&lt;span class="p">|&lt;/span>-- tyfo-4011.hinet.net 0.0% &lt;span class="m">5&lt;/span> 12.0 9.1 6.8 12.0 2.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> 7.&lt;span class="p">|&lt;/span>-- r31-la.us.hinet.net 0.0% &lt;span class="m">5&lt;/span> 142.5 142.9 140.1 148.3 3.2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> 8.&lt;span class="p">|&lt;/span>-- r32-la.us.hinet.net 0.0% &lt;span class="m">5&lt;/span> 139.9 141.4 139.0 143.1 1.9
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> 9.&lt;span class="p">|&lt;/span>-- 141.101.72.250 0.0% &lt;span class="m">5&lt;/span> 153.2 146.1 139.4 153.3 6.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> 10.&lt;span class="p">|&lt;/span>-- 104.21.33.138 0.0% &lt;span class="m">5&lt;/span> 140.3 141.2 139.8 142.6 1.2
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="測試-api-請求狀況">測試 API 請求狀況&lt;/h4>
+&lt;p>使用 curl 命令對 api/ping 做請求, 這支 API 非常輕量, 但響應時間需要 1144 ms, 有點不合理.&lt;/p>
+&lt;p>由下面資訊可以看到在 time_appconnect 這邊花了比較長的時間, 也就是可能在做 TLS 的時候佔了很長的時間, 而因為有使用 Cloudflare proxy, 所以 client 端在是對 proxy 的機器做 TLS Handshake.&lt;/p>
+&lt;blockquote>
+&lt;p>time_appconnect here is TLS setup. The client is then ready to send it’s HTTP GET request.&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ bash curl_timetrace.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1"># starting_time: Fri Aug 13 17:43:56 CST 2021&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> time_namelookup: 0.002113
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> time_connect: 0.187355
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> time_appconnect: 0.521270
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> time_pretransfer: 0.521435
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">time_starttransfer: 1.144257
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> ---------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> time_total: 1.144484 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="troubleshoot">Troubleshoot&lt;/h3>
+&lt;p>經由上面分析觀察到可能是 TLS 耗時太久. 嘗試移除 Cloudflare proxy 的功能, 讓 Cloudflare 只單純的做 DNS.&lt;/p>
+&lt;p>目前路由狀況如下圖. 由於網站上的 SSL 綁定都是使用 &lt;a href="https://www.cloudflare.com/zh-tw/ssl/">Cloudflare 免費 SSL/TLS&lt;/a>, 這功能必須啟用 proxy. 若要禁用 proxy 的話, 必須將 SSL 憑證在其他地方綁定. 測試時先暫時把 SSL 憑證改綁在 AWS Elastic Load Balancing 上.&lt;/p>
+&lt;pre class="mermaid">flowchart LR
+client --> cloudflare["Cloudflare proxy"]
+cloudflare --> originServer["origin server"]&lt;/pre>
+&lt;h3 id="比較結果">比較結果&lt;/h3>
+&lt;p>可以看到調整過後, 約提升了 60% 的效率. 這邊評估可能是 proxy 的節點較遠, 而 client 需要先經過 proxy 才能到達 origin server, 所以導致變慢.&lt;/p>
+&lt;p>這邊有一個網站 &lt;a href="https://cloudflare-test.judge.sh/">cloudflare-test&lt;/a>，可以測試 proxy 的地理位置，另外 proxy 會隨時間作變動非固定。&lt;/p>
+&lt;p>&lt;strong>Before&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ bash curl_timetrace.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1"># starting_time: Fri Aug 13 17:43:56 CST 2021&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> time_namelookup: 0.002113
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> time_connect: 0.187355
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> time_appconnect: 0.521270
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> time_pretransfer: 0.521435
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">time_starttransfer: 1.144257
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> ---------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> time_total: 1.144484 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>After&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ bash curl_timetrace.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1">##### starting_time: Fri Aug 13 20:31:22 CST 2021&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> time_namelookup: 0.002898
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> time_connect: 0.117132
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> time_appconnect: 0.344409
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> time_pretransfer: 0.344475
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> time_starttransfer: 0.453052
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> ---------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> time_total: 0.453251 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>什麼是 QUIC</title><link>https://chiehting.com/posts/quick-udp-internet-connections/</link><pubDate>Wed, 21 Jul 2021 13:55:00 +0800</pubDate><guid>https://chiehting.com/posts/quick-udp-internet-connections/</guid><description>
+&lt;p>QUIC(Quick UDP Internet Connections) 為 OSI model 中 &amp;quot;傳輸層&amp;quot; 和 &amp;quot;應用層&amp;quot; 之間的一個新的協議層. 是基於 UDP 之上的, 但它在傳輸層和應用層之間引入了自己的協議層, 用於處理連接、可靠性、流控制和安全性等問題. 所以 QUIC 不好用 OSI model 去區分, 而是稱為 &amp;quot;安全的通用傳輸協議(secure general-purpose transport protocol)&amp;quot;.&lt;/p>
+&lt;p>HTTP/3 是個新的 HTTP 版本，使用 QUIC 作為傳輸協議，與 HTTP/1.1、HTTP/2.0 使用的 TCP/IP 不同。相較於 TCP/IP 協議；QUIC 提高了網路效能。&lt;/p>
+&lt;p>HTTP 是網際網路上重要的網路協議之一，至今已經發行了多個版本。這個 &lt;a href="https://http2.akamai.com/demo">demo1&lt;/a>、&lt;a href="http://www.http2demo.io/">demo2&lt;/a> 可以看到 HTTP/1.1 與 HTTP/2.0 的差異。&lt;/p>
+&lt;ul>
+&lt;li>HTTP/1.0&lt;/li>
+&lt;li>HTTP/1.1&lt;/li>
+&lt;li>HTTP/2.0&lt;/li>
+&lt;/ul>
+&lt;p>HTTP（Hypertext Transfer Protocol）協議是 application-level protocol (OSI model: layer 7)，在 RFC 2616 中描述 HTTP 傳輸層預設是使用 TCP/IP 作為連線，原因是因為要基於可靠的傳輸方式，但不排除 HTTP 也可以使用在其他協議上，前提是需要可靠的傳輸。&lt;/p>
+&lt;blockquote>
+&lt;p>HTTP communication usually takes place over TCP/IP connections. The
+default port is TCP 80 [19], but other ports can be used. This does
+not preclude HTTP from being implemented on top of any other protocol
+on the Internet, or on other networks. HTTP only presumes a reliable
+transport; any protocol that provides such guarantees can be used;
+the mapping of the HTTP/1.1 request and response structures onto the
+transport data units of the protocol in question is outside the scope
+of this specification.&lt;/p>
+&lt;/blockquote>
+&lt;p>然後 HTTP/2.0 是基於 TCP/IP 協議，所以只要某個 tcp package 遺失就會觸發 Retransmission Timer（重傳計時器）重傳封包進而造成隊頭阻塞（head of line blocking），在未收到該 ack 之前，所有 stream 都須等待。
+而在極端的網路環境之下，HTTP/2.0 可能比 HTTP/1.1 之效率來得差。&lt;/p>
+&lt;h3 id="quic">QUIC&lt;/h3>
+&lt;p>&lt;a href="https://www.chromium.org/quic/">QUIC, a multiplexed transport over UDP&lt;/a> 是由 Google 所提出的設計，後來演變為一個 IETF 標準化的協議（RFC 9000）。而這協議是在端點間建立數個 Multiplexing 的 UDP 連線。&lt;/p>
+&lt;blockquote>
+&lt;p>QUIC is a new multiplexed transport built on top of UDP. HTTP/3 is designed to take advantage of QUIC's features, including lack of Head-Of-Line blocking between streams.&lt;/p>
+&lt;/blockquote>
+&lt;p>而 QUIC 的優點：&lt;/p>
+&lt;ul>
+&lt;li>使用 UDP 連線，所以減少了三次握手的效能消耗&lt;/li>
+&lt;li>封包遺失只會影響到對應的 stream，&lt;/li>
+&lt;li>實現了 TCP 的可靠性，使用 Packet Number 來代替 TCP 的 sequence number&lt;/li>
+&lt;li>實現了 HTTP/2.0 的多路復用（multiplexed），但相較於 HTTP/2.0 協議 QUIC 每個 stream 間沒有依賴關係，也就是說大幅減少隊頭阻塞(lack of Head-Of-Line)&lt;/li>
+&lt;li>實現了 TLS 的安全性&lt;/li>
+&lt;/ul>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://javascript.plainenglish.io/what-is-http-3-and-why-does-it-matter-cb7d7b4b600f">What is http/3&lt;/a>&lt;/li>
+&lt;li>&lt;a href="http://xiaorui.cc/archives/6117">技术分享之http2和quic的那些事儿&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://medium.com/@the.real.yushuf/benchmarking-quic-1fd043e944c7">benchmarking quic&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://datatracker.ietf.org/doc/html/rfc2616">Hypertext Transfer Protocol&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.chromium.org/quic">QUIC&lt;/a>&lt;/li>
+&lt;/ul></description></item><item><title>Linux kernel 的網路參數 rp_filter</title><link>https://chiehting.com/posts/linux-kernel-rp-filter/</link><pubDate>Thu, 24 Jun 2021 14:39:00 +0800</pubDate><guid>https://chiehting.com/posts/linux-kernel-rp-filter/</guid><description>
+&lt;p>這篇來記錄有關 Linux kernel 的 network 參數。&lt;/p>
+&lt;h3 id="rp_filter">rp_filter&lt;/h3>
+&lt;p>為逆向路徑過濾 (Reverse Path Filtering)，其作用為為過濾反向不通的封包，將其丟棄。
+而原理為由 NIC1 (network interface card) 進來的封包，reverse path filtering 模塊會將其封包的源地址（source ip）與目標地址（destination ip）做對調，然後再路由表中查找，如果出去的介面是 NIC1 則通過；反之不是 NIC1 則丟棄該封包。&lt;/p>
+&lt;p>可以從 &lt;a href="https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt">ip-sysctl&lt;/a> 文件中找到參數的用法。其中該參數為整數型，其值包括了 0：不做來源驗證；1：嚴謹認證模式；2：寬鬆認證模式。&lt;/p>
+&lt;pre>&lt;code>rp_filter - INTEGER
+0 - No source validation.
+1 - Strict mode as defined in RFC3704 Strict Reverse Path
+Each incoming packet is tested against the FIB and if the interface
+is not the best reverse path the packet check will fail.
+By default failed packets are discarded.
+2 - Loose mode as defined in RFC3704 Loose Reverse Path
+Each incoming packet's source address is also tested against the FIB
+and if the source address is not reachable via any interface
+the packet check will fail.
+Current recommended practice in RFC3704 is to enable strict mode
+to prevent IP spoofing from DDos attacks. If using asymmetric routing
+or other complicated routing, then loose mode is recommended.
+The max value from conf/{all,interface}/rp_filter is used
+when doing source validation on the {interface}.
+Default value is 0. Note that some distributions enable it
+in startup scripts.
+&lt;/code>&lt;/pre>
+&lt;h4 id="source-code">Source code&lt;/h4>
+&lt;p>可以上網找到原始碼 &lt;a href="https://elixir.bootlin.com/linux/latest/source/net/ipv4/fib_frontend.c#L419">fib_frontend.c&lt;/a>，這邊來看一下實作方法。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="cm">/* Ignore rp_filter for packets protected by IPsec. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="kt">int&lt;/span> &lt;span class="nf">fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 是否啟用反向封包過濾功能，這邊注意如果封包受 IPSec 保護則忽略反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">r&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">secpath_exists&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">IN_DEV_RPFILTER&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">fib_num_tclassid_users&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_TX_REDIRECTS&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 本地源的封包不執行反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">ok&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* with custom local routes in place, checking local addresses
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="cm"> * only will be too optimistic, with custom rules, checking
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="cm"> * local addresses only can be too strict, e.g. due to vrf
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ipv4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fib_has_custom_local_routes&lt;/span> &lt;span class="o">||&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fib4_has_custom_rules&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">full_check&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">inet_lookup_ifaddr_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="nl">ok&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="nl">full_check&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">r&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">itag&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">static&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="nf">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">rpf&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flow_keys&lt;/span> &lt;span class="n">flkeys&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">no_addr&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">fib_result&lt;/span> &lt;span class="n">res&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flowi4&lt;/span> &lt;span class="n">fl4&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="kt">bool&lt;/span> &lt;span class="n">dev_match&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">l3mdev_master_ifindex_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">LOOPBACK_IFINDEX&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 可以看到這邊做反轉了 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">daddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">saddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tos&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_scope&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">RT_SCOPE_UNIVERSE&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tun_key&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">tun_id&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_flags&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_uid&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">sock_net_uid&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_multipath_hash&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="n">no_addr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifa_list&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_mark&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">IN_DEV_SRC_VMARK&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="nl">mark&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fib4_rules_early_flow_dissect&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">flkeys&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_proto&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_sport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_dport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_inval&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl"> &lt;span class="n">fib_combine_itag&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">fib_info_nh_uses_dev&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fi&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* This is not common, loopback packets retain skb_dst so normally they
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl">&lt;span class="cm"> * would not even hit this slow path.
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl"> &lt;span class="n">dev&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">loopback_dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">48&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">dev_match&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">49&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">50&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">51&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">52&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">no_addr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">53&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">54&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">55&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">56&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">57&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">58&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">59&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">FIB_LOOKUP_IGNORE_LINKSTATE&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">60&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">61&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">62&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">63&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">64&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">65&lt;/span>&lt;span class="cl">&lt;span class="nl">last_resort&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">66&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">67&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">68&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">69&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">70&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">71&lt;/span>&lt;span class="cl">&lt;span class="nl">e_inval&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">72&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">73&lt;/span>&lt;span class="cl">&lt;span class="nl">e_rpf&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">74&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EXDEV&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">75&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>參數：&lt;/p>
+&lt;ul>
+&lt;li>struct sk_buff - socket buffer&lt;/li>
+&lt;li>__be32 src - source&lt;/li>
+&lt;li>__be32 dst - destination&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/netdevice.h#L1853">struct net_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/inetdevice.h#L25">struct in_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>saddr - start address&lt;/li>
+&lt;li>daddr - destination address&lt;/li>
+&lt;/ul>
+&lt;p>科普：&lt;/p>
+&lt;ul>
+&lt;li>__bet32 - le 與 be 分別表示 little endian 和 big endian&lt;/li>
+&lt;li>u8、u32 - 表示無符號 char 字符類型&lt;/li>
+&lt;/ul>
+&lt;h4 id="作用">作用&lt;/h4>
+&lt;p>當前RFC3704文檔建議使用嚴謹認證模式。如果網路是非對稱網路或複雜的網路 rp_filter 建議配置為 2，做寬鬆認證。
+而 rp_filter 配置作用通常為下列：&lt;/p>
+&lt;ol>
+&lt;li>減少 DDoS 攻擊，注意是減少不是防止&lt;/li>
+&lt;li>防止 IP Spoofing&lt;/li>
+&lt;/ol></description></item><item><title>Understanding Docker network through iptables</title><link>https://chiehting.com/posts/docker-understanding-network-through-iptables/</link><pubDate>Mon, 21 Jun 2021 16:46:00 +0800</pubDate><guid>https://chiehting.com/posts/docker-understanding-network-through-iptables/</guid><description>
+&lt;p>Docker 為主流的容器化技術之一，而 Docker 則是使用 iptables 做 provide network isolation。
+這篇來了解 Docker 預設的 iptables 規則是什麼。&lt;/p>
+&lt;p>之前有寫過 iptables guide([[iptables-guide]])，知道 iptables 底層是使用 Netfilter 模組作封包的控制。&lt;/p>
+&lt;p>官方也有相關的資料可以參考 &lt;a href="https://docs.docker.com/network/iptables/">Docker and iptables&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;p>On Linux, Docker manipulates &lt;code>iptables&lt;/code> rules to provide network isolation. While this is an implementation detail and you should not modify the rules Docker inserts into your &lt;code>iptables&lt;/code> policies, it does have some implications on what you need to do if you want to have your own policies in addition to those managed by Docker.&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="思路">思路&lt;/h3>
+&lt;ol>
+&lt;li>建立虛擬機，確認初始 network interface 與 iptables&lt;/li>
+&lt;li>安裝 Docker 並確認 network interface 與 iptables&lt;/li>
+&lt;li>建置 nginx 容器，測試封包走向&lt;/li>
+&lt;/ol>
+&lt;h3 id="環境與版本">環境與版本&lt;/h3>
+&lt;p>OS：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# cat /etc/os-release
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">NAME&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;Ubuntu&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="nv">VERSION&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;20.04.2 LTS (Focal Fossa)&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Docker：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# docker version
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Client: Docker Engine - Community
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> Version: 20.10.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> API version: 1.41
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">Server: Docker Engine - Community
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> Engine:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> Version: 20.10.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> API version: 1.41 &lt;span class="o">(&lt;/span>minimum version 1.12&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> containerd:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> Version: 1.4.6
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> GitCommit: d71fcd7d8303cbf684402823e425e9dd2e99285d
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> runc:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> Version: 1.0.0-rc95
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> GitCommit: b9ee9c6314599f1b4a7f497e1f1f856fe433d3b7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> docker-init:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> Version: 0.19.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> GitCommit: de40ad0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="確認初始的-iptables-rules">確認初始的 iptables rules&lt;/h3>
+&lt;p>在一個新的虛擬機中，一開始的網路介面有 lo 跟 eth0。
+其中 lo 為這虛擬機的 LOOPBACK 使用; 而 eth0 則為可廣播的網路介面使用。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">65536&lt;/span> qdisc noqueue state UNKNOWN group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> inet 127.0.0.1/8 scope host lo
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> inet6 ::1/128 scope host
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">9001&lt;/span> qdisc fq_codel state UP group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> link/ether 06:3d:47:e2:09:ba brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> inet 172.31.37.164/20 brd 172.31.47.255 scope global dynamic eth0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> valid_lft 3514sec preferred_lft 3514sec
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> inet6 fe80::43d:47ff:fee2:9ba/64 scope link
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>新的虛擬機中，一開始是沒有配置 Chain、Table 的。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Chain PREROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">58&lt;/span> packets, &lt;span class="m">5352&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">Chain FORWARD &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">48&lt;/span> packets, &lt;span class="m">6066&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="安裝-docker-並且確認-iptables-rules">安裝 Docker 並且確認 iptables rules&lt;/h3>
+&lt;h4 id="確認網路介面">確認網路介面&lt;/h4>
+&lt;p>Docker 安裝完成後，看到新增了一個網路介面 docker0。
+其 docker0 的網路介面 ip 位置可以看到被分配到 172.17.0.1/16 的 private ip。而 router 部分則看到 172.17.0.0/16 網段都 link src 172.17.0.1。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># ip address&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">3: docker0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue state DOWN group default
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> link/ether 02:42:d3:81:15:1c brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1"># ip route&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip r
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">default via 172.31.32.1 dev eth0 proto dhcp src 172.31.37.164 metric &lt;span class="m">100&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">172.31.32.0/20 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">172.31.32.1 dev eth0 proto dhcp scope link src 172.31.37.164 metric &lt;span class="m">100&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="c1"># ip route show table local&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip r show table &lt;span class="nb">local&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">broadcast 127.0.0.0 dev lo proto kernel scope link src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 127.0.0.0/8 dev lo proto kernel scope host src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 127.0.0.1 dev lo proto kernel scope host src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">broadcast 127.255.255.255 dev lo proto kernel scope link src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">broadcast 172.17.0.0 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 172.17.0.1 dev docker0 proto kernel scope host src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">broadcast 172.17.255.255 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">broadcast 172.31.32.0 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 172.31.37.164 dev eth0 proto kernel scope host src 172.31.37.164
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">broadcast 172.31.47.255 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="確認-iptables-的-nat-table">確認 iptables 的 NAT Table&lt;/h4>
+&lt;p>下面列出了 nat table 的 Chain。看到新增了多個 Chain &lt;code>DOCKER&lt;/code>，而這 Chain 被 references 在 PREROUTING、OUTPUT 中。
+而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。&lt;/p>
+&lt;p>下面說明 nat table 的 Chain：&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>PREROUTING num 1&lt;/code> 是指如果進來的封包目的地址 match LOCAL 都跳到 Chain DOCKER，這邊要注意 LOCAL 並不是指本地，可以使用 &amp;quot;ip route show table local&amp;quot; 命令來確認哪些 ip 為 LOCAL
+&lt;ol>
+&lt;li>&lt;code>DOCKER num 1&lt;/code> 指如果封包是從 docker0 網路介面進來的，則結束 Chain DOCKER 然後返回原來的 Chain 繼續跑規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>OUTPUT num 1&lt;/code> 是指如果出去封包目的地址 match LOCAL 都跳到 Chain DOCKER，除了 127.0.0.0/8 網段
+&lt;ol>
+&lt;li>&lt;code>DOCKER num 1&lt;/code> 指如果封包是從 docker0 網路介面進來的，則結束 Chain DOCKER 然後返回原來的 Chain 繼續跑規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>POSTROUTING num 1&lt;/code> 是指如果出去封包不是 docker0 網路介面和 ip 來源是 172.17.0.0/16 時，不做修改&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Chain PREROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">14138&lt;/span> 743K DOCKER all -- * * 0.0.0.0/0 0.0.0.0/0 ADDRTYPE match dst-type LOCAL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">4&lt;/span> &lt;span class="m">240&lt;/span> DOCKER all -- * * 0.0.0.0/0 !127.0.0.0/8 ADDRTYPE match dst-type LOCAL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">34&lt;/span> &lt;span class="m">2073&lt;/span> MASQUERADE all -- * !docker0 172.17.0.0/16 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">2&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">19&lt;/span> &lt;span class="m">1140&lt;/span> RETURN all -- docker0 * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="確認-iptables-的-filter-table">確認 iptables 的 Filter Table&lt;/h4>
+&lt;p>可以看到新增了多個 Chain &lt;code>DOCKER&lt;/code>、&lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code>、&lt;code>DOCKER-ISOLATION-STAGE-2&lt;/code>、&lt;code>DOCKER-USER&lt;/code>，而這些 Chain 都被 references 在 FORWARD 中。
+可以看到 Chain FORWARD 的預設 policy 已經被改為 DROP，而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。&lt;/p>
+&lt;p>看到 FORWARD 的規則：&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>FORWARD num 1&lt;/code> 規則是跳到 &lt;code>DOCKER-USER&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-USER num 1&lt;/code> 規則是 RETURN 封包，回 &lt;code>FORWARD&lt;/code> 中繼續直執行其他的規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 2&lt;/code> 規則是跳到 &lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-1 num 1&lt;/code> 封包又跳到 &lt;code>DOCKER-ISOLATION-STAGE-2&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-2 num 1&lt;/code> 丟棄所有 docker0 網路介面出去的封包&lt;/li>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-2 num 2&lt;/code> RETURN 所有封包繼續執封包繼續執行 &lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code> 的其他規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-1 num 2&lt;/code> RETURN 所有封包繼續執封包繼續執行 &lt;code>FORWARD&lt;/code> 的其他規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 3&lt;/code> 規則為允許由 docker0 網路介面出去的封包，但封包狀態是 RELATED,ESTABLISHED&lt;/li>
+&lt;li>&lt;code>FORWARD num 4&lt;/code> 規則為當封包是 docker0 網路介面出去的，則跳到 &lt;code>DOCKER&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER&lt;/code> 暫無規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 5&lt;/code>、&lt;code>FORWARD num 6&lt;/code> 為允許經由 docker0 網路介面近來的所有封包進出&lt;/li>
+&lt;li>不在上述規則中的封包全部都 drop&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t fillter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">385&lt;/span> packets, &lt;span class="m">28200&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">Chain FORWARD &lt;span class="o">(&lt;/span>policy DROP &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-USER all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-ISOLATION-STAGE-1 all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="m">3&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- * docker0 0.0.0.0/0 0.0.0.0/0 ctstate RELATED,ESTABLISHED
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="m">4&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER all -- * docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="m">5&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- docker0 !docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="m">6&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- docker0 docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">304&lt;/span> packets, &lt;span class="m">59638&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">Chain DOCKER-ISOLATION-STAGE-1 &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-ISOLATION-STAGE-2 all -- docker0 !docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">Chain DOCKER-ISOLATION-STAGE-2 &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DROP all -- * docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">Chain DOCKER-USER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="建置-nginx-容器測試封包走向">建置 nginx 容器，測試封包走向&lt;/h3>
+&lt;p>啟動 container nginx&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">docker run --name nginx -p 80:80 -d nginx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="查看本機-listen-port">查看本機 listen port&lt;/h4>
+&lt;p>看到 port 80 被 docker-proxy 監聽著&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# netstat -tlnp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Active Internet connections &lt;span class="o">(&lt;/span>only servers&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Proto Recv-Q Send-Q Local Address Foreign Address State PID/Program name
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 0.0.0.0:80 0.0.0.0:* LISTEN 253681/docker-proxy
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 127.0.0.53:53 0.0.0.0:* LISTEN 370/systemd-resolve
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 0.0.0.0:22 0.0.0.0:* LISTEN 576/sshd: /usr/sbin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">tcp6 &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> :::80 :::* LISTEN 253686/docker-proxy
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">tcp6 &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> :::22 :::* LISTEN 576/sshd: /usr/sbin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="確認網路變化">確認網路變化&lt;/h4>
+&lt;p>網路介面新增了 &lt;code>veth3ce1bed&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:~# ip link
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">65536&lt;/span> qdisc noqueue state UNKNOWN mode DEFAULT group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">9001&lt;/span> qdisc fq_codel state UP mode DEFAULT group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> link/ether 06:3d:47:e2:09:ba brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">18: docker0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue state UP mode DEFAULT group default
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> link/ether 02:42:55:24:1f:ed brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">22: veth3ce1bed@if21: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue master docker0 state UP mode DEFAULT group default
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl"> link/ether ea:ba:b9:7b:48:ea brd ff:ff:ff:ff:ff:ff link-netnsid &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>還有將新增的網路介面 &lt;code>veth3ce1bed&lt;/code> 橋接在 &lt;code>docker0&lt;/code> 上。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:~# brctl show
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">bridge name bridge id STP enabled interfaces
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">docker0 8000.024255241fed no veth3ce1bed
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>iptables NAT table 新增了兩條規則。&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>POSTROUTING&lt;/code> 封包來源為封包目的為 172.17.0.2 地址為裝封包內容 tcp dpt:80&lt;/li>
+&lt;li>&lt;code>DOCKER num 2&lt;/code> 規則為所有非 docker0 網路介面近來且 tcp dpt:80 的封包，改到 172.17.0.2:80&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">266&lt;/span> packets, &lt;span class="m">17090&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> MASQUERADE tcp -- * * 172.17.0.2 172.17.0.2 tcp dpt:80
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">2&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">136&lt;/span> &lt;span class="m">7472&lt;/span> DNAT tcp -- !docker0 * 0.0.0.0/0 0.0.0.0/0 tcp dpt:80 to:172.17.0.2:80
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">123&lt;/span> &lt;span class="m">6692&lt;/span> ACCEPT tcp -- !docker0 docker0 0.0.0.0/0 172.17.0.2 tcp dpt:80
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="測試封包走向">測試封包走向&lt;/h4>
+&lt;p>在不同 client 端嘗試連上 nginx 服務，觀察封包所經過的網路規則。&lt;/p>
+&lt;p>監控 iptalbes 的 pkts 變化。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# watch iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# watch iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>監控 docker0 網路介面的封包裝況。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">tcpdump -i docker0 -q -v tcp port &lt;span class="m">80&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Iptables guide</title><link>https://chiehting.com/posts/iptables-guide/</link><pubDate>Tue, 04 May 2021 10:30:00 +0800</pubDate><guid>https://chiehting.com/posts/iptables-guide/</guid><description>
+&lt;p>iptables 被許多服務廣泛的運用著, 例如 Docker, Kubernetes 都是基於 iptables 來管理網路封包的處理, 所以此篇來研究 iptables 工具, 看看這些服務底層究竟在幹些什麼事.&lt;/p>
+&lt;p>Linux 核心 &lt;a href="https://www.netfilter.org/">Netfilter&lt;/a> 模組提供了網路的框架, 用於管理 Linux 主機的封包, 包括了&lt;code>過濾封包&lt;/code>、&lt;code>NAT&lt;/code>、&lt;code>Port 轉發&lt;/code>. 而 Linux 系統上有許多軟體是基於 &lt;a href="https://www.netfilter.org/">Netfilter&lt;/a> 模組實作網路管理介面, 例如 firewalld、ntw、iptables、nftables.&lt;/p>
+&lt;p>iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 &lt;code>Chain&lt;/code>、&lt;code>Target&lt;/code>、&lt;code>Table&lt;/code>、&lt;code>Match&lt;/code>, 而規則方面有 &lt;code>PREROUTING&lt;/code>、&lt;code>INPUT&lt;/code>、&lt;code>FORWARD&lt;/code>、&lt;code>OUTPUT&lt;/code>、&lt;code>POSTROUTIONG&lt;/code>.&lt;/p>
+&lt;h3 id="packet-flow">Packet flow&lt;/h3>
+&lt;p>引用 wiki &lt;a href="https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg">netfilter packet flow&lt;/a> 的圖, 可以看到封包在主機中的流量.&lt;/p>
+&lt;h3 id="tables-與-chain">Tables 與 chain&lt;/h3>
+&lt;p>下面列出 &lt;code>tables&lt;/code> 內建 &lt;code>chain&lt;/code> 關係&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;/th>
+&lt;th>PREROUTING&lt;/th>
+&lt;th>INPUT&lt;/th>
+&lt;th>FORWARD&lt;/th>
+&lt;th>OUTPUT&lt;/th>
+&lt;th>POSTROUTIONG&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>raw&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>mangle&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>nat&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>filter&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="tables">Tables&lt;/h4>
+&lt;p>優先層級為 &lt;code>raw&lt;/code> -&amp;gt; &lt;code>mangle&lt;/code> -&amp;gt; &lt;code>nat&lt;/code> -&amp;gt; &lt;code>filter&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>raw: 於處理異常(優先層級最高).&lt;/li>
+&lt;li>mangle: 提供改寫封包的功能.&lt;/li>
+&lt;li>nat(network address translation): IP 轉發; port 轉發.&lt;/li>
+&lt;li>filter: 封包過濾 (此為預設表).&lt;/li>
+&lt;/ul>
+&lt;h4 id="chain">Chain&lt;/h4>
+&lt;ul>
+&lt;li>PREROUTING: 數據包進入路由表之前.&lt;/li>
+&lt;li>INPUT: 通過路由表後目的地為本機.&lt;/li>
+&lt;li>FORWARD: 通過路由表後, 目的地不為本機.&lt;/li>
+&lt;li>OUTPUT: 由本機產生, 向外轉發.&lt;/li>
+&lt;li>POSTROUTIONG: 發送到網卡接口之前.&lt;/li>
+&lt;/ul>
+&lt;h4 id="state">State&lt;/h4>
+&lt;ul>
+&lt;li>NEW: 一個新的連線封包 (建立新連線後的第一個封包).&lt;/li>
+&lt;li>ESTABLISHED: 成功建立的連線, 即建立追蹤連線後所有封包狀態 (跟在 NEW 封包後面的所有封包).&lt;/li>
+&lt;li>RELATED: 新建連線,由 ESTABLISHED session 所建立的新獨立連線 (ex. ftp-data 連線).&lt;/li>
+&lt;li>INVALID: 非法連線狀態的封包 (DROP 封包).&lt;/li>
+&lt;li>UNKOWN: 不明連線狀態的封包.&lt;/li>
+&lt;/ul>
+&lt;h4 id="policy-and-target">Policy and target&lt;/h4>
+&lt;ul>
+&lt;li>ACCEPT: 允許封包移動至目的地或另一個 chain.&lt;/li>
+&lt;li>DROP: 丟棄封包,不回應要求,不傳送失敗訊息.&lt;/li>
+&lt;li>REJECT: 拒絕封包,回應要求,傳送失敗訊息.&lt;/li>
+&lt;li>SNAT: 修改 Source Socket.&lt;/li>
+&lt;li>DNAT: 修改 Destination Socket.&lt;/li>
+&lt;li>MASQUERADE: 動態修改 Source Socket (無法指定 IP,取當時網卡的 IP),較方便但效率較差.&lt;/li>
+&lt;li>REDIRECT: 將連線導至本機行程 (Local Process).&lt;/li>
+&lt;li>RETURN: 結束自行定義的 Chain 然後返回原來的 Chain 繼續跑規則 (rules).&lt;/li>
+&lt;li>QUEUE: 封包排隊等待處理.&lt;/li>
+&lt;li>LOG: 記錄指定的規則封包 (/etc/syslog.conf , default /var/log/messges).&lt;/li>
+&lt;/ul>
+&lt;h3 id="iptables-輸出格式說明">iptables 輸出格式說明&lt;/h3>
+&lt;p>下面指令可以列出表 &lt;code>filter&lt;/code> 的規則清單, 可以看到有三條 &lt;code>Chain&lt;/code>, 有九個欄位, 說明如下:&lt;/p>
+&lt;ul>
+&lt;li>pkts: 總共通過的封包的數量&lt;/li>
+&lt;li>bytes: 總共通過的流量大小&lt;/li>
+&lt;li>target: 執行的動作, 例如 &lt;code>ACCEPT&lt;/code>、&lt;code>REJECT&lt;/code>、&lt;code>RETURN&lt;/code>、&lt;code>DROP&lt;/code>、&lt;code>LOG&lt;/code>,也可以參照到其他 &lt;code>Chain&lt;/code>.&lt;/li>
+&lt;li>port: 使用封包的協定, 例如 &lt;code>all&lt;/code>、&lt;code>tcp&lt;/code>、&lt;code>udp&lt;/code>、&lt;code>icmp&lt;/code>&lt;/li>
+&lt;li>opt: 額外的選項說明&lt;/li>
+&lt;li>in: 進入的網路介面&lt;/li>
+&lt;li>out: 出去的網路介面&lt;/li>
+&lt;li>source: 此規則是針對哪個來源進行限制,例如 &lt;code>0.0.0.0/0&lt;/code>&lt;/li>
+&lt;li>destination: 此規則是針對哪個目標進行限制,例如 &lt;code>0.0.0.0/0&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@server:~ iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">Chain FORWARD &lt;span class="o">(&lt;/span>policy ACCEPT&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl"> pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="iptables-應用">iptables 應用&lt;/h3>
+&lt;h4 id="參數說明">參數說明&lt;/h4>
+&lt;ul>
+&lt;li>-P chain target: 變更 chain 的預設政策.&lt;/li>
+&lt;li>-A chain: 加入規則至 chain 的最後.&lt;/li>
+&lt;li>-I chain [rulenum]: 插入規則至 chain.&lt;/li>
+&lt;li>-D chain [rulenum]: 刪除 chain 上的規則.&lt;/li>
+&lt;li>-R chain [rulenum]: 取代 chain 上的規則.&lt;/li>
+&lt;li>-L [chain [rulenum]]: 列出 chain 上的規則.&lt;/li>
+&lt;li>-F [chain]: 刪除 chain 上的所有規則.&lt;/li>
+&lt;li>-Z [chain [rulenum]]: 將計數器歸零.&lt;/li>
+&lt;li>-N chain: 建立使用者定義的 chain.&lt;/li>
+&lt;li>-X [chain]: 刪除使用者定義的 chain.&lt;/li>
+&lt;li>-E old-chain new-chain: 變更 chain 的名稱.&lt;/li>
+&lt;/ul>
+&lt;p>其中 rulenum 是從上至下順序執行，直至匹配的的規則為止，否則執行預設政策。&lt;/p>
+&lt;h4 id="狀況題">狀況題&lt;/h4>
+&lt;p>測試主機有網路介面有 &lt;code>lo&lt;/code> and &lt;code>eth0&lt;/code>.&lt;/p>
+&lt;h5 id="查看-table-filter-的規則">查看 table filter 的規則&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@server:~ iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="修改-chain-的預設政策">修改 chain 的預設政策&lt;/h5>
+&lt;p>先將 22 port 打開, 以免被擋在家門外. INPUT 預設政策為 DROP.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># INPUT chain accept port 22&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@server:~ iptables -I INPUT -i eth0 -p tcp --dport &lt;span class="m">22&lt;/span> -m state --state NEW,ESTABLISHED -j ACCEPT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># OUTPUT chain accept port 22&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">root@server:~ iptables -I OUTPUT -o eth0 -p tcp --sport &lt;span class="m">22&lt;/span> -m state --state ESTABLISHED -j ACCEPT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># INPUT chain default drop&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">root@server:~ iptables -P INPUT DROP
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>還原&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># INPUT chain default accept&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@server:~ iptables -P INPUT ACCEPT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># Delete the INPUT chain first rule&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">root@server:~ iptables -D INPUT &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># Delete the OUTPUT chain first rule&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">root@server:~ iptables -D OUTPUT &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="封鎖-input-chain-指定的-port">封鎖 INPUT chain 指定的 port&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">＃ 拒絕由網卡 eth0 進來的 tcp port &lt;span class="m">80&lt;/span> 所有封包
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">iptables -A INPUT -p tcp -dport &lt;span class="m">80&lt;/span> -i eth0 -j REJECT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">＃ 拒絕由網卡 eth0 進來的 tcp port &lt;span class="m">7000&lt;/span> ~ &lt;span class="m">7005&lt;/span> 所有封包
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">iptables -A INPUT -p tcp -sport 7000:7005 -i eth0 -j REJECT
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="封鎖-input-chain-指定的-來源">封鎖 INPUT chain 指定的 來源&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iptables -I INPUT -p tcp --dport &lt;span class="m">80&lt;/span> -s 1.34.113.121/32 -m state --state ESTABLISHED -j REJECT
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="刪除-input-chain-所有的規則">刪除 INPUT chain 所有的規則&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iptables -F INPUT
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="rafances">Rafances&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="http://linux.vbird.org/linux_server/0250simple_firewall.php#netfilter_chain">iptables 的表格 (table) 與鏈 (chain)&lt;/a>&lt;/li>
+&lt;li>&lt;/li>
+&lt;/ul></description></item></channel></rss>

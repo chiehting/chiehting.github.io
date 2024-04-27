@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>jmeter on Chiehting</title><link>https://chiehting.com/tags/jmeter/</link><description>Recent content in jmeter on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 16 Nov 2023 10:30:51 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/jmeter/index.xml" rel="self" type="application/rss+xml"/><item><title>Apache Jmeter</title><link>https://chiehting.com/posts/testing-apache-jmeter/</link><pubDate>Thu, 16 Nov 2023 10:30:51 +0800</pubDate><guid>https://chiehting.com/posts/testing-apache-jmeter/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 紀錄 Apache Jmeter 的使用筆記。&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>理解 Apache Jmeter 壓工具，研究其中的的元件&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 Java([[moc-java]]) 編譯好的應用程式。&lt;/p>
+&lt;h4 id="install">Install&lt;/h4>
+&lt;p>當前版本為 Jmeter 5.6.2 的版本，下面操作皆是以這個版本為基礎。&lt;/p>
+&lt;h5 id="required">Required&lt;/h5>
+&lt;ol>
+&lt;li>由於是 Java 編譯，所以需要先配置好 Jar([[moc-java#Jar]]) 環境。&lt;/li>
+&lt;/ol>
+&lt;h5 id="download-jmeter">Download Jmeter&lt;/h5>
+&lt;p>配置好環境後下載即可使用，下面為下載命令。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> /opt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">tar zxf apache-jmeter-5.6.2.tgz
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="how-to-use">How to use&lt;/h4>
+&lt;h5 id="編寫腳本">編寫腳本&lt;/h5>
+&lt;p>Jmeter 有 IDE 可以使用，開啟 &lt;code>./bin/ApacheJMeter.jar&lt;/code> 就可以看到介面，可以透過 IDE 配置壓測流程。
+官方也有提供一些範例在 &lt;code>./bin/examples&lt;/code> 底下，以及樣板 &lt;code>./bin/templates&lt;/code>，可以參考。&lt;/p>
+&lt;p>&lt;em>Thread Group&lt;/em> 中有個配置 &lt;em>Ramp-up period&lt;/em>，這欄位的目的在於在 N 秒內執行指定的 thread number。
+設定的話 thread 會線性執行，由於線性起初的壓力不會過大，產出的報表也相對好看；如果沒設定的話 thread 會在同一時間放行，在壓測的開始會對服務造成滿大的壓力，適合搶票的情境。&lt;/p>
+&lt;p>&lt;em>JSR223 Sampler&lt;/em> 是滿好用的元件之一，可以使用多種語言（groovy、javascript, etc...）來編輯。&lt;/p>
+&lt;p>&lt;em>If Controller&lt;/em> 可以做流程的判別式，要注意選項 &lt;em>Interpret Condition as Variable Expression?&lt;/em>，用來解義變數的擴展語言。使用 true or false 的變數內容的話，建議是開啟。&lt;/p>
+&lt;h5 id="壓測機器">壓測機器&lt;/h5>
+&lt;p>提升 Ubuntu server 22.04 的主機效能，設定配置。&lt;/p>
+&lt;p>增加 ulimit 的配置，使主機能使用的 &lt;em>open file&lt;/em>、&lt;em>process&lt;/em> 都加大。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">vim /etc/pam.d/common-session
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">session required pam_limits.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">vim /etc/security/limits.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">* soft nproc &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">* hard nproc &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">* soft nofile &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">* hard nofile &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">root soft nofile &lt;span class="m">64000&lt;/span> &lt;span class="c1"># option&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">root hard nofile &lt;span class="m">64000&lt;/span> &lt;span class="c1"># option&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>調整 kernel 的配置。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">vim /etc/sysctl.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">net.ipv4.ip_local_port_range&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;15000 61000&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">net.ipv4.tcp_fin_timeout&lt;span class="o">=&lt;/span>&lt;span class="m">30&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">net.ipv4.tcp_tw_recycle&lt;span class="o">=&lt;/span>&lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">net.ipv4.tcp_tw_reuse&lt;span class="o">=&lt;/span>&lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 添加或修改以下参数，提高 TCP 缓冲区大小&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">net.core.rmem_max &lt;span class="o">=&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">net.core.wmem_max &lt;span class="o">=&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">net.ipv4.tcp_rmem &lt;span class="o">=&lt;/span> &lt;span class="m">4096&lt;/span> &lt;span class="m">87380&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">net.ipv4.tcp_wmem &lt;span class="o">=&lt;/span> &lt;span class="m">4096&lt;/span> &lt;span class="m">87380&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="c1"># 可開啟檔案數量&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">fs.file-max &lt;span class="o">=&lt;/span> &lt;span class="m">100000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">vm.swappiness&lt;span class="o">=&lt;/span>&lt;span class="m">10&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>調整 &lt;em>transparent huge page&lt;/em> 策略。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">vim /etc/default/grub
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">GRUB_CMDLINE_LINUX&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;transparent_hugepage=never&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="壓力測試">壓力測試&lt;/h5>
+&lt;p>可以直接使用 IDE 或 Command 來執行壓測，下面為使用 Command 的方式做執行。&lt;/p>
+&lt;p>腳本編寫完成後保存成 jmx 檔案，jmeter 會使用腳本去執行壓測流程。壓測完成後會產生 jtl 檔案為壓測結果，dashboard 為 htlm 的報告書。&lt;/p>
+&lt;p>其中有配置 &lt;em>JVM_ARGS&lt;/em> 參數，開大 &lt;em>-Xms&lt;/em>、&lt;em>-Xmx&lt;/em> 為記憶體可使用量。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">JVM_ARGS&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;-Dnashorn.args=--no-deprecation-warning -Xms15g -Xmx15g&amp;#34;&lt;/span> apache-jmeter-5.6.2/bin/jmeter -n -t jmeter.jmx -l jmeter-result.jtl -e -o dashboard
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
