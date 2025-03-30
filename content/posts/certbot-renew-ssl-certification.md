@@ -1,16 +1,11 @@
 ---
 date: 2021-10-28T15:24:00+0800
-updated: 2023-07-29T19:44:30+08:00
+updated: 2025-02-27T09:02:13+08:00
 title: How to use certbot to renew SSL certification
-category: internet
+category: ssl
 tags:
-  - internet
   - ssl
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: .
 post: true
 ---
 

@@ -1,25 +1,22 @@
 ---
 date: 2023-07-31T17:58:32+08:00
-updated: 2024-02-27T17:42:17+08:00
-title: What is the DIKW Pyramid?
+updated: 2025-02-27T09:27:50+08:00
+title: What Is the Data, Information, Knowledge, Wisdom (DIKW) Pyramid?
 category: productivity
 tags:
   - productivity
+  - dikw
 type: note
-author: Ontotext
-status: 長青期
-sourceType: 📰️
-sourceURL: https://www.ontotext.com/knowledgehub/fundamentals/dikw-pyramid/
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: DIKW 金字塔模型是知名的知識架構之ㄧ, 使我們了解到知識的轉化過程. 如諺語 "師父領進門, 修煉在個人", 當師傅講得再多; 給的資料再多, 如果自身沒有想要深入理解的話, 永遠都不會轉化成智慧. 這也有關於自身的態度.
+這篇文章主要在了解 DIKW 的知識模型，DIKW 金字塔模型是知名的知識架構之ㄧ, 使我們了解到知識的轉化過程. 如諺語 "師父領進門, 修煉在個人", 當師傅講得再多; 給的資料再多, 如果自身沒有想要深入理解的話, 永遠都不會轉化成智慧. 這也有關於自身的態度.
 
 <!--more-->
+
+### Reference
+
+[What Is the Data, Information, Knowledge, Wisdom (DIKW) Pyramid?](https://www.ontotext.com/knowledgehub/fundamentals/dikw-pyramid/)
 
 ### Summary
 

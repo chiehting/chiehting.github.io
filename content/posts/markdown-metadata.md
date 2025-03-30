@@ -1,16 +1,12 @@
 ---
 date: 2023-07-03T10:25:14+08:00
-updated: 2023-12-11T01:14:17+08:00
+updated: 2025-03-10T12:12:07+08:00
 title: Metadata of the Markdown
 category: markdown
 tags:
   - markdown
   - metadata
 type: note
-author: 朱騏
-status: 培育期
-sourceType: 💭️
-sourceURL: https://medium.com/pm%E7%9A%84%E7%94%9F%E7%94%A2%E5%8A%9B%E5%B7%A5%E5%85%B7%E7%AE%B1/obsidian-%E4%BD%BF%E7%94%A8%E6%95%99%E5%AD%B8-%E7%AD%86%E8%A8%98%E7%AF%87-01-%E4%BA%86%E8%A7%A3-obsidian-%E7%9A%84-metadata-f8602bbddade
 post: true
 ---
 
@@ -18,7 +14,11 @@ post: true
 
 <!--more-->
 
-### Metadata
+## References
+
+[【Obsidian 使用教學】筆記篇 01 — 了解 Obsidian 的 Metadata，建立一套可持續迭代的筆記系統](https://medium.com/pm%E7%9A%84%E7%94%9F%E7%94%A2%E5%8A%9B%E5%B7%A5%E5%85%B7%E7%AE%B1/obsidian-%E4%BD%BF%E7%94%A8%E6%95%99%E5%AD%B8-%E7%AD%86%E8%A8%98%E7%AF%87-01-%E4%BA%86%E8%A7%A3-obsidian-%E7%9A%84-metadata-f8602bbddade)
+
+## Metadata
 
 什麼是 Metadata([[metadata]])? 用於定義資的資料.
 在 Markdown 中, 欄位可以自定義, 以我個人目前所需要的資料如下.

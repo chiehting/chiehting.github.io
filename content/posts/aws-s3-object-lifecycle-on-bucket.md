@@ -1,24 +1,19 @@
 ---
 date: 2023-09-11T16:35:02+08:00
-updated: 2024-03-06T16:34:35+08:00
-title: Amazon Web Services
+updated: 2025-02-27T08:46:36+08:00
+title: Managing the lifecycle of the objects on AWS S3
 category: cloud
 tags:
   - cloud
   - aws
+  - s3
 type: note
-author: Chiehting
-status: 培育期
-sourceType: 📜️
-sourceURL: https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html
 post: true
 ---
 
-### Evergreen Note
+如何管理 S3 上的物件生命週期？
 
-Question :: 如何管理 S3 上的物件生命週期。
-
-Answer :: 在做 S3 物件的管理時，若使用 HTTP request 做操作，會造成成本增加。所以若是物件有**轉換**或是**過期**的操作時，就可以考慮使用 S3 生命週期來做管理。
+在做 S3 物件的管理時，若使用 HTTP request 做操作，會造成成本增加。所以若是物件有**轉換**或是**過期**的操作時，就可以考慮使用 S3 生命週期來做管理。
 
 <!--more-->
 

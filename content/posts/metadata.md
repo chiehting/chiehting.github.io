@@ -1,26 +1,23 @@
 ---
 date: 2023-07-10T11:34:49+08:00
-updated: 2024-02-26T01:51:11+08:00
+updated: 2025-03-10T15:09:19+08:00
 title: 什麼是 Metadata
 category: markdown
 tags:
-  - markdown
   - metadata
 type: note
-author: Chiehting
-status: 發芽期
-sourceType: 📜️
-sourceURL: https://atlan.com/what-is-metadata/
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章的目的及動機?
-
-Answer :: Metadata 在電腦科學裡, 應用的範圍相當廣泛, 例如: 文件、圖檔、影像檔、網站、數據分析、數位資產管理、物聯網等等. 想要理解 Metadata 的概念為何.
+Metadata 在電腦科學裡, 應用的範圍相當廣泛, 例如: 文件、圖檔、影像檔、網站、數據分析、數位資產管理、物聯網等等. 因此，它可以幫助您了解特定資料集的相關性並指導您如何使用它. 此篇目的為理解 Metadata 的概念為何.
 
 <!--more-->
+
+## References
+
+[What Is Metadata?](https://atlan.com/what-is-metadata/)
+
+## Metadata
 
 ### Summary
 

@@ -1,25 +1,23 @@
 ---
 date: 2023-11-24T16:20:49+08:00
-updated: 2024-02-19T16:38:58+08:00
+updated: 2025-03-10T15:32:22+08:00
 title: MQTT 初學指南
 category: mqtt
 tags:
   - mqtt
 type: note
-author: Steve
-status: 培育期
-sourceType: 📰️
-sourceURL: http://www.steves-internet-guide.com/mqtt/
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說明了什麼，以及什麼是 MQTT？
-
-Answer :: 本篇文章說明了 MQTT 的相關知識，包括起源、版本、資安, etc。MQTT 用於 IoT 訊息傳遞的服務，由 client 跟 brokers 的架構組成。由於用於 IoT 設備，所以通常硬件的資源有限，MQTT 輕量且穩定的好處就很適合。
+本篇文章說明了 MQTT 的相關知識，包括起源、版本、資安, etc。MQTT 用於 IoT 訊息傳遞的服務，由 client 跟 brokers 的架構組成。由於用於 IoT 設備，所以通常硬件的資源有限，MQTT 輕量且穩定的好處就很適合。
 
 <!--more-->
+
+## References
+
+[Beginners Guide To The MQTT Protocol](http://www.steves-internet-guide.com/mqtt/)
+
+## MQTT
 
 ### Summary
 

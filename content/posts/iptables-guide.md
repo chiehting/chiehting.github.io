@@ -1,16 +1,12 @@
 ---
 date: 2021-05-04T10:30:00+0800
-updated: 2023-07-30T24:49:57+08:00
+updated: 2025-03-02T19:57:54+08:00
 title: Iptables guide
-category: internet
+category: linux
 tags:
   - internet
   - linux
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
@@ -31,12 +27,12 @@ iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 `Chain`、`Targe
 
 下面列出 `tables` 內建 `chain` 關係
 
-||PREROUTING|INPUT|FORWARD|OUTPUT|POSTROUTIONG|
-|---|---|---|---|---|---|
-|raw|o|x|x|o|x|
-|mangle|o|o|o|o|o|
-|nat|o|x|x|o|o|
-|filter|x|o|o|o|x|
+|        | PREROUTING | INPUT | FORWARD | OUTPUT | POSTROUTIONG |
+| ------ | ---------- | ----- | ------- | ------ | ------------ |
+| raw    | o          | x     | x       | o      | x            |
+| mangle | o          | o     | o       | o      | o            |
+| nat    | o          | x     | x       | o      | o            |
+| filter | x          | o     | o       | o      | x            |
 
 #### Tables
 

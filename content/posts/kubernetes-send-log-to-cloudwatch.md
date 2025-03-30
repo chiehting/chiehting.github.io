@@ -1,15 +1,13 @@
 ---
 date: 2022-11-24T10:00:00+0800
-updated: 2023-07-31T16:42:48+08:00
+updated: 2025-03-01T02:49:40+08:00
 title: How to send log from AWS eks to cloudwatch.
 category: kubernetes
 tags:
   - kubernetes
+  - log
+  - cloudwatch
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
@@ -219,7 +217,7 @@ org_role = "Viewer"
 
 上面提到的問題, 改了架構後做觀察.
 
-> 目前開發使用情境, 之需要查看 log 且可以搜尋, 不需要做 log 分析. 殺雞用牛刀了.
+> 目前開發使用情境, 之需要查看 log 且可以搜尋, 不需要做 log 分析..
 
 這邊換了架構對開發並無影響. (開發沒過多反應, 平時有在使用嗎?)
 

@@ -1,31 +1,29 @@
 ---
 date: 2021-06-04T15:42:00+0800
-updated: 2023-07-31T16:27:33+08:00
+updated: 2025-02-27T10:48:06+08:00
 title: Elasticsearch 效率優化 (1)
 category: elasticsearch
 tags:
   - elasticsearch
+  - performance
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
-現在使用 Kubernetes 容器架構，搭配了 elk 做為我們的 logging solution。但是目前使用預設的配置，在搜尋 log 時效率很慢。
+現在使用 Kubernetes 容器架構，搭配了 elk 做為我們的 logging solution。
+但是目前使用預設的配置，在搜尋 log 時效率很慢。
 這邊紀錄排查 index 的狀況，並且嘗試做改善。
 
 <!--more-->
 
 ### 思路
 
-1. 先確認目前 index 狀況，考量可以優化的部分。
+1. 先確認目前 index 狀況，評估可以優化的部分。
 2. 新建兩個 index，分別為原本的設定 test-old；調整過後的設定 test-new。
 3. 從舊有的 index 中抓出 n 筆資料，分邊寫入新建的兩的 index。
 4. 比較兩個 index 效率。
 
-#### 先確認目前 index 狀況，考量可以優化的部分
+#### 先確認目前 index 狀況，評估可以優化的部分
 
 Index 的設定：可以看到第 9、13、27 行被折疊了大量的行數，也就是說我們使用了很多不必要的欄位。
 

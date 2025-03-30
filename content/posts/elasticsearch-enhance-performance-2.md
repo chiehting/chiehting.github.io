@@ -1,15 +1,12 @@
 ---
 date: 2021-06-04T15:42:00+0800
-updated: 2023-07-31T16:27:33+08:00
+updated: 2025-02-27T10:47:08+08:00
 title: Elasticsearch 效率優化 (2)
 category: elasticsearch
 tags:
   - elasticsearch
+  - performance
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 

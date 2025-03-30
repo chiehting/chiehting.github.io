@@ -1,15 +1,11 @@
 ---
 date: 2023-09-12T10:00:34+08:00
-updated: 2024-02-25T22:11:59+08:00
+updated: 2025-02-27T09:17:29+08:00
 title: 比較專案管理系統
 category: project-management
 tags:
   - project-management
 type: note
-author: Chiehting
-status: 發芽期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 

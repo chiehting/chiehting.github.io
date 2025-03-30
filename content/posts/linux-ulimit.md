@@ -1,16 +1,12 @@
 ---
 date: 2020-01-14T17:23:00+0800
-updated: 2023-07-31T17:04:29+08:00
+updated: 2025-03-10T11:47:44+08:00
 title: 了解 linux ulimit
 category: operating-system
 tags:
   - operating-system
   - linux
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 

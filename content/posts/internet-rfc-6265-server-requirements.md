@@ -1,6 +1,6 @@
 ---
 date: 2024-02-16T11:28:57+08:00
-updated: 2024-02-25T22:13:48+08:00
+updated: 2025-02-27T12:06:34+08:00
 title: rfc6265
 category: internet
 tags:
@@ -8,20 +8,16 @@ tags:
   - ietf
   - rfc
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: https://www.rfc-editor.org/rfc/rfc6265.html#section-4
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 文章是在導讀 Set-Cookie header fields 規範以及重要屬性。
+文章是在導讀 Set-Cookie header fields 規範以及重要屬性。
 
 <!--more-->
+
+### Referances
+
+[HTTP State Management Mechanism](https://www.rfc-editor.org/rfc/rfc6265.html#section-4)
 
 ### Summary
 

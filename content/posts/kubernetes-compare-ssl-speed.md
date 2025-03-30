@@ -1,16 +1,12 @@
 ---
 date: 2023-03-01T14:27:00+0800
-updated: 2023-07-31T15:37:22+08:00
+updated: 2025-03-01T02:26:36+08:00
 title: 比較 SSL Certificates 的驗證效率
 category: kubernetes
 tags:
   - kubernetes
   - internet
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
@@ -31,7 +27,7 @@ post: true
 
 ### 架構變更
 
-原本是使用 Cloudflare DNS01 challenge，透過 cert-manager([[kubernetes-install-cert-manager]]) 申請憑證；改為使用 ACM + Amazon Route 53 管理。
+原本是使用 Cloudflare DNS01 challenge，透過 cert-manager([[using-ssl-certificates-on-kubernetes-ingress-via-cert-manager]]) 申請憑證；改為使用 ACM + Amazon Route 53 管理。
 
 架構為調整，將 "SSL verifiation" 由 Ingress-NGINX 改到 Network Load balancers。
 

@@ -1,23 +1,18 @@
 ---
 date: 2023-07-24T11:27:29+08:00
-updated: 2023-08-17T14:50:47+08:00
+updated: 2025-02-27T09:20:31+08:00
 title: What is electronic wallet
 category: finance
 tags:
   - finance
+  - wallet
 type: note
-author: Wistek
-status: 長青期
-sourceType: 📰️
-sourceURL: https://www.mypay.com.tw/main_article2.html
 post: true
 ---
 
-### Evergreen Note
+電子錢包的分類方式?
 
-Question :: 電子錢包的分類方式?
-
-Answer :: 電子錢包可以分成幾種類型, 一種是給金融機構使用的錢包,像是 `Apple Pay` ; 一種是給商家業者使用的錢包, 像是 `LINE Pay`. 另外還有一種為商家開發的預先儲值型電子錢包, 這種錢包儲值只有該商家可以使用, 像是 `星巴克 APP`.
+電子錢包可以分成幾種類型, 一種是給金融機構使用的錢包,像是 `Apple Pay` ; 一種是給商家業者使用的錢包, 像是 `LINE Pay`. 另外還有一種為商家開發的預先儲值型電子錢包, 這種錢包儲值只有該商家可以使用, 像是 `星巴克 APP`.
 
 <!--more-->
 
@@ -87,3 +82,7 @@ Apple Pay與Samsung Pay則利用自身手機優勢與用戶黏著度，提供電
 **這種模式，<span style="background-color: #ffffcc; color: red">基本上就是儲值卡的電子化</span>，消費者預先儲值（現金或信用卡）在店家提供的電子錢包中，才在商店進行消費。**這種電子錢包服務對象以店家為中心，店家使用電子錢包做為店內支付工具。舉例來說，星巴克的儲值卡，只能在星巴克使用。
 
 之所以將此種模式特別獨立出來，是因其採用儲值的方式，金流模式跟一般信用卡交易一樣，但因為是預收款，必須將款項信託，以確保支付款項安全性。
+
+## Reference
+
+https://www.mypay.com.tw/main_article2.html

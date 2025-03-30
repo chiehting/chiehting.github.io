@@ -1,15 +1,14 @@
 ---
 date: 2021-08-16T14:55:00+0800
-updated: 2023-07-25T17:49:00+08:00
+updated: 2025-02-27T09:14:47+08:00
 title: Cloudfloar proxy slow
-category: internet
+category: cloudflare
 tags:
+  - cloudflare
+  - proxy
   - internet
+  - issue
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: .
 post: true
 ---
 
@@ -52,7 +51,7 @@ HOST: JustinLee                   Loss%   Snt   Last   Avg  Best  Wrst StDev
 
 由下面資訊可以看到在 time_appconnect 這邊花了比較長的時間, 也就是可能在做 TLS 的時候佔了很長的時間, 而因為有使用 Cloudflare proxy, 所以 client 端在是對 proxy 的機器做 TLS Handshake.
 
->time_appconnect here is TLS setup. The client is then ready to send it’s HTTP GET request.
+> time_appconnect here is TLS setup. The client is then ready to send it’s HTTP GET request.
 
 ```bash
 ➜ bash curl_timetrace.sh

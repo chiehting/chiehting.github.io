@@ -1,12 +1,12 @@
 ---
 date: 2021-04-16T14:48:00+0800
-updated: 2023-07-30T01:03:52+08:00
+updated: 2024-07-25T14:48:24+08:00
 title: rds binlog 留存機制
 category: aws
 tags:
   - cloud
   - aws
-  - databases
+  - database
 type: note
 author: AWS
 status: 長青期

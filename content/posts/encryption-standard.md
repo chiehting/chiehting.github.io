@@ -1,22 +1,22 @@
 ---
 date: 2021-10-01T16:35:00+0800
-updated: 2023-07-25T16:32:44+08:00
+updated: 2025-02-27T10:49:43+08:00
 title: 淺談加密標準
 category: system-design
 tags:
   - system-design
   - cryptography
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
 在開發上常會用到資料加密，例如雜湊函式（MD5、SHA-2）、對稱式加密（AES、DES、3DES)、非對稱式加密（RSA演算法）等方式，這篇就來研究一下這些加密方式之差異。
 
 <!--more-->
+### References
+
+- [IThome](https://ithelp.ithome.com.tw/articles/10251031)
+- [知乎](https://zhuanlan.zhihu.com/p/26029199)
 
 ### Cryptography
 
@@ -77,7 +77,3 @@ RSA 是基於大數因數分解的加密方式。另外 RSA-155 (512 bits) 被�
 
 ECC 可以透過較小的密鑰長度提供相當的安全性，但實作起來較複雜。
 
-#### References
-
-- [IThome](https://ithelp.ithome.com.tw/articles/10251031)
-- [知乎](https://zhuanlan.zhihu.com/p/26029199)

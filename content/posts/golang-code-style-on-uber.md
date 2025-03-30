@@ -1,15 +1,11 @@
 ---
 date: 2021-08-12T10:58:00+0800
-updated: 2023-07-31T14:49:06+08:00
+updated: 2025-02-27T10:52:02+08:00
 title: Uber's Golang code style guide
 category: golang
 tags:
   - golang
 type: note
-author: Uber
-status: 長青期
-sourceType: 📰️
-sourceURL: https://go.dev/tour/basics/11
 post: true
 ---
 
@@ -18,7 +14,9 @@ post: true
 
 <!--more-->
 
-Golang 官方 [style guide](https://github.com/uber-go/guide/blob/master/style.md)。
+### Referances
+
+[uber style guide](https://github.com/uber-go/guide/blob/master/style.md)。
 
 ### Table of Contents
 

@@ -1,25 +1,25 @@
 ---
 date: 2023-11-24T15:34:42+08:00
-updated: 2024-01-03T14:42:27+08:00
+updated: 2025-03-10T15:37:31+08:00
 title: 什麼是 MQTT
 category: mqtt
 tags:
   - mqtt
 type: note
-author: mqtt
-status: 培育期
-sourceType: 📰️
-sourceURL: https://mqtt.org/
 post: true
 ---
 
-### Evergreen Note
+MQTT 是物聯網 (IoT) 的 OASIS 標準訊息傳遞協定。
 
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 初探 MQTT 的協議與使用目的，了解 MQTT 的特色。
+OASIS（Organization Advancement Structured Information Standards / 結構化資訊標準促進組織 ）：全球的非營利組織，主要在發展及整合物聯網、網路服務等領域的相關標準。
 
 <!--more-->
+
+## References
+
+https://mqtt.org/
+
+## MQTT
 
 ### Summary
 

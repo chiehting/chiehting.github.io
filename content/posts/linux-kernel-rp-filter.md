@@ -1,17 +1,12 @@
 ---
 date: 2021-06-24T14:39:00+0800
-updated: 2023-07-31T17:07:25+08:00
+updated: 2025-03-30T17:49:04+08:00
 title: Linux kernel 的網路參數 rp_filter
-category: operating-system
+category: linux
 tags:
-  - operating-system
   - linux
-  - internet
+  - network
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt
 post: true
 ---
 
@@ -19,10 +14,25 @@ post: true
 
 <!--more-->
 
+### References
+
+[ip-sysctl](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt)
+
 ### rp_filter
 
 為逆向路徑過濾 (Reverse Path Filtering)，其作用為為過濾反向不通的封包，將其丟棄。
 而原理為由 NIC1 (network interface card) 進來的封包，reverse path filtering 模塊會將其封包的源地址（source ip）與目標地址（destination ip）做對調，然後再路由表中查找，如果出去的介面是 NIC1 則通過；反之不是 NIC1 則丟棄該封包。
+
+#### 功能概述
+
+`rp_filter` 的主要作用是檢查接收到的資料包的來源位址是否是通過正確的網路介面到達的。如果資料包的來源位址與路由表中的反向路徑不匹配，`rp_filter` 就會丟棄該資料包，從而防止偽造的 IP 資料包進入系統。
+
+
+### 工作原理
+
+1. 當系統接收到一個資料包時，`rp_filter` 會檢查該資料包的來源位址。
+2. 它根據路由表計算，若系統要將一個資料包發送到該來源位址，會使用哪個網路介面。
+3. 如果接收到的資料包實際上是通過另一個介面到達的，而不是路由表中計算出的介面，`rp_filter` 會認為這個資料包是偽造的，並將其丟棄。
 
 可以從 [ip-sysctl](https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt) 文件中找到參數的用法。其中該參數為整數型，其值包括了 0：不做來源驗證；1：嚴謹認證模式；2：寬鬆認證模式。
 
@@ -85,7 +95,6 @@ full_check:
     return __fib_validate_source(skb, src, dst, tos, oif, dev, r, idev, itag);
 }
 ```
-
 
 ```c
 static int __fib_validate_source(struct sk_buff *skb, __be32 src, __be32 dst,
@@ -188,3 +197,18 @@ e_rpf:
 1. 減少 DDoS 攻擊，注意是減少不是防止
 1. 防止 IP Spoofing
 
+### 問題
+
+#### 當系統只有一個網路介面時，是否需要開啟 `rp_filter` 取決於具體的需求和安全性考量。
+
+1. **只有一個網路介面，且無特殊路由需求**
+    
+    - 如果系統只有一個網路介面，且路由配置相對簡單（例如，所有流量都通過該介面進出），那麼來源 IP 位址欺騙的風險較低。
+    - 在這種情況下，開啟 `rp_filter` 的作用有限，因為所有資料包都只能通過這唯一的網路介面進出。
+2. **只有一個網路介面，但存在潛在的安全威脅**
+    
+    - 即使系統只有一個網路介面，攻擊者仍可能試圖通過偽造來源 IP 位址向系統發送惡意資料包。
+    - 開啟 `rp_filter` 可以增加一層安全性，確保接收到的資料包符合路由規則，從而防止這類攻擊。
+3. **未來可能擴展到多網路介面**
+    
+    - 如果系統未來可能會增加更多網路介面，建議養成良好的安全習慣，提前配置 `rp_filter`，以避免多介面時的安全漏洞。

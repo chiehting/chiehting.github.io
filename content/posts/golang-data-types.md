@@ -1,15 +1,12 @@
 ---
 date: 2021-03-11T11:17:00+0800
-updated: 2023-07-31T14:49:06+08:00
+updated: 2025-02-27T10:52:43+08:00
 title: Basic types in Golang
 category: golang
 tags:
   - golang
 type: note
 author: Golang
-status: 長青期
-sourceType: 📰️
-sourceURL: https://go.dev/tour/basics/11
 post: true
 ---
 

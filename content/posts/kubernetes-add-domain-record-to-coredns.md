@@ -1,20 +1,16 @@
 ---
 date: 2023-01-19T12:20:00+0800
-updated: 2023-07-30T24:43:27+08:00
+updated: 2025-02-27T14:53:05+08:00
 title: Set the Domain's record to the CoreDNS
 category: kubernetes
 tags:
   - kubernetes
-  - internet
+  - dns
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
-這兩天在處理 DNS 的問題, 看到可以直接在 CoreDNS 中塞 record. 這邊做個紀錄
+這兩天在處理 DNS 的問題, 看到可以直接在 CoreDNS 中塞 record。
 
 <!--more-->
 
@@ -80,3 +76,19 @@ db.example.com.tw:53 {
 ### 同時配置時
 
 若同時配置時, 則會以 DNS Server 為優先.
+
+### 禁止 CoreDNS 對 IPv6 類型的 AAAA 紀錄查詢返回
+
+當業務容器不需要AAAA記錄類型時，可以在CoreDNS中將AAAA記錄類型攔截並返回空值（NODATA），以減少不必要的網路通信。示例配置如下：
+
+```yaml
+Corefile: |
+  .:53 {
+      errors
+      health {
+         lameduck 15s
+      }
+      #新增以下一行Template插件，其它数据请保持不变。
+      template IN AAAA .
+  }
+```

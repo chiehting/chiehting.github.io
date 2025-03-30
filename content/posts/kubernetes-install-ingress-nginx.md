@@ -1,15 +1,13 @@
 ---
 date: 2021-09-01T14:44:00+0800
-updated: 2023-07-31T15:32:03+08:00
+updated: 2025-03-01T02:31:19+08:00
 title: 使用 Helm 建立 AWS network load balancer
 category: kubernetes
 tags:
   - kubernetes
+  - aws
+  - helm
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: .
 post: true
 ---
 

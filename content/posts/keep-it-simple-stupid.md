@@ -1,15 +1,11 @@
 ---
 date: 2023-06-26T13:38:19+08:00
-updated: 2024-02-27T17:01:31+08:00
+updated: 2025-02-27T14:46:21+08:00
 title: keep it simple stupid.!
 category: system-design
 tags:
   - system-design
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 

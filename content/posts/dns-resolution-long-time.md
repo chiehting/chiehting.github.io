@@ -1,16 +1,12 @@
 ---
 date: 2024-04-19T10:00:19+08:00
-updated: 2024-04-19T11:30:10+08:00
+updated: 2025-02-27T09:50:41+08:00
 title: DNS resolution takes a long time
 category: internet
 tags:
   - internet
   - dns
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 

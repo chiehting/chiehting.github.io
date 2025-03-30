@@ -1,15 +1,11 @@
 ---
 date: 2023-09-06T16:19:12+08:00
-updated: 2023-09-08T18:36:30+08:00
+updated: 2025-02-27T09:16:47+08:00
 title: 比較 GitLab 和 Gitea
 category: devops
 tags:
   - devops
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
@@ -46,7 +42,7 @@ post: true
 | 專案群組管理   | 專案群組，可做階層                                       | 組織管理，無階層                                       |
 | 高可用性       | 是<br>[gitlab geo]                                       | 部分支援，需要自定義和配置                             |
 | 備份還原機制   | 是<br>[gitlab backup and restore]                        | 是<br>[gitea backup and restore]                       |
-| 身份認證機制   | AD、LDAP、OAuth SSO、SAML SSO                            | LDAP、OAuth SSO、SAML SSO                              | 
+| 身份認證機制   | AD、LDAP、OAuth SSO、SAML SSO                            | LDAP、OAuth SSO、SAML SSO                              |
 
 [gitlab system requirements]: https://docs.gitlab.com/ee/install/requirements.html
 [gitea system requirements]: https://docs.gitea.com/?_highlight=cpu#system-requirements

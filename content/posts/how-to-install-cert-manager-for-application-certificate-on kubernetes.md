@@ -1,20 +1,17 @@
 ---
-date: 2021-08-20T14:44:00+0800
-updated: 2023-07-31T15:15:42+08:00
-title: Using SSL certificates in Kubernetes ingress via cert-manager
+date: 2025-03-01T02:21:48+08:00
+updated: 2025-03-01T02:25:01+08:00
+title: How to install cert-manager for application Certificate on Kubernetes
 category: kubernetes
 tags:
+  - cert-manager
+  - ssl
   - kubernetes
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
-之前將 SSL 憑證交給 Cloudflare 託管，要使用該服務就必須開啟 Cloudflare proxy 功能，但會造成網路效能降低([[cloudflare-proxy-slow-issue]])。
-改用憑證管理工具 [cert-manager](https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/) 向 [Let's Encrypt](https://letsencrypt.org/) 申請憑證。
+如何在 Kubernetes 上申請 SSL 憑證給服務使用
 
 <!--more-->
 

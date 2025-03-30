@@ -1,6 +1,6 @@
 ---
 date: 2024-02-16T11:28:57+08:00
-updated: 2024-02-20T17:19:22+08:00
+updated: 2025-02-27T12:04:16+08:00
 title: rfc6265
 category: internet
 tags:
@@ -8,20 +8,16 @@ tags:
   - ietf
   - rfc
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: https://www.rfc-editor.org/info/rfc6265
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 文章主要在研究 RFC 6265 - HTTP State Management Mechanism。文章是在定義 HTTP Cookie and Set-Cookie header fields 規範。
+文章主要在研究 RFC 6265 - HTTP State Management Mechanism。文章是在定義 HTTP Cookie and Set-Cookie header fields 規範。
 
 <!--more-->
+
+### Referances
+
+[RFC 6265](https://www.rfc-editor.org/rfc/rfc6265.txt)
 
 ### Summary
 

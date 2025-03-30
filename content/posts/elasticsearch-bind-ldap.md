@@ -1,15 +1,11 @@
 ---
 date: 2021-06-03T14:00:00+0800
-updated: 2023-07-31T16:25:27+08:00
+updated: 2025-02-27T10:43:51+08:00
 title: Elasticsearch 用戶管理
 category: elasticsearch
 tags:
   - elasticsearch
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: .
 post: true
 ---
 

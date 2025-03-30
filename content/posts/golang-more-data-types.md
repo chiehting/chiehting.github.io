@@ -1,15 +1,11 @@
 ---
 date: 2021-03-12T11:00:00+0800
-updated: 2023-07-31T15:01:12+08:00
+updated: 2025-02-27T10:53:06+08:00
 title: More types structs, slices, and maps.
 category: golang
 tags:
   - golang
 type: note
-author: Golang
-status: 長青期
-sourceType: 📰️
-sourceURL: https://tour.golang.org/moretypes/11
 post: true
 ---
 
