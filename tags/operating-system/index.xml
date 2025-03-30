@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>operating-system on Chiehting</title><link>https://chiehting.com/tags/operating-system/</link><description>Recent content in operating-system on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 14 Jan 2020 17:23:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/operating-system/index.xml" rel="self" type="application/rss+xml"/><item><title>了解 linux ulimit</title><link>https://chiehting.com/posts/linux-ulimit/</link><pubDate>Tue, 14 Jan 2020 17:23:00 +0800</pubDate><guid>https://chiehting.com/posts/linux-ulimit/</guid><description>
+&lt;p>有時候為了榨出主機上的效能,需要去調整linux的配置,ulimit就是其中一項可控配置.&lt;/p>
+&lt;p>參考 &lt;a href="https://man.linuxde.net/ulimit">ulimit&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;p>ulimit用於限制shell啟動進程所佔用的資源，支持以下各種類型的限制：所創建的內核文件的大小，進程數據塊的大小，Shell進程創建文件的大小，內存鎖住的大小，常駐內存 集的大小，打開文件大小的數量，分配大小的最大大小，CPU時間，單獨用戶的最大線程數，Shell進程所能使用的最大虛擬內存。同時，它支持硬資源和軟資源的限制。&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="注意">注意&lt;/h3>
+&lt;p>這邊使用配置/etc/security/limits.conf檔案,透過PAM來加載用戶的資源限制.
+但在Centos 7使用Systemd替代了之前的SysV,所以配置會對Systemd的service不生效.&lt;/p>
+&lt;h3 id="確認環境">確認環境&lt;/h3>
+&lt;p>主機資訊.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ uname -a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Linux dev-db2.solartninc.com 3.10.0-1062.9.1.el7.x86_64 &lt;span class="c1">#1 SMP Fri Dec 6 15:49:49 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ cat /etc/redhat-release
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">CentOS Linux release 7.7.1908 &lt;span class="o">(&lt;/span>Core&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ lscpu
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">Architecture: x86_64
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">CPU op-mode&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: 32-bit, 64-bit
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">Byte Order: Little Endian
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">CPU&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: &lt;span class="m">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">On-line CPU&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span> list: 0-3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">Thread&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span> per core: &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">Core&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span> per socket: &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">Socket&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: &lt;span class="m">4&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">NUMA node&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Vendor ID: GenuineIntel
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">CPU family: &lt;span class="m">6&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">Model: &lt;span class="m">158&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">Model name: Intel&lt;span class="o">(&lt;/span>R&lt;span class="o">)&lt;/span> Core&lt;span class="o">(&lt;/span>TM&lt;span class="o">)&lt;/span> i7-8700 CPU @ 3.20GHz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">Stepping: &lt;span class="m">10&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">CPU MHz: 3192.000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">BogoMIPS: 6384.00
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">Hypervisor vendor: VMware
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">Virtualization type: full
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">L1d cache: 32K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">L1i cache: 32K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">L2 cache: 256K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">L3 cache: 12288K
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">NUMA node0 CPU&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>: 0-3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">Flags: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon nopl xtopology tsc_reliable nonstop_tsc eagerfpu pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single ssbd ibrs ibpb stibp fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec arat spec_ctrl intel_stibp flush_l1d arch_capabilities
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ free -h
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl"> total used free shared buff/cache available
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">Mem: 3.7G 274M 3.1G 8.8M 320M 3.2G
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">Swap: 2.0G 0B 2.0G
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>預設的配置.預設linux系統的檔案描述符是1024,負載變大時有可能會造成錯誤&lt;code>open too many files&lt;/code>.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ &lt;span class="nb">ulimit&lt;/span> -a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">core file size &lt;span class="o">(&lt;/span>blocks, -c&lt;span class="o">)&lt;/span> &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">data seg size &lt;span class="o">(&lt;/span>kbytes, -d&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">scheduling priority &lt;span class="o">(&lt;/span>-e&lt;span class="o">)&lt;/span> &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">file size &lt;span class="o">(&lt;/span>blocks, -f&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">pending signals &lt;span class="o">(&lt;/span>-i&lt;span class="o">)&lt;/span> &lt;span class="m">15064&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">max locked memory &lt;span class="o">(&lt;/span>kbytes, -l&lt;span class="o">)&lt;/span> &lt;span class="m">64&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">max memory size &lt;span class="o">(&lt;/span>kbytes, -m&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">open files &lt;span class="o">(&lt;/span>-n&lt;span class="o">)&lt;/span> &lt;span class="m">1024&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">pipe size &lt;span class="o">(&lt;/span>&lt;span class="m">512&lt;/span> bytes, -p&lt;span class="o">)&lt;/span> &lt;span class="m">8&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">POSIX message queues &lt;span class="o">(&lt;/span>bytes, -q&lt;span class="o">)&lt;/span> &lt;span class="m">819200&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">real-time priority &lt;span class="o">(&lt;/span>-r&lt;span class="o">)&lt;/span> &lt;span class="m">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">stack size &lt;span class="o">(&lt;/span>kbytes, -s&lt;span class="o">)&lt;/span> &lt;span class="m">8192&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">cpu &lt;span class="nb">time&lt;/span> &lt;span class="o">(&lt;/span>seconds, -t&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">max user processes &lt;span class="o">(&lt;/span>-u&lt;span class="o">)&lt;/span> &lt;span class="m">4096&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">virtual memory &lt;span class="o">(&lt;/span>kbytes, -v&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">file locks &lt;span class="o">(&lt;/span>-x&lt;span class="o">)&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="調整配置">調整配置&lt;/h3>
+&lt;ul>
+&lt;li>&lt;code>ulimit&lt;/code>有分軟限制和硬限制.而&lt;code>noproc&lt;/code>是代表最大程序數; &lt;code>nofile&lt;/code>是代表最大檔案開啟數.&lt;/li>
+&lt;li>而ulimit -n的最大值限制是1048576 (2^20).&lt;/li>
+&lt;li>網路上很多都配置為65535,這邊我還沒搞懂為什麼是這個數字.&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ sudo vim /etc/security/limits.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">* hard noproc &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">* soft noproc &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">* hard nofile &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">* soft nofile &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>上面配置好後,需要確認有引入pam的pam_limits.so模塊,在下面可以發現預設在&lt;code>/etc/pam.d/system-auth&lt;/code>檔案中有找到被required.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ cat /etc/pam.d/login
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">session optional pam_keyinit.so force revoke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">session include system-auth
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">session include postlogin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ cat /etc/pam.d/system-auth
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">session optional pam_keyinit.so revoke
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">session required pam_limits.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-session optional pam_systemd.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

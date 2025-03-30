@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>mqtt on Chiehting</title><link>https://chiehting.com/tags/mqtt/</link><description>Recent content in mqtt on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Mon, 06 May 2024 11:04:27 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/mqtt/index.xml" rel="self" type="application/rss+xml"/><item><title>安裝 EMQX 到 Kubernetes 上</title><link>https://chiehting.com/posts/emqx-install/</link><pubDate>Mon, 06 May 2024 11:04:27 +0800</pubDate><guid>https://chiehting.com/posts/emqx-install/</guid><description>
+&lt;p>如何使用 emqx-operator 建立 EMQX 服務到 Kubernetes 上。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>&lt;a href="https://github.com/emqx/emqx-operator/tree/main/deploy/charts/emqx-operator">emqx-operator&lt;/a> 是用 Helm 的腳本，可以快速定義 EMXQ 服務。&lt;/p>
+&lt;p>引用 Github 上的架構圖，如下：&lt;/p>
+&lt;img src="https://github.com/emqx/emqx-operator/raw/main/docs/en_US/introduction/assets/architecture.png"/>
+&lt;p>從架構圖上可以看到兩款 EMQX Operator、EMQX Cluster 則為我們要建立的服務。&lt;/p>
+&lt;h4 id="emqx-operator">EMQX Operator&lt;/h4>
+&lt;p>為 EMQX 的 CRD，是需要最先建立的資源，建立命令如下。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">helm upgrade --install emqx-operator emqx/emqx-operator &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span>--namespace emqx-operator-system &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span>--create-namespace &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span>--version 2.2.5 -f values.yaml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>上面命令包括了 &lt;code>values.yaml&lt;/code> 檔案，內容如下。主要是使服務更可以建立在指定的 nodes 中。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">repository&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx/emqx-operator-controller&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">tag&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">2.2.5&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">imagePullSecrets&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">[]&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">replicaCount&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">resources&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">limits&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">cpu&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">500m&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">memory&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">512Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requests&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">cpu&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">100m&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">memory&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">128Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">affinity&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nodeAffinity&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requiredDuringSchedulingIgnoredDuringExecution&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nodeSelectorTerms&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">matchExpressions&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">key&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;lindu-tech/server&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">operator&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">In&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">values&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;infra&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">tolerations&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">key&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;lindu-tech/server&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">operator&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;Exists&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">effect&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;NoSchedule&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">affinity&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">podAntiAffinity&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requiredDuringSchedulingIgnoredDuringExecution&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">labelSelector&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">matchExpressions&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">key&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;app.kubernetes.io/name&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">operator&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">In&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">values&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="s2">&amp;#34;emqx-operator&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">topologyKey&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s2">&amp;#34;kubernetes.io/hostname&amp;#34;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="emqx-cluster">EMQX Cluster&lt;/h4>
+&lt;p>建立好 EMQX Operator 後，可以使用 &lt;code>Kind: EMQX&lt;/code>，接著才建立 EMQX Cluster。&lt;/p>
+&lt;p>創建一個 emqx-cluster.yaml 檔案，內容如下。服務只開啟了 &lt;code>listeners.tcp.default&lt;/code>，其他因為使用不到所以皆關閉。其服務是使用 nodePort 的方式揭露，port 的位置需自行地義，不要衝突。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">apps.emqx.io/v2beta1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">EMQX&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx:5.3.2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">config&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">data&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.tcp.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="sd"> bind = &amp;#34;0.0.0.0:1883&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="sd"> max_connections = 1024
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="sd"> max_conn_rate = &amp;#34;1000/s&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="sd"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.wss.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = false
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="sd"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.ssl.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = false
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="sd"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.ws.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = false
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="sd"> }&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">coreTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumeClaimTemplates&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">storageClassName&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">sas&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">resources&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requests&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">storage&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">5Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">accessModes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">ReadWriteOnce&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">replicas&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">resources&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requests&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">cpu&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">200m&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">memory&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">256Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">replicantTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">replicas&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">resources&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requests&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">cpu&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">250m&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">memory&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">256Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">listenersServiceTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">type&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">NodePort&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">48&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">49&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># - name: wss-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">50&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># nodePort: 31081&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">51&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># port: 8084&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">52&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># protocol: TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">53&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># targetPort: 8084&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">54&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># - name: ssl-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">55&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># nodePort: 31082&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">56&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># port: 8883&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">57&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># protocol: TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">58&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># targetPort: 8883&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">59&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">tcp-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">60&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nodePort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">31083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">61&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1883&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">62&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">protocol&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">63&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">targetPort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1883&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">64&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># - name: ws-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">65&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># nodePort: 31084&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">66&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># port: 8083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">67&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># protocol: TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">68&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># targetPort: 8083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">69&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">dashboardServiceTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">70&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">71&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">type&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">NodePort&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">72&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">73&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">tcp-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">74&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nodePort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">32083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">75&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">18083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">76&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">protocol&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">77&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">targetPort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">18083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>定義建立好後，運行下面命令創建資源，資源會建立在預設的 namespace 中。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">kubectl apply -f emqx-cluster.yaml
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1"># 確認資源狀態&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">kubectl get emqx
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">NAME STATUS AGE
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">emqx Ready 5d18h
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="配置-ssl-連線">配置 SSL 連線&lt;/h4>
+&lt;p>EMQX 有整合 &lt;code>cert-manager&lt;/code> 服務，可以透過配置執行憑證的申請，但是憑證只能在與 EMQX Operator 同個 namespace 中，以上面的命令為例就會建立在 namespace &lt;code>emqx-operator-system&lt;/code> 裡面。&lt;/p>
+&lt;p>如果 EMQX Operator 與 EMQX Cluster 不在同個 namespace 中的話，就會取不到憑證，所以要另外配置，下面為配置方式。&lt;/p>
+&lt;p>收先要先使用 cert-manager 做憑證的申請並建立 secret，建立一個 test-mqtt.example.com.yaml 檔案，內容如下。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">cert-manager.io/v1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">Certificate&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">labels&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">app.kubernetes.io/instance&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">app.kubernetes.io/name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">test-mqtt.example.com&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">dnsNames&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">test-mqtt.example.com&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">duration&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">2160h0m0s&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">issuerRef&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">group&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">cert-manager.io&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">ClusterIssuer&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">letsencrypt-http01&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">renewBefore&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">360h0m0s&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">secretName&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">test-mqtt.example.com&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">usages&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">digital signature&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">key encipherment&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>運行上面定義的 yaml 來建立資源，執行憑證的申請。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">kubectl apply -f test-mqtt.example.com.yaml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>接著配置 EMQX Cluster 的憑證掛載，&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nt">apiVersion&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">apps.emqx.io/v2beta1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">kind&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">EMQX&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">metadata&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx:5.3.2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">config&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">data&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">|&lt;/span>&lt;span class="sd">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.tcp.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 10&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 11&lt;/span>&lt;span class="cl">&lt;span class="sd"> bind = &amp;#34;0.0.0.0:1883&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 12&lt;/span>&lt;span class="cl">&lt;span class="sd"> max_connections = 1024
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 13&lt;/span>&lt;span class="cl">&lt;span class="sd"> max_conn_rate = &amp;#34;1000/s&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 14&lt;/span>&lt;span class="cl">&lt;span class="sd"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 15&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.ssl.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 16&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 17&lt;/span>&lt;span class="cl">&lt;span class="sd"> bind = &amp;#34;0.0.0.0:8883&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 18&lt;/span>&lt;span class="cl">&lt;span class="sd"> max_connections = 1024
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 19&lt;/span>&lt;span class="cl">&lt;span class="sd"> max_conn_rate = &amp;#34;1000/s&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 20&lt;/span>&lt;span class="cl">&lt;span class="sd"> ssl_options {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 21&lt;/span>&lt;span class="cl">&lt;span class="sd"> cacertfile = &amp;#34;/mounted/cert/ca.crt&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 22&lt;/span>&lt;span class="cl">&lt;span class="sd"> certfile = &amp;#34;/mounted/cert/tls.crt&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 23&lt;/span>&lt;span class="cl">&lt;span class="sd"> keyfile = &amp;#34;/mounted/cert/tls.key&amp;#34;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 24&lt;/span>&lt;span class="cl">&lt;span class="sd"> gc_after_handshake = true
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 25&lt;/span>&lt;span class="cl">&lt;span class="sd"> handshake_timeout = 5s
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 26&lt;/span>&lt;span class="cl">&lt;span class="sd"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 27&lt;/span>&lt;span class="cl">&lt;span class="sd"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 28&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.wss.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 29&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = false
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 30&lt;/span>&lt;span class="cl">&lt;span class="sd"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 31&lt;/span>&lt;span class="cl">&lt;span class="sd"> listeners.ws.default {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 32&lt;/span>&lt;span class="cl">&lt;span class="sd"> enable = false
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 33&lt;/span>&lt;span class="cl">&lt;span class="sd"> }&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 34&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">coreTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 35&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 36&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">volumeClaimTemplates&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 37&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">storageClassName&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">sas&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 38&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">resources&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 39&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requests&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 40&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">storage&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">5Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 41&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">accessModes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 42&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">ReadWriteOnce&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 43&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">replicas&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 44&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">resources&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 45&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requests&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 46&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">cpu&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">200m&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 47&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">memory&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">256Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 48&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">extraVolumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 49&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx-tls&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 50&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">secret&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 51&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">secretName&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">test-mqtt.example.com&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 52&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">extraVolumeMounts&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 53&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx-tls&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 54&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">mountPath&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/mounted/cert&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 55&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">replicantTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 56&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 57&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">replicas&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 58&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">resources&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 59&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">requests&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 60&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">cpu&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">250m&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 61&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">memory&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">256Mi&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 62&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">extraVolumes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 63&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx-tls&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 64&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">secret&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 65&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">secretName&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">test-mqtt.example.com&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 66&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">extraVolumeMounts&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 67&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">emqx-tls&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 68&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">mountPath&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">/mounted/cert&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 69&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">listenersServiceTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 70&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 71&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">type&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">NodePort&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 72&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 73&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># - name: wss-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 74&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># nodePort: 30712&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 75&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># port: 8084&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 76&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># protocol: TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 77&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># targetPort: 8084&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 78&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">ssl-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 79&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nodePort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">31082&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 80&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">8883&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 81&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">protocol&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 82&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">targetPort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">8884&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 83&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">tcp-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 84&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nodePort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">31083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 85&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1883&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 86&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">protocol&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 87&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">targetPort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">1884&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 88&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># - name: ws-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 89&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># nodePort: 31394&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 90&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># port: 8083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 91&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># protocol: TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 92&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c"># targetPort: 8083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 93&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">dashboardServiceTemplate&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 94&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">spec&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 95&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">type&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">NodePort&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 96&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ports&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 97&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">tcp-default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 98&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">nodePort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">32084&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 99&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">port&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">18083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">100&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">protocol&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">TCP&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">101&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">targetPort&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">18083&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>接著執行配置更新，就可以使用 mqtts:// 來做連線。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="l">kubectl apply -f emqx-cluster.yaml&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="test">test&lt;/h3>
+&lt;p>使用工具 &lt;a href="https://mqttx.app/">mqttx&lt;/a> 工具做測試，看連線次是否有成功建立。&lt;/p></description></item><item><title>MQTT 初學指南</title><link>https://chiehting.com/posts/mqtt-beginners-guide/</link><pubDate>Fri, 24 Nov 2023 16:20:49 +0800</pubDate><guid>https://chiehting.com/posts/mqtt-beginners-guide/</guid><description>
+&lt;p>本篇文章說明了 MQTT 的相關知識，包括起源、版本、資安, etc。MQTT 用於 IoT 訊息傳遞的服務，由 client 跟 brokers 的架構組成。由於用於 IoT 設備，所以通常硬件的資源有限，MQTT 輕量且穩定的好處就很適合。&lt;/p>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a href="http://www.steves-internet-guide.com/mqtt/">Beginners Guide To The MQTT Protocol&lt;/a>&lt;/p>
+&lt;h2 id="mqtt">MQTT&lt;/h2>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>MQTT 是一個輕量且高效的訊息佇列遙測傳輸，常用於 IoT 系統。他是由 Andy Stanford-Clark (IBM) 和 Arlen Nipper 在 1999 年設計的，後來被 OASIS 在 2014 年標準化。&lt;/p>
+&lt;p>MQTT 是讓兩的裝置可以透過 broker 進行交互溝通，例如 &amp;quot;智慧門鎖&amp;quot; 跟 &amp;quot;APP&amp;quot; 做訊息（開門、訪客, etc）的通知。&lt;/p>
+&lt;p>目前 MQTT 的最新版本為 v5，是在 v3 的版本上做優化。但要使用 v5 版本必需要 broker 跟 client 都使用 v5 版本。所以目前主流的版本還是 v3.1.1。&lt;/p>
+&lt;p>文章中也有列出一些常見的問題：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Question&lt;/th>
+&lt;th>Answer&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>MQTT 可以不需要 broker 嗎？&lt;/td>
+&lt;td>不行，必須要使用 brokers。因為 IoT 裝置上的限制。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>MQTT 使用的 Protocol 是什麼？&lt;/td>
+&lt;td>MQTT 標準版本使用的是 TCP/IP&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>有可能從發布訊息中取得 client 的身份嗎？&lt;/td>
+&lt;td>預設沒有這方面的資訊，除非在 topic or payload 中有配置。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>要如何找出已經 published topics？&lt;/td>
+&lt;td>無法容易地做到，因為 MQTT 不要長久地保持 published topics。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>訊息會被保存在 borker 上嗎？&lt;/td>
+&lt;td>會暫時的保存在 broker 上，等訊息被發出後就會拋棄。&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="http://www.steves-internet-guide.com/mqtt/">Beginners Guide To The MQTT Protocol&lt;/a>&lt;/p>
+&lt;h4 id="what-is-mqtt">What is MQTT?&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">MQTT is a lightweight &lt;strong>publish/subscribe&lt;/strong> messaging protocol designed for M2M (machine to machine) telemetry in low bandwidth environments.&lt;/span>&lt;/p>
+&lt;p>It was designed by Andy Stanford-Clark (IBM) and Arlen Nipper in 1999 for connecting Oil Pipeline telemetry systems over satellite.&lt;/p>
+&lt;p>Although it started as a proprietary protocol it was released Royalty free in 2010 and became an OASIS standard in 2014.&lt;/p>
+&lt;p>&lt;strong>MQTT&lt;/strong> stands for &lt;strong>MQ&lt;/strong> Telemetry Transport but previously was known as Message Queuing Telemetry Transport.&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">&lt;strong>MQTT&lt;/strong> is fast becoming one of the main protocols for &lt;strong>IOT&lt;/strong> (internet of things) deployments.&lt;/span>&lt;/p>
+&lt;h4 id="mqtt-versions">MQTT Versions&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The original &lt;strong>MQTT&lt;/strong> which was designed in 1999 and has been in use for many years and is designed for &lt;strong>TCP/IP networks&lt;/strong>.&lt;/span>&lt;/p>
+&lt;p>MQTTv3.1.1 is version in common use.&lt;/p>
+&lt;p>There is very little difference between v3.10 and 3.1.1. Here is a &lt;a href="https://github.com/mqtt/mqtt.github.io/wiki/Differences-between-3.1.0-and-3.1.1">Github page&lt;/a> detailing the main differences&lt;/p>
+&lt;p>Here is the actual Specification &lt;a href="http://public.dhe.ibm.com/software/dw/webservices/ws-mqtt/MQTT_V3.1_Protocol_Specific.pdf">MQTT V3.1&lt;/a> and here is a more detailed overview of the &lt;a href="http://www.steves-internet-guide.com/mqtt-protocol-messages-overview/">MQTT protocol packet structure,.&lt;/a>&lt;/p>
+&lt;p>The latest MQTT version(v5) ,&lt;a href="https://www.oasis-open.org/news/announcements/mqtt-v5-0-is-an-approved-oasis-committee-specification">has now been approved&lt;/a> (Jan 2018).. You can download the specification &lt;a href="http://docs.oasis-open.org/mqtt/mqtt/v5.0/cs01/mqtt-v5.0-cs01.pdf">here&lt;/a>.&lt;/p>
+&lt;h4 id="mqtt-sn-notes">&lt;strong>MQTT-SN Notes&lt;/strong>&lt;/h4>
+&lt;p>&lt;strong>MQTT-SN&lt;/strong> which was specified in around 2013, and designed to work over &lt;strong>UDP&lt;/strong>, ZigBee and other transports.&lt;/p>
+&lt;p>&lt;strong>MQTT-SN&lt;/strong> doesn’t currently appear to be very popular. and the specification hasn’t changed for several years, but I expect that to change as &lt;strong>IOT&lt;/strong> deployments start. See &lt;a href="http://www.steves-internet-guide.com/mqtt-sn/">MQTT-SN working Notes&lt;/a>. for more details on MQTT-SN.&lt;/p>
+&lt;h4 id="mqtt-clients">MQTT Clients&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">Because MQTT clients don’t have addresses like email addresses, phone numbers etc. you don’t need to assign addresses to clients like you do with most messaging systems.&lt;/span>&lt;/p>
+&lt;h4 id="mqtt-brokers-or-servers">MQTT Brokers or Servers&lt;/h4>
+&lt;p>&lt;strong>Note:&lt;/strong> The original term was &lt;strong>broker&lt;/strong> but it has now been standardized as &lt;strong>Server&lt;/strong>. You will see Both terms used.&lt;/p>
+&lt;p>There are many MQTT brokers available that you can use for testing and for real applications.&lt;/p>
+&lt;p>There are free self hosted brokers , the most popular being &lt;a href="https://mosquitto.org/">Mosquitto&lt;/a> and commercial ones like &lt;a href="http://www.hivemq.com/">HiveMQ.&lt;/a>&lt;/p>
+&lt;p>There are many MQTT brokers available that you can use for testing and for real applications.&lt;/p>
+&lt;h4 id="mqtt-over-websockets">MQTT Over WebSockets&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">&lt;strong>Websockets&lt;/strong> allows you to receive MQTT data directly into a web browser.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">This is important as the web browser may become the DE-facto interface for displaying MQTT data.&lt;/span>&lt;/p>
+&lt;p>MQTT websocket support for web browsers is provided by the &lt;strong>Javascript MQTT Client&lt;/strong>.&lt;/p>
+&lt;p>See –&lt;a href="http://www.steves-internet-guide.com/mqtt-websockets/">Using MQTT Over WebSockets&lt;/a>&lt;/p>
+&lt;h4 id="mqtt-security">MQTT Security&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">MQTT supports various authentications and data security mechanisms.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">It is important to note that these security mechanisms are configured on the MQTT broker, and it is up to the client to comply with the mechanisms in place.&lt;/span>&lt;/p>
+&lt;p>See &lt;a href="http://www.steves-internet-guide.com/mqtt-security-mechanisms/">An Introduction to MQTT security mechanisms&lt;/a>&lt;/p>
+&lt;h4 id="common-questions">Common Questions&lt;/h4>
+&lt;p>If you are familiar with the web and email then you will probably find, as I did, that MQTT is very different. These are some of the questions I had, and saw on other sites and forums that may clear things up a little.&lt;/p>
+&lt;h5 id="q-what-port-does-mqtt-normally-use">Q, What Port does MQTT Normally Use?&lt;/h5>
+&lt;p>&lt;strong>A-&lt;/strong> The standard port is 1883.&lt;/p>
+&lt;h5 id="q--can-you-use-mqtt-without-a-broker">Q- Can you use MQTT without a broker?&lt;/h5>
+&lt;p>A- No See &lt;a href="http://www.steves-internet-guide.com/mqtt-works/">How MQTT works&lt;/a>&lt;/p>
+&lt;h5 id="q--what-protocol-does-mqtt-use">Q- What Protocol does MQTT use?&lt;/h5>
+&lt;p>A- The standard version uses &lt;strong>TCP/IP&lt;/strong>.&lt;/p>
+&lt;h5 id="q-can-multiple-clients-publish-to-the-same-topic">Q, Can multiple clients publish to the same topic?&lt;/h5>
+&lt;p>&lt;strong>A-&lt;/strong> Yes&lt;/p>
+&lt;h5 id="q--is-possible-to-know-the-identity-of-the-client-that-published-a-message">Q- Is possible to know the identity of the client that published a message?&lt;/h5>
+&lt;p>&lt;strong>A-&lt;/strong> No not unless the client includes that information in the topic or payload.&lt;/p>
+&lt;h5 id="q--what-happens-to-messages-that-get-published-to-topics-that-no-one-subscribes-to">Q- What happens to messages that get published to topics that no one subscribes to?&lt;/h5>
+&lt;p>&lt;strong>A-&lt;/strong> They are discarded by the broker.&lt;/p>
+&lt;h5 id="q-how-can-i-find-out-what-topics-have-been-published">Q-How can I find out what topics have been published?&lt;/h5>
+&lt;p>&lt;strong>A-&lt;/strong> You can’t do this easily as the broker doesn’t seem to keep a list of published topics as they aren’t permanent.&lt;/p>
+&lt;h5 id="q--can-i-subscribe-to-a-topic-that-no-one-is-publishing-to">Q- Can I subscribe to a topic that no one is publishing to?&lt;/h5>
+&lt;p>&lt;strong>A-&lt;/strong> Yes&lt;/p>
+&lt;h5 id="q--are-messages-stored-on-the-broker">Q- Are messages stored on the broker?&lt;/h5>
+&lt;p>A- &lt;strong>Yes&lt;/strong> but only temporarily. Once they have been sent to all subscribers they are then discarded. But see next question.&lt;/p>
+&lt;h5 id="q--what-are-retained-messages">Q- What are retained messages?&lt;/h5>
+&lt;p>&lt;strong>A-&lt;/strong> When you publish a message you can have the broker store the last published message. This message will be the first message that new subscribers see when they subscribe to that topic. &lt;strong>MQTT only retains 1 message.&lt;/strong> See &lt;a href="http://www.steves-internet-guide.com/mqtt-retained-messages-example/">Understanding Retained Messages&lt;/a>&lt;/p>
+&lt;h4 id="other-mqtt-tutorials">Other MQTT Tutorials&lt;/h4>
+&lt;p>Here is a list of &lt;a href="http://www.steves-internet-guide.com/category/mqtt/">all MQTT tutorials&lt;/a> on this site&lt;/p>
+&lt;h4 id="mqtt-vs-http">MQTT vs HTTP&lt;/h4>
+&lt;p>If you are wondering if MQTT is the best choice for your project then here are a collection of articles comparing MQTT with HTTP.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://www.linkedin.com/pulse/internet-things-http-vs-websockets-mqtt-ronak-singh-cspo/">Internet of Things: Battle of The Protocols (HTTP vs. Websockets vs. MQTT)&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://medium.com/mqtt-buddy/mqtt-vs-http-which-one-is-the-best-for-iot-c868169b3105">MQTT vs. HTTP: which one is the best for IoT?&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://flespi.com/blog/http-vs-mqtt-performance-tests">HTTP vs MQTT performance tests&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://iotdunia.com/mqtt-and-http/">MQTT and HTTP : Comparison between two IoT Protocols&lt;/a> – contains errors but chart useful&lt;/li>
+&lt;/ul></description></item><item><title>什麼是 MQTT</title><link>https://chiehting.com/posts/mqtt-org/</link><pubDate>Fri, 24 Nov 2023 15:34:42 +0800</pubDate><guid>https://chiehting.com/posts/mqtt-org/</guid><description>
+&lt;p>MQTT 是物聯網 (IoT) 的 OASIS 標準訊息傳遞協定。&lt;/p>
+&lt;p>OASIS（Organization Advancement Structured Information Standards / 結構化資訊標準促進組織 ）：全球的非營利組織，主要在發展及整合物聯網、網路服務等領域的相關標準。&lt;/p>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a href="https://mqtt.org/">https://mqtt.org/&lt;/a>&lt;/p>
+&lt;h2 id="mqtt">MQTT&lt;/h2>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>MQTT 是設計給 IoT 作為訊息傳遞來使用的協定。通常 IoT 硬件通常會有資源上的限制，所以 MQTT 的特色就是輕量且高效。
+下面列出了 MQTT 的特色：&lt;/p>
+&lt;ol>
+&lt;li>Lightweight and Efficient（輕量且高效）&lt;/li>
+&lt;li>Bi-directional Communications（裝置跟服務可雙向溝通）&lt;/li>
+&lt;li>Scale to Millions of Things（可平行擴充）&lt;/li>
+&lt;li>Reliable Message Delivery（可靠的訊息傳遞）&lt;/li>
+&lt;li>Support for Unreliable Networks（適用於網路不穩定的環境之下）&lt;/li>
+&lt;li>Security Enabled （安全性，可使用 TLS 加密訊息）&lt;/li>
+&lt;/ol>
+&lt;h4 id="下圖為-mqtt-org-上的-publish--subscribe-架構也繪出一份-flowchart-供紀錄">下圖為 MQTT org 上的 Publish / Subscribe 架構，也繪出一份 flowchart 供紀錄。&lt;/h4>
+&lt;p>&lt;em>MQTT pub/sub Flowchart&lt;/em>&lt;/p>
+&lt;pre class="mermaid">flowchart LR
+mc3[MQTT Client&lt;br>Subscriber: Mobile device] --"Subscribe to topic:temperature"--> mb
+mc2[MQTT Client&lt;br>Subscriber: Backend device] --"Subscribe to topic:temperature"--> mb
+mb --"Publish: 24°C"--> mc2
+mb --"Publish: 24°C"--> mc3
+subgraph MQtt Broker
+mb[MQTT Broker]
+end
+subgraph MQTT Client
+mc1[Publisher: Temperature Sensor] --"
+Publish to topic: temperature&lt;br>Publish: 24°C"--> mb
+end&lt;/pre>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://mqtt.org/">mqtt org&lt;/a>&lt;/p>
+&lt;h4 id="mqtt-the-standard-for-iot-messaging">MQTT: The Standard for IoT Messaging&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">MQTT is an OASIS standard messaging protocol for the Internet of Things (IoT).&lt;/span> It is designed as an extremely lightweight publish/subscribe messaging transport that is ideal for connecting remote devices with a small code footprint and minimal network bandwidth. MQTT today is used in a wide variety of industries, such as automotive, manufacturing, telecommunications, oil and gas, etc.&lt;/p>
+&lt;h4 id="why-mqtt">Why MQTT?&lt;/h4>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;em>Lightweight and Efficient&lt;/em>&lt;/p>
+&lt;p>MQTT clients are very small, require minimal resources so can be used on small microcontrollers. MQTT message headers are small to optimize network bandwidth.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;em>Bi-directional Communications&lt;/em>&lt;/p>
+&lt;p>MQTT allows for messaging between device to cloud and cloud to device. This makes for easy broadcasting messages to groups of things.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;em>Scale to Millions of Things&lt;/em>&lt;/p>
+&lt;p>MQTT can scale to connect with millions of IoT devices.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;em>Reliable Message Delivery&lt;/em>&lt;/p>
+&lt;p>Reliability of message delivery is important for many IoT use cases. This is why MQTT has 3 defined quality of service levels: 0 - at most once, 1- at least once, 2 - exactly once&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;em>Support for Unreliable Networks&lt;/em>&lt;/p>
+&lt;p>Many IoT devices connect over unreliable cellular networks. MQTT’s support for persistent sessions reduces the time to reconnect the client with the broker.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;em>Security Enabled&lt;/em>&lt;/p>
+&lt;p>MQTT makes it easy to encrypt messages using TLS and authenticate clients using modern authentication protocols, such as OAuth.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="mqtt-publish--subscribe-architecture">MQTT Publish / Subscribe Architecture&lt;/h4>
+&lt;p>&lt;em>MQTT publish subscribe image&lt;/em>&lt;/p>
+&lt;p>&lt;img src="https://mqtt.org/assets/img/mqtt-publish-subscribe.png" alt="參考 MQTT org">&lt;/p>
+&lt;h4 id="is-mqtt-a-standard">Is MQTT a standard?&lt;/h4>
+&lt;p>v5.0 and v3.1.1 are now OASIS standards (v3.1.1 has also been ratified by ISO).&lt;/p></description></item></channel></rss>

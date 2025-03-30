@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>sre on Chiehting</title><link>https://chiehting.com/category/sre/</link><description>Recent content in sre on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 13 Jul 2023 15:45:24 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/sre/index.xml" rel="self" type="application/rss+xml"/><item><title>Service Level Indicator</title><link>https://chiehting.com/posts/service-level-indicator/</link><pubDate>Thu, 13 Jul 2023 15:45:24 +0800</pubDate><guid>https://chiehting.com/posts/service-level-indicator/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 什麼是 SLI?&lt;/p>
+&lt;p>Answer :: SLI 為 SLO 的指標數據, SLI 為 IT 團隊跟系統間的狀態確認. 但與以往的監控不同, SLO 的目標是以用戶體驗為導向. SLI 在擷取的過程中, 要保持單純與精確, 可以參考文章的 SLI 分類.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Service Level Indicator (服務水平指標) 是根據 SLO 目標所衡量的指標, 通常是&lt;strong>可量化的數值&lt;/strong>, 文章中建議將指標做主要的分類 (e.g., response/request, storage, data pipeline).&lt;/p>
+&lt;pre>&lt;code>e.g., HTTP 狀態碼為 200 的回應次數, 佔總回應次數的比率
+&lt;/code>&lt;/pre>
+&lt;p>每個指標不要過於複雜, 盡量保持簡單且要是有關用戶的體驗. 例如一個購物車系統結帳, 當購物車系統的 CPU 過高、MEM 過高, 但不直接影響用戶體驗, 就不是個好的 SLI 指標; 例如加入購物車 API 等待時間, 直接影響用戶的體驗, 就是個需關注的 SLI 指標. 這段注意是在講如何提取好的 SLI 指標, 不是說不要監控 CPU、MEM 等數據. 個人認為監控目標被分成兩種, 一種是系統狀態; 一種是用戶體驗.&lt;/p>
+&lt;p>通常一個系統可能由多個組件來組成, 文中建議從最接近用戶的組件中提取數據. 指標要貼近用戶體驗且獨立分開, 單位例如以: cluster, host or component, ext.&lt;/p>
+&lt;p>延伸閱讀, &lt;a href="https://www.coursera.org/lecture/site-reliability-engineering-slos/the-sli-menu-CST0V">The SLI menu&lt;/a>, 可參考影片中對 SLI 的指標分類：&lt;/p>
+&lt;ol>
+&lt;li>請求/回應（Request/Response）
+&lt;ul>
+&lt;li>可用性指標（Availability）&lt;/li>
+&lt;li>回應時間指標（Latency）&lt;/li>
+&lt;li>回應品質指標（Quality）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>數據處理（Data Processing）
+&lt;ul>
+&lt;li>覆蓋率指標（Coverage）&lt;/li>
+&lt;li>正確性指標（Correctness）&lt;/li>
+&lt;li>新鮮度指標（Freshness）&lt;/li>
+&lt;li>吞吐量指標（Throughput）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>資料存儲（Storage）
+&lt;ul>
+&lt;li>持久性指標（Durability）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.datadoghq.com/blog/establishing-service-level-objectives/#getting-from-slis-to-slos">Getting from SLIs to SLOs&lt;/a>&lt;/p>
+&lt;h4 id="getting-form-slis-to-slos">Getting form SLIs to SLOs&lt;/h4>
+&lt;p>Now that we’ve defined some key concepts related to SLOs, it’s time to begin thinking about how to craft them. &lt;strong>&lt;span style="background-color: #ffffcc; color: red">Developing a good understanding of how your users experience your product—and which user journeys are most critical—is the first and most important step in creating useful SLOs.&lt;/span>&lt;/strong> Here are a few questions you should consider:&lt;/p>
+&lt;ul>
+&lt;li>How are your users interacting with your application?&lt;/li>
+&lt;li>What is their journey through the application?&lt;/li>
+&lt;li>Which parts of your infrastructure do these journeys interact with?&lt;/li>
+&lt;li>What are they expecting from your systems and what are they hoping to accomplish?&lt;/li>
+&lt;/ul>
+&lt;h4 id="picking-good-slis">Picking good SLIs&lt;/h4>
+&lt;p>&lt;strong>As your infrastructure grows in complexity, it becomes more cumbersome to set external SLOs for every single database, message queue, and load balancer. Instead, &lt;span style="background-color: #ffffcc; color: red">we recommend organizing your system components into a few main categories (e.g., response/request, storage, data pipeline), and specifying SLIs within each of these categories.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>As you start selecting SLIs, &lt;span style="background-color: #ffffcc; color: red">a short but important saying to keep in mind is: “All SLIs are metrics, but not all metrics make good SLIs.” This means that while you might be tracking hundreds or even thousands of metrics, you should focus on the indicators that matter most: the ones that best capture your users’ experience.&lt;/span>&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Service type&lt;/th>
+&lt;th>SLI type&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;strong>Response/Request&lt;/strong>&lt;/td>
+&lt;td>&lt;strong>Availability:&lt;/strong> Could the server respond to the request successfully? &lt;br>&lt;strong>Latency:&lt;/strong> How long did it take for the server to respond to the request? &lt;br>&lt;strong>Throughput:&lt;/strong> How many requests can be handled?&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>Storage&lt;/strong>&lt;/td>
+&lt;td>&lt;strong>Availability:&lt;/strong> Can the data be accessed on demand? &lt;br>&lt;strong>Latency:&lt;/strong> How long does it take to read and write data? &lt;br>&lt;strong>Durability:&lt;/strong> Is the data still there when it is needed?&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>Pipeline&lt;/strong>&lt;/td>
+&lt;td>&lt;strong>Correctness:&lt;/strong> Was the right data returned? &lt;br>&lt;strong>Freshness:&lt;/strong> How long does it take for new data or processed results to appear?&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>Contrast this with a metric that will almost certainly never make a good SLI: CPU utilization. Even if your servers were experiencing a surge in CPU usage—and your infrastructure teams were getting alerted more often on this high usage—your end users might still be able to seamlessly check out. &lt;span style="background-color: #ffffcc; color: red">The takeaway here is that regardless of how important a metric might be to your internal teams, if its value does not directly affect user satisfaction, then it will not be useful as an SLI.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>Once you have identified good SLIs, you’ll need to measure them with data from your monitoring system. Again, &lt;span style="background-color: #ffffcc; color: red">we recommend pulling data from the components that are in closest proximity to the user.&lt;/span>&lt;/strong> For instance, you might use a payments API to accept and authorize credit card transactions as part of your checkout service. While numerous other internal components might make up this service (e.g., servers, background job processors), they are typically abstracted away from the user’s view. &lt;span style="background-color: #ffffcc; color: red">Since SLIs serve to quantify your end user experience, it is sufficient to only gather data from the payments endpoint, as it exposes functionalities to the user&lt;/span>.&lt;/p>
+&lt;h4 id="turning-slis-into-slos">Turning SLIs into SLOs&lt;/h4>
+&lt;p>&lt;strong>Finally, you will need to set a target value—or range of values—for an SLI to transform it into an SLO. &lt;span style="background-color: #ffffcc; color: red">You should state what your best- and worst-case standard would be—and over what period of time this condition should remain valid&lt;/span>.&lt;/strong> For example, an SLO tracking request latency might be “The latency of 99 percent of requests to the authentication service will be less than 250 ms over a 30-day period.”&lt;/p>
+&lt;p>As you start to create SLOs, you should keep the following points in mind.&lt;/p>
+&lt;h5 id="be-realistic">Be realistic&lt;/h5>
+&lt;p>&lt;strong>No matter how tempting it might be to set an SLO to 100 percent, it is essentially impossible to achieve in practice.&lt;/strong> Without factoring in an error budget, your development teams might feel overly cautious about experimenting with new features, which will inhibit the growth of your product. &lt;strong>The typical industry standard is to set SLO targets as a number of nines&lt;/strong> (e.g., 99.9 percent is known as “three nines”, 99.95 percent is known as “three and a half nines”).&lt;/p>
+&lt;p>&lt;strong>And as a general rule of thumb, &lt;span style="background-color: #ffffcc; color: red">you should keep your SLOs slightly stricter than what you detail in your SLAs.&lt;/span>&lt;/strong> It’s always better to err on the side of caution to ensure you are meeting your SLAs rather than consistently under-delivering.&lt;/p>
+&lt;h5 id="experiment-away">Experiment away&lt;/h5>
+&lt;p>&lt;strong>There is no hard-and-fast rule for perfecting SLOs. &lt;span style="background-color: #ffffcc; color: red">Each organization’s SLOs will differ depending on the nature of the product, the priorities of the teams that manage them, and the expectations of the end users. Remember that you can always continue to refine your targets until you find the most optimal values.&lt;/span>&lt;/strong> For instance, if your team is consistently beating the targets by a large amount, you might want to tighten those values or capitalize on your unused error budgets by investing more heavily in product development. But if your team is consistently failing to meet its targets, it might be wise to drop them down to more achievable levels or invest more time in stabilizing the product.&lt;/p>
+&lt;h5 id="dont-overcomplicate-it">Don’t overcomplicate it&lt;/h5>
+&lt;p>&lt;strong>Last but not least, &lt;span style="background-color: #ffffcc; color: red">resist the temptation to set too many SLOs or to overcomplicate your SLI aggregations when defining your SLO targets.&lt;/span> Instead of setting an individual SLI for each and every single cluster, host, or component that makes up a critical journey, you should try to aggregate them in a meaningful way as a single SLI. In general, &lt;span style="background-color: #ffffcc; color: red">you should restrict your SLOs and SLIs to only ones that are absolutely critical to your end user experience.&lt;/span> This helps cut through the noise so you can focus on what’s truly important.&lt;/strong>&lt;/p></description></item><item><title>Red Hat 所定義的 SRE 角色</title><link>https://chiehting.com/posts/sre-devops-difference/</link><pubDate>Wed, 12 Jul 2023 17:36:48 +0800</pubDate><guid>https://chiehting.com/posts/sre-devops-difference/</guid><description>
+&lt;p>&lt;a href="https://www.coursera.org/learn/site-reliability-engineering-slos/lecture/XCfHn/whats-the-difference-between-devops-and-sre">https://www.coursera.org/learn/site-reliability-engineering-slos/lecture/XCfHn/whats-the-difference-between-devops-and-sre&lt;/a>&lt;/p>
+&lt;p>It's sounding very familiar because if you think about DevOps as a philosophy, SRE is a prescriptive way of accomplishing that philosophy so if DevOps were an interface and programming language, you might almost say that SRE is a concrete class that implements DevOps.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="kd">class&lt;/span> &lt;span class="nc">SRE&lt;/span> &lt;span class="kd">implements&lt;/span> &lt;span class="n">DevOps&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="sre-跟-devops-的差別">SRE 跟 DevOps 的差別&lt;/h3></description></item><item><title>Service Level Ojbective</title><link>https://chiehting.com/posts/service-level-objective/</link><pubDate>Wed, 12 Jul 2023 16:14:50 +0800</pubDate><guid>https://chiehting.com/posts/service-level-objective/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 為什麼 SLO 這麼重要?&lt;/p>
+&lt;p>Answer :: SLO 是為滿足 SLA 的目標設立, 將客戶對系統穩定度的期待轉換成目標. 之所以重要是因為 IT 團隊直接關注客戶所在乎的重點, 讓系統的穩定度保持在可接受的範圍內. 當然服務越可靠; 成本就越高.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Service level objective (服務水準目標) 是系統監控的目標, 為了滿足 SLA 所承諾之協議. SLO 的組成是由 &lt;strong>SLI、一段時間區間、目標(通常以百分比呈現)&lt;/strong>, 公式如下:&lt;/p>
+&lt;p>$$ SLO = SLI + period\ of\ time + valid\ conditions $$&lt;/p>
+&lt;p>在建立 SLOs 的時候目標必須是明確且清晰的. 在文中出指出五點來測量與評估 SLOs, 我個人的經驗裡, 在執行上會有些困難點, 在下面一併列出.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>設定準確的目標&lt;/strong>: 須將目標收斂. 設定人需明確目標, 不要過於發散, 讓指標精確以利於後許的衡量.&lt;/li>
+&lt;li>&lt;strong>搜集監控數據&lt;/strong>: 數據需要定義清楚且完善, 可視覺化輔助. 工具例如: DataDog, Grafana. 設立人需對目標清楚與系統了解, 使得資訊搜集完全且正確.&lt;/li>
+&lt;li>&lt;strong>對收集的指標發出警報&lt;/strong>: 對於告警要透明且公開很認同, 但大量的警報會讓 IT 團隊感受到變弱. 這邊可以做警報權重的配置, 讓 IT 團隊對於警報事件是要繃緊神經的. 工具例如: Opsgenie&lt;/li>
+&lt;li>&lt;strong>建立警報報告&lt;/strong>: 取得事件的數據報告, 包括每項服務解決和關閉事件的平均時間、服務健康百分比、事件的嚴重性、事件的關聯性等等. 關鍵的數據報告可以讓評估準確.&lt;/li>
+&lt;li>&lt;strong>報告的評估與分享&lt;/strong>: 警報事件要設立負責人, 來對該事件作分析與回饋. 負責人不是單個團隊的職責, 可以是 Dev、Ops、PMs, etc. 依據目標不同, 負責人也會不同. 依據狀況與相關利益者分享報告分析.&lt;/li>
+&lt;/ul>
+&lt;p>上述幾點是循環且持續執行的優化項目, 不會是一次性任務.&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives">Measuring and evaluating Service Level Objectives (SLOs)&lt;/a>&lt;/p>
+&lt;p>In this context, SLAs (Service Level Agreement) are likely familiar. &lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA is a written agreement between the client and the service provider to ensure a healthy level of quality.&lt;/span> If specified conditions aren’t met there are consequences, and they are often financial.&lt;/strong>&lt;/p>
+&lt;p>However, the real world isn’t this simple. Service owners are accountable to serve both outside and inside stakeholders. These stakeholders depend on the services to meet their business objectives. This is especially common in microservices architectures, where one service is dependent on another. &lt;strong>As it doesn’t make sense to have written contracts for everything, &lt;span style="background-color: #ffffcc; color: red">service owners should be held responsible by defining clear objectives.&lt;/span>&lt;/strong> There are no severe penalties if those objectives aren’t met. Yet, this doesn’t mean they are there for nothing. There are some consequences, or rather– corrective actions, needed to improve those services.&lt;/p>
+&lt;p>&lt;em>A simple equation to define SLA and SLO relationship is:&lt;/em>&lt;/p>
+&lt;p>$$ SLA = SLO + written\ and\ signed\ consequences $$&lt;/p>
+&lt;p>Let’s focus on 5 key steps while measuring and evaluating SLOs.&lt;/p>
+&lt;h5 id="set-the-right-objectives">Set the right objectives&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Setting the right objectives is the first important step towards building proper SLOs.&lt;/span>&lt;/strong> There are some important things to consider at this point:&lt;/p>
+&lt;ul>
+&lt;li>Identify key metrics (service level indicators — SLIs) from the end-user viewpoint, such as latency&lt;/li>
+&lt;li>Make it measurable– such as 100 ms. latency&lt;/li>
+&lt;li>Allow some space (error budget) such as 100 ms. 99.9% of the time&lt;/li>
+&lt;li>Be clear on what you promise, for example 99.9% of the time (averaged over 10 minutes), HTTP calls are completed under 100 ms.&lt;/li>
+&lt;li>Consider product and business implications because setting the right objectives for SLOs aren’t purely technical as stated the &lt;a href="https://landing.google.com/sre/book/chapters/service-level-objectives.html">in SRE Book&lt;/a>.&lt;/li>
+&lt;/ul>
+&lt;p>Although these points are important and seem obvious, it is really hard to identify the right metrics. Talk openly with users and be clear on what is promised.&lt;/p>
+&lt;h5 id="collect-monitoring-data">Collect monitoring data&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Once important metrics have been identified, they need to be collected.&lt;/span> This stage depends heavily on SLOs and what the service means to others. Different things may need to be monitored depending on the level of abstraction.&lt;/strong> Often what is needed is a monitoring tool like DataDog to collect and visualize the data. These tools allow for aggregation and alerting when the metric reaches the threshold defined.&lt;/p>
+&lt;h5 id="alert-on-collected-metrics">Alert on collected metrics&lt;/h5>
+&lt;p>&lt;strong>Alerting is a critical and a complex job by itself. Filtering out low priority alerts and letting the team know about these are important for the health of on-call.&lt;/strong> But these are not the only places where an incident management solution such as &lt;em>Opsgenie&lt;/em> helps. A proper incident management tool does “a lot” more than that. It centralizes all alerts from different monitoring tools in one dashboard and allows users to &lt;a href="https://docs.opsgenie.com/docs/filters">categorize important alerts&lt;/a> for later analysis.&lt;/p>
+&lt;h5 id="create-reports-from-alerts">Create reports from alerts&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Once all of the alerts are in one place it’s important to setup alert reporting&lt;/span>, which makes it easy to see important data points in a structured view.&lt;/strong> To report on SLOs, Service and Infrastructure Health Reports are used at Opsgenie which include key indicators that can be used to evaluate metrics and share with customers as a team. Examples of these metrics are mean time to resolve and close incidents per service, Service health percentage (healthy/unhealthy state by outages and disruptions), severity of incidents that arise in a service and the alerts associated with all incidents (so that insight is gained into which monitoring systems reported the incident in which way) and how stakeholders were affected by the service disruptions – whether they were notified in a timely and proper way. The infrastructure health reports provide infrastructure-wide context by allowing stakeholders to see all alerts and incidents across an entire infrastructure in a single view.&lt;/p>
+&lt;h5 id="evaluate-and-share-the-reports">Evaluate and share the reports&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Reports mean nothing if left un-evaluated. As they are the written proof of performance on the service level indicators defined internally, and they help to see if SLOs were met or not.&lt;/span> Evaluation should include every team member and stakeholder. This means transparency is crucial– be open about them and share the results with others.&lt;/strong> To dig a little bit deeper with analytics tools or create more sophisticated reports for stakeholders, export the reports for easy sharing.&lt;/p>
+&lt;h4 id="slos-dont-matter-if-the-cycle-isnt-repeated">SLOs don’t matter if the cycle isn’t repeated&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Once the cycle is completed– from creating the objectives and finishing with evaluating– the job still isn’t done. It starts all over again. Reevaluate objectives and take corrective actions either by refining the indicators or making services more robust.&lt;/span> Clearly examine error budgets to make sure that overachievement is avoided (yes, that is bad too).&lt;/strong> It is important to design objectives taking into account that tools and services will fail, because they will.&lt;/p></description></item><item><title>Service Level Agreement</title><link>https://chiehting.com/posts/service-level-agreement/</link><pubDate>Mon, 10 Jul 2023 18:02:11 +0800</pubDate><guid>https://chiehting.com/posts/service-level-agreement/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 為什麼 SLA 這麼重要?&lt;/p>
+&lt;p>Answer :: 身為 SRE, 要確保系統的可靠性, 並且滿足客戶的期待. 所以訂定協議可以增加客戶與
+對服務的信任; 也可以讓 IT 團隊知道系統穩定的目標在哪, 達到客戶與 IT 團隊擁有共識. 並且可以設立 error budget 來應對意外狀況, 讓用戶了解系統碰到異常, 並知道在多少時間內可修復; 讓團隊有排除系統異常的空間, 並了解要在多少時間內修復完畢.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Service level agreement (服務水準協議) 是在訂定服務可以提供的承諾. SLA 的組成會是由 &lt;strong>SLO 與未達成賠償&lt;/strong>, 公式如下:&lt;/p>
+&lt;p>$$ SLA = SLO + written\ and\ signed\ consequences $$&lt;/p>
+&lt;p>作為一個服務提供商, 會讓客戶 (外部客戶或內部客戶) 保持對服務的信任. 而協議可讓客戶跟 IT 團隊知道我們提供的服務水準在哪, 進而達成共識.&lt;/p>
+&lt;p>當然水準也不會亂承諾 100% 的事情, 因爲總是會有例外狀況. 所以會設立 error budget 來應對意外的發生.&lt;/p>
+&lt;p>下面為產業的 SLA 範例:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://aws.amazon.com/tw/legal/service-level-agreements/">AWS&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://cloud.google.com/terms/sla?hl=zh-tw">GCP&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://azure.microsoft.com/zh-tw/support/legal/sla/">Azure&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.atlassian.com/legal/sla">Atlassian&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h4 id="amazon-api-gateway-service-level-agreement">Amazon API Gateway Service Level Agreement&lt;/h4>
+&lt;p>AWS 將努力使API Gateway 在每個 AWS 區域正常運行時間百分比至少達到 99.95％. 如果不能滿足則給出服務積分,用來計算賠償使用.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Monthly Uptime Percentage&lt;/th>
+&lt;th>Service Credit Percentage&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Less than 99.95% but greater than or equal to 99.0%&lt;/td>
+&lt;td>10%&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Less than 99.0% but greater than or equal to 95.0%&lt;/td>
+&lt;td>25%&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Less than 95.0%&lt;/td>
+&lt;td>100%&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="pchome-24h-購物">PChome 24h 購物&lt;/h4>
+&lt;p>全台灣保證24h到貨,遲到將提供100元現金積點;週末假日照常出貨.&lt;/p>
+&lt;h4 id="sla-裡常用的服務關鍵績效指標">SLA 裡常用的服務關鍵績效指標:&lt;/h4>
+&lt;ol>
+&lt;li>系統可用性(System Availability): 客戶使用系統正常運作率會達到 X% 以上, 一般以月份為基準單位進行度量.&lt;/li>
+&lt;li>系統回復性(System Recovery): 系統中斷時會在 X 小時內回復正常運作, 系統資料會復原到發生中斷前 X 小時內的狀態.&lt;/li>
+&lt;li>系統回應時間(System Response): 系統反應時間不會超過 X 秒.&lt;/li>
+&lt;li>網路服務品質(Quality of Service, QoS): 封包遺失比率(Packet Loss)&amp;lt; X%、封包發送延遲時間(Latency)&amp;lt; X 毫秒(ms)、封包發送延遲時間變異數(Jitter)&amp;lt; X 毫秒(ms)等.&lt;/li>
+&lt;li>問題回應時間(Incident Response): 系統發生問題後於 X 分鐘內回應, 一般會將問題區分為不同優先等級, 並設定不同的回應時間標準.&lt;/li>
+&lt;li>問題解決時間(Incident Resolution): 系統發生問題後於 X 小時內解決, 一般會將問題區分為不同優先等級，並設定不同的解決時間標準.&lt;/li>
+&lt;li>平均故障時間(Mean Time to Failurel, MTTF): 指工作系統直到發生故障失效的平均時間. 這表示此系統僅能失效一次且不可修復, 對於不可修復的系統而言, MTTF 為系統可靠度中極為重要的指標. 例如: 筆電電池平均充電循環次數 100 次後損壞, 則 MTTF 就是 100 次.&lt;/li>
+&lt;li>平均修復時間(Mean Time To Repair, MTTR): 描述系統從故障狀態轉為工作狀態的平均修理時間. MTTR 越短, 表示恢復性越好.&lt;/li>
+&lt;li>平均故障間隔時間(Mean Time Between Failures, MTBF): 指可修復系統兩次故障相鄰之間的平均時間值. MTBF 越長, 系統的可靠性越高, 工作能力越強.&lt;/li>
+&lt;li>客服支援時段: 明確訂定出支援小組可提供服務的方式和時段, 例如: 周一到周五上午 9:00 至下午 18:00.&lt;/li>
+&lt;/ol>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/itsm/service-request-management/slas">SLAs: The what, the why, the how&lt;/a>&lt;/p>
+&lt;h4 id="what-is-a-service-level-agreement-sla">What is a service level agreement (SLA)?&lt;/h4>
+&lt;p>**&lt;span style="background-color: #ffffcc; color: red">As a service provider, a service level agreement is a plain-language agreement between you and your customer (whether internal or external)&lt;/span> that defines the services you will deliver, the responsiveness that can be expected, and how you will measure performance. **&lt;/p>
+&lt;p>SLAs define contractually agreed upon terms for services including things like uptime and support responsiveness. For instance, promising customers 99.9% service uptime or a response from support within 24 hours. In addition to formalizing service expectations, SLAs set forth the terms for redress when requirements are breached.&lt;/p>
+&lt;h4 id="the-importance-of-slas">The importance of SLAs&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">SLAs are a foundational agreement between your IT team and customers that are important in building trust.&lt;/span> They manage customer expectations and allow your team to know which issues you are responsible for resolving.&lt;/strong>&lt;/p>
+&lt;p>With SLAs in place, there is mutual understanding of service expectations. Implementing SLAs can benefit your IT team in numerous ways that include:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Strengthening IT’s relationship with customers&lt;/strong> - SLAs ease the concern over risk, which improves trust between parties. By defining what happens in the event of a breach, they reduce uncertainty. &lt;/li>
+&lt;li>&lt;strong>Formalizing communication&lt;/strong> - Conversations with stakeholders about IT issues can be difficult. Nobody wants to be hearing from a customer ten times a day or,on the other hand, allowing a customer to quietly stew over their unspoken expectations for service performance. An SLA enables stakeholders to have structured conversations based on already agreed-upon terms. &lt;/li>
+&lt;li>&lt;strong>Improving productivity and morale&lt;/strong> - SLAs define the urgency of incoming requests. They focus IT teams on which incoming issues matter the most.&lt;/li>
+&lt;/ul>
+&lt;h4 id="the-difference-between-slas-and-kpis">The difference between SLAs and KPIs&lt;/h4>
+&lt;p>An SLA is an agreement between you and your customer that defines how your relationship will work in the future. Key performance indicators (KPIs) are the metrics chosen to gauge how well a team performed against agreed standards.&lt;/p>
+&lt;p>An IT service desk, for example, typically agrees to provide technical support for a wide variety of services and devices within the business, and offers guarantees around things like uptime, first-call resolution, and time-to-recovery after service outages. KPIs are the specific metrics that are chosen to track whether the IT service desk fulfills these guarantees.&lt;/p>
+&lt;h4 id="the-challenges-of-slas">The challenges of SLAs&lt;/h4>
+&lt;p>This all sounds simple, right? In theory, yes. In practice, though, IT teams often run into one or more major challenges:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Tracking SLAs is difficult, and changing them is even harder&lt;/strong>. To see how they’re performing against SLA, many IT managers have to extract a ton of raw data, write custom queries, and build elaborate Excel formulas and reports. Plus, the SLAs often have to be custom or hard-coded into many service desks, meaning it can take days of development effort to change them.&lt;/li>
+&lt;li>&lt;strong>SLAs don’t always align with business priorities&lt;/strong>. SLAs seldom seem to change or evolve at the same pace the business does. In fact, more often than not, they’re inherited. Someone set an SLA a decade ago, and today it’s honored simply because it’s there. &lt;/li>
+&lt;li>&lt;strong>There is little flexibility in reporting&lt;/strong>. Even though there are a ton of unique circumstances influencing SLA attainment (like how long it takes for a customer to reply to you, etc.) most SLA reports don’t easily account for them. You either met your SLA or you didn’t. There’s no way to highlight something in a report that shows why, or helps you continually improve.&lt;/li>
+&lt;/ul>
+&lt;h4 id="how-to-set-slas-and-measure-your-performance">How to set SLAs and measure your performance&lt;/h4>
+&lt;p>Above, we talked about how SLAs can feel a bit arbitrary and like you’re not always measuring things that directly support your company’s bigger business objectives. To make sure you’re measuring the right things, and meeting the expectations that other parts of the business have of you, we recommend revisiting your SLAs regularly. Follow this process:&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Set a baseline.&lt;/span>&lt;/strong> The best place to start is by looking at your current SLAs, and how you’re performing against them. Take an inventory of what you offer, and how it aligns to the business goals of your company and your customers.&lt;/li>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Ask how you’re doing.&lt;/span>&lt;/strong> Talk directly with your customers and solicit constructive feedback. What are you doing well, and what could you do better? Are you offering the right services?&lt;/li>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Build a draft of new SLAs based on the results of the steps above.&lt;/span>&lt;/strong> Get rid of the services you no longer need, and add the ones that will make customers even happier and bring more value to both the business and IT.&lt;/li>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Get support from management.&lt;/span>&lt;/strong> To be successful, SLAs need the blessing of your IT leaders, and the leaders of your customer organizations, too. Start by getting your own management to buy in, and then ask them to help you negotiate with your customer’s management team.&lt;/li>
+&lt;/ol>
+&lt;p>If you've followed the above process, your SLAs should be in pretty good shape.&lt;/p></description></item><item><title>Red Hat 所定義的 SRE 角色</title><link>https://chiehting.com/posts/sre-definition-from-redhat/</link><pubDate>Mon, 10 Jul 2023 10:23:37 +0800</pubDate><guid>https://chiehting.com/posts/sre-definition-from-redhat/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 透過 &lt;em>Red Hat&lt;/em> 文件來理解什麼是 SRE, 其闡述與 Google 所提出的核心觀念一樣. 並衍伸此概念提出了兩個實踐模型&lt;strong>標準化&lt;/strong>和&lt;strong>自動化&lt;/strong>. 應用這兩個模型, SRE 團隊可以建立標準化的流程和自動化的工具, 進而提升運維的效率、可靠性和可重複性. 這樣可以減少人為錯誤, 加快問題解決速度, 並確保系統運行在穩定和可預測的狀態下.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>文章為 &lt;em>Red Hat&lt;/em> 來解釋什麼是 SRE, 與 &lt;em>Google&lt;/em> 所提出的核心觀念 &amp;quot;使用軟體工具來執行 IT 運維的任務&amp;quot; 一致. 這邊還有提到說 SRE 可以幫助團隊們在更新新功能與系統穩定間找到平衡, 確保每次的部署都在可控範圍內.&lt;/p>
+&lt;p>文件中還講到 SRE 有兩個重要的準則, 為&lt;strong>標準化&lt;/strong>跟&lt;strong>自動化&lt;/strong>. 這兩個準則我認為是實踐 &lt;em>Ben Treynor Sloss&lt;/em> 所提出之理念的方法. 其中標準化為之重要, 若標準化定義不夠精確, 則會造成系統可靠性降低. 而自動化則有關維運的效率.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>標準化: 標準化模型旨在確保運維任務的一致性和可重複性. 這包括定義和實踐運維流程、流程標準、準則和最佳實踐. 通過標準化, SRE 團隊可以確保不同的運維任務都按照相同的標準進行, 減少人為錯誤和不一致性. 例如, SRE 可以制定標準化的網站部署流程, 確保每次部署都遵循相同的步驟和標準, 從而提高部署的效率和可靠性.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>自動化: 自動化模型旨在利用軟體工程和自動化技術來自動執行運維任務, 減少手動操作和人為錯誤的風險. 通過自動化, SRE團隊可以自動化許多重複性、繁瑣的運維任務，從而節省時間和資源. 例如, SRE 可以開發腳本或工具來自動監控系統的健康狀態、自動擴展資源、自動備份數據等. 這樣一來, SRE團隊可以專注於解決更具挑戰性的問題, 並提高系統的穩定性和可靠性.&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.redhat.com/en/topics/devops/what-is-sre">What is SRE (site reliability engineering)?&lt;/a>&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">&lt;em>Site reliability engineering&lt;/em> (SRE) is a software engineering approach to IT operations. SRE teams use software as a tool to manage systems, solve problems, and automate operations tasks.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>SRE takes the tasks that have historically been done by operations teams, often manually, and instead gives them to engineers or operations teams who use software and automation to solve problems and manage production systems.&lt;/p>
+&lt;p>&lt;strong>SRE is a valuable practice when creating scalable and highly reliable software systems. &lt;span style="background-color: #ffffcc; color: red">It helps  manage large systems through code, which is more scalable and sustainable for system administrators (sysadmins) managing thousands or hundreds of thousands of machines.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>The concept of site reliability engineering comes from the &lt;em>Google&lt;/em> engineering team and is credited to &lt;em>Ben Treynor Sloss&lt;/em>.&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">SRE helps teams find a balance between releasing new features and ensuring reliability for users.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">In this context, standardization and automation are 2 important components of the SRE model.&lt;/span>&lt;/strong> Here, site reliability engineers seek to enhance and automate operations tasks.&lt;/p></description></item><item><title>IBM 所定義的 SRE 角色</title><link>https://chiehting.com/posts/sre-definition-from-ibm/</link><pubDate>Fri, 07 Jul 2023 14:46:24 +0800</pubDate><guid>https://chiehting.com/posts/sre-definition-from-ibm/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 透過 IBM 文件來理解 SRE. 觀點跟 Google 所提倡的相差不遠, 說明角色是使用軟體軟體工程自動化的處理運維的任務. 此外, 還有講到 SRE 跟 DevOps 相輔相成的關係 , 並強調 SRE 可在 DevOps 中發揮重要的作用.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>此篇文章由 IBM 所撰寫, 定義什麼是 SRE. 這角色的目標是使用軟體軟體工程自動化的處理運維[[operations-what-it]]的任務. 其核心是強化運維的效率跟可靠度, 降低手動操作的行為.&lt;/p>
+&lt;p>這邊有提到運為在系統做擴展或遷移的時候, 使用軟體工程是個不錯的策略. 當看到這段話時, 個人是有感觸的, 因為曾經有導入 Infrastructure as code (IaC), 將手動建立的雲架構寫成定義檔. 之後再做系統的克隆或架構的調整, 都可以明確的同步到所有雲上, 穩定且可靠.&lt;/p>
+&lt;ul>
+&lt;li>案例分享: 系統 Load Balancer 的 endpoint 發生變更, 需要快速的變更所有 DNS. 此時有定義好 endpoint 的變數, 將其改為新的位置後, 同意即可變更. 過程中穩定且速度快.&lt;/li>
+&lt;li>案例分享: 上頭說要 clone 一整個系統, 此時已將系統架構定義好, 同意即可變更.&lt;/li>
+&lt;/ul>
+&lt;p>文章還有提到 SRE 可以減少開發團隊跟運維團隊的摩擦, 這邊是引用 DevOps 文化的概念. &lt;strong>DevOps 的概念是使用流程跟軟體來縮短服務開發的生命週期, 這是所有團隊之的責任; SRE 的概念是使用軟體工程來做運維.&lt;/strong> 兩者的概念上有交集, 但個人認爲不能混淆.&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.ibm.com/topics/site-reliability-engineering">What is site reliability engineering?&lt;/a>&lt;/p>
+&lt;h4 id="what-is-site-reliability-engineering">What is site reliability engineering?&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Site reliability engineering (SRE) uses software engineering to automate IT operations tasks&lt;/span>&lt;/strong> - e.g. production system management, change management, incident response, even emergency response - **that would otherwise be performed manually by systems administrators (sysadmins). **&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">The principle behind SRE is that using software code to automate oversight of large software systems is a more scalable and sustainable strategy than manual intervention&lt;/span> - especially as those systems extend or migrate to the cloud.&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>SRE can also reduce or remove much of the natural friction between development teams who want to continually release new or updated software into production, and operations teams who don't want to release any type of update or new software without being absolutely sure it won't cause outages or other operations problems.&lt;/strong> As a result, while not strictly required for &lt;a href="https://www.ibm.com/topics/devops" title="devops-a-complete-guide">DevOps&lt;/a>, SRE aligns closely with DevOps principles and can be play an important role in DevOps success.&lt;/p>
+&lt;p>The concept of SRE is credited to Ben Treynor Sloss, VP of engineering at Google, &lt;strong>who famously wrote that &amp;quot;&lt;span style="background-color: #ffffcc; color: red">SRE is what happens when you ask a software engineer to design an operations team.&lt;/span>&amp;quot;&lt;/strong>&lt;/p></description></item><item><title>什麼是運維(Operations)?</title><link>https://chiehting.com/posts/operations-what-it/</link><pubDate>Thu, 06 Jul 2023 16:42:36 +0800</pubDate><guid>https://chiehting.com/posts/operations-what-it/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 根據軟體業來定義運維. 而運維之核心價值在於維持系統的穩定度, 其手段根據不同公司會有不同的方式.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>運維管理可以應用在不同產業上, 而此篇文章則關注在軟體產業, 所以這邊選擇了 &lt;em>ASANA&lt;/em> 跟 &lt;em>IBM&lt;/em> 做研讀.&lt;/p>
+&lt;p>對於 OPS 所需的技能跟責任根據所待的公司有所不同, 但運維的目的其繞著確保系統的可靠性、穩定性和高效運作進行.&lt;/p>
+&lt;p>以我在其產業中的經驗, 大致列幾個方向:&lt;/p>
+&lt;ol>
+&lt;li>監控和警報&lt;/li>
+&lt;li>備份機制和還原機制&lt;/li>
+&lt;li>故障排除和系統分析&lt;/li>
+&lt;li>設備資源規劃和優化&lt;/li>
+&lt;li>安全和合規性&lt;/li>
+&lt;/ol>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;h4 id="what-is-operations-management">What is operations management?&lt;/h4>
+&lt;p>Operations management is the implementation of business strategies in order to create the highest level of &lt;a href="https://asana.com/zh-tw/resources/efficiency-vs-effectiveness-whats-the-difference">efficiency&lt;/a> possible within your organization.&lt;/p>
+&lt;p>Operations management involves planning, organizing, and overseeing processes such as inventory management, the production process, service operations, and other business processes. &lt;strong>&lt;span style="background-color: #ffffcc; color: red">The goal of an operations strategy is to make these processes more efficient, so you can balance cost and revenue and generate the highest possible profit.&lt;/span>&lt;/strong>&lt;/p>
+&lt;h4 id="what-is-it-operations-itops">What is IT operations (ITOps)?&lt;/h4>
+&lt;p>Whether it’s the financial industry, telecommunications or retail, today’s businesses and their customers rely on immediate access to applications and expect seamless customer experiences. This requires optimal performance from applications and the supporting IT resources that the applications run on, such as &lt;a href="https://www.ibm.com/topics/public-cloud">public cloud&lt;/a> and &lt;a href="https://www.ibm.com/topics/private-cloud">private cloud&lt;/a> infrastructure, data, networks and services. Even a brief IT outage can have a significant impact on business operations and quickly become costly. &lt;strong>&lt;span style="background-color: #ffffcc; color: red">The primary role of IT operations is to ensure the smooth performance of IT and business technologies so that business operations can proceed uninterrupted.&lt;/span>&lt;/strong>&lt;/p></description></item><item><title>Google 所定義的 SRE 角色</title><link>https://chiehting.com/posts/sre-definition-from-google/</link><pubDate>Thu, 06 Jul 2023 15:57:40 +0800</pubDate><guid>https://chiehting.com/posts/sre-definition-from-google/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: Google SRE 的定義是將運維(operations)視為軟體問題. 而運維之核心價值在於維持系統的穩定度, 依據不同企業會有不同的方式. 也就是説 SRE 在每間企業所做的事情都不盡相同.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>此篇原文來源於 &lt;a href="https://sre.google/">Google Site Reliability Engineering&lt;/a> 其中提供了許多值得一看的 &lt;a href="https://sre.google/resources/">Resources&lt;/a>.&lt;/p>
+&lt;p>其內容節錄至 &lt;a href="https://sre.google/">Google Site Reliability Engineering&lt;/a> 的網站首頁, 簡要介紹了什麼是 SRE. &lt;strong>其中的核心概念為 &amp;quot;當我們將運維[[operations-what-it]]視為軟體問題時就是 SRE&amp;quot;&lt;/strong>. 這句話我理解為將&lt;strong>運維任務視為軟體工程的一部分來處理&lt;/strong>, 意指要制定運維任務的標準流程, 將其流程使用軟體或自動化來進行, 以確保系統的可靠性和穩定性.&lt;/p>
+&lt;p>在傳統的運維觀念中, 系統運維和軟體開發通常視為兩個獨立的領域, 這可能導致隔閡存在. 因此提倡 DevOps 的文化, 旨在促進開發團隊和運維團隊之間的合作與溝通. 然而, SRE 與 DevOps 在本質上有所不同, 市場上也容易將兩個混為一談.&lt;/p>
+&lt;p>延伸閱讀, &lt;a href="https://sre.google/in-conversation/">Google 訪談 Ben Treynor&lt;/a>&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://sre.google/">What is Site Reliability Engineering (SRE)?&lt;/a>&lt;/p>
+&lt;h5 id="what-is-site-reliability-engineering-sre">What is Site Reliability Engineering (SRE)?&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">SRE is what you get when you treat operations as if it’s a software problem. Our mission is to protect, provide for, and progress the software and systems behind all of Google’s public services&lt;/span>&lt;/strong> — Google Search, Ads, Gmail, Android, YouTube, and App Engine, to name just a few — with an ever-watchful eye on their availability, latency, performance, and capacity.&lt;/p>
+&lt;p>On top of that, in Google, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">we have a bunch of rules of engagement, and principles for how SRE teams interact with their environment&lt;/span> -- not only the production environment, but also the development teams, the testing teams, the users, and so on. &lt;span style="background-color: #ffffcc; color: red">Those rules and work practices help us to keep doing primarily engineering work and not operations work.&lt;/span>&lt;/strong>&lt;/p>
+&lt;h5 id="what-we-do-assre">What we do as SRE&lt;/h5>
+&lt;p>Our job is a combination not found elsewhere in the industry. Like traditional operations groups, &lt;span style="background-color: #ffffcc; color: red">we keep important, revenue-critical systems up and running despite hurricanes, bandwidth outages, and configuration errors.&lt;/span>&lt;/p>
+&lt;h4 id="how-we-sre-atgoogle">How We SRE At Google&lt;/h4>
+&lt;p>As SRE, we flip between the fine-grained detail of disk driver IO scheduling to the big picture of continental-level service capacity, across a range of systems and a user population measured in billions.&lt;/p></description></item><item><title>SLA、SLO、SLI的概念</title><link>https://chiehting.com/posts/service-level/</link><pubDate>Wed, 04 Nov 2020 17:22:00 +0800</pubDate><guid>https://chiehting.com/posts/service-level/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 拜讀 Atlassian 的文章, 暸解如何訂定服務的穩定性, 以及如何量化他們. 這邊定義了三件事情 SLA、SLO、SLI, 從對用戶的承諾, 到設定系統目標, 至搜集服務指標, 達到使用戶感受到系統的穩定, 但如果承諾未達成, 系統商也應該付出所承諾之代價.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>SRE ([[moc-sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 &lt;em>Atlassian&lt;/em> 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:&lt;/p>
+&lt;ul>
+&lt;li>系統可以使用多久?&lt;/li>
+&lt;li>系統出現故障, 維護團隊多久可以給出回饋?&lt;/li>
+&lt;li>系統對響應速度做什麼樣的承諾?&lt;/li>
+&lt;/ul>
+&lt;p>SLA 是提供商對用戶承諾的協議. 例如承諾系統使用時間、響應時間. 通常會由公司的商務團隊或法務團隊來訂定對客戶的承諾. 如未達到承諾之協議, 則需要承擔後果. 而且非技術團隊所做出的承諾, 容易無法做出衡量. 所以如果是提供免費的服務, 就不太需要訂定承諾.&lt;/p>
+&lt;p>SLO 是系統對 SLA 所承諾之衡量目標的設定. 這邊感覺起來如果 SLA 是對用戶做承諾, SLO 就是將承諾提交給相關的團隊, 來做數據化的監控. 例如: 承諾系統要在 99.95% 的時間可使用, 就要將此承諾交給 IT team 來設定系統運行時間的目標要在 99.95% 內.&lt;/p>
+&lt;p>SLI 是系統對 SLO 所設定衡量目標之衡量指標. 是對 SLO 所衡量之目標所所測量的實際指標. 例如: 設定了 SLO 系統運行時間的目標在 99.95%, 而衡量指標就是這個目標目前實際的值, 可能是 99.9%.&lt;/p>
+&lt;p>延伸閱讀, &lt;a href="https://ikala.cloud/understanding-sli-slo-sla-in-sre/">iKala - 一次搞懂 SLI、SLO、SLA 差異，Google DevOps 理念實踐&lt;/a>&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli">SLA vs. SLO vs. SLI: What’s the difference?&lt;/a>&lt;/p>
+&lt;p>&lt;strong>And in today’s always-on world, people’s expectations—for free and paid services alike—are high. Speed. Uptime. Useful UX. Today’s user base expects everything to meet a high standard.&lt;/strong>&lt;/p>
+&lt;p>Which is why it’s important for companies to understand and maintain SLAs, SLOs, and SLIs—three initialisms that represent the promises we make to our users, the internal objectives that help us keep those promises, and the trackable measurements that tell us how we’re doing.&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">The goal of all three things is to get everybody—vendor and client alike—on the same page about system performance.&lt;/span>&lt;/strong> How often will your systems be available? How quickly will your team respond if the system goes down? What kind of promises are you making about speed and functionality? Users want to know—and so you need SLAs, SLOs, and SLIs.&lt;/p>
+&lt;ul>
+&lt;li>Service Level Agreement (SLA), the agreement you make with your clients or users.&lt;/li>
+&lt;li>Service Level Objective (SLOs), the objectives your team must hit to meet that agreement.&lt;/li>
+&lt;li>Services Level Indicator (SLIs), the real numbers on your performance.&lt;/li>
+&lt;/ul>
+&lt;h4 id="what-is-an-sla">What is an SLA?&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA (service level agreement) is an agreement between provider and client about measurable metrics like uptime, responsiveness, and responsibilities.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>These agreements are typically drawn up by a company’s new business and legal teams and they represent the promises you’re making to customers—and the consequences if you fail to live up to those promises. Typically, consequences include financial penalties, service credits, or license extensions.&lt;/p>
+&lt;h5 id="the-challenge-of-slas">The challenge of SLAs&lt;/h5>
+&lt;p>&lt;a href="https://www.atlassian.com/it-unplugged/best-practices-and-trends/stop-hating-on-slas">SLAs are notoriously difficult to measure, report on, and meet&lt;/a>. These agreements—generally written by people who aren’t in the tech trenches themselves—often make promises that are difficult for teams to measure, don’t always align with current and ever-evolving business priorities, and don’t account for nuance.&lt;/p>
+&lt;h5 id="who-needs-an-sla">Who needs an SLA?&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA is an agreement between a vendor and a paying customer.&lt;/span> Companies providing a service to users for free are unlikely to want or need an SLA for those free users.&lt;/strong>&lt;/p>
+&lt;h4 id="what-is-an-slo">What is an SLO?&lt;/h4>
+&lt;p>An SLO (service level objective) is an agreement within an SLA about a specific metric like uptime or response time. So, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if the SLA is the formal agreement between you and your customer, SLOs are the individual promises you’re making to that customer. SLOs are what set customer expectations and tell IT and DevOps teams &lt;a href="https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives">what goals they need to hit and measure themselves against&lt;/a>.&lt;/span>&lt;/strong>&lt;/p>
+&lt;h5 id="the-challenges-of-slos">The challenges of SLOs&lt;/h5>
+&lt;p>SLOs get less hate than SLAs, but they can create just as many problems if they’re vague, overly complicated, or impossible to measure. The key to SLOs that don’t make your engineers want to tear their hair out is simplicity and clarity. &lt;strong>Only the most important metrics should qualify for SLO status, the objectives should be spelled out in plain language, and, as with SLAs, they should always account for issues such as client-side delays.&lt;/strong>&lt;/p>
+&lt;h5 id="who-needs-slos">Who needs SLOs?&lt;/h5>
+&lt;p>Where SLAs are only relevant in the case of paying customers, SLOs can be useful for both paid and unpaid accounts, as well as internal and external customers. &lt;/p>
+&lt;p>Internal systems, such as CRMs, client data repositories, and intranet, can be just as important as external-facing systems. And having SLOs for those internal systems is an important piece of not only meeting business goals but enabling internal teams to meet their own customer-facing goals.&lt;/p>
+&lt;h4 id="what-is-an-sli">What is an SLI?&lt;/h4>
+&lt;p>An SLI (service level indicator) measures compliance with an SLO (service level objective). So, for example, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if your SLA specifies that your systems will be available 99.95% of the time, your SLO is likely 99.95% uptime and your SLI is the actual measurement of your uptime. Maybe it’s 99.96%. Maybe 99.99%.&lt;/span>&lt;/strong> To stay in compliance with your SLA, the SLI will need to meet or exceed the promises made in that document.&lt;/p>
+&lt;h5 id="the-challenges-of-slis">The challenges of SLIs&lt;/h5>
+&lt;p>As with SLOs, &lt;span style="background-color: #ffffcc; color: red">the challenge of SLIs is keeping them simple, choosing the right metrics to track, and not overcomplicating IT’s job by tracking too many metrics that don’t actually matter to clients.&lt;/span>&lt;/p>
+&lt;h5 id="who-needs-slis">Who needs SLIs?&lt;/h5>
+&lt;p>Any company measuring their performance against SLOs needs SLIs in order to make those measurements. You can’t really have SLOs without SLIs.&lt;/p></description></item></channel></rss>

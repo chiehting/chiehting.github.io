@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>note-management on Chiehting</title><link>https://chiehting.com/tags/note-management/</link><description>Recent content in note-management on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 26 Feb 2025 17:15:22 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/note-management/index.xml" rel="self" type="application/rss+xml"/><item><title>How to use the PARA method</title><link>https://chiehting.com/posts/how-to-use-the-para-method/</link><pubDate>Wed, 26 Feb 2025 17:15:22 +0800</pubDate><guid>https://chiehting.com/posts/how-to-use-the-para-method/</guid><description>
+&lt;p>在使用 PARA 方法管理資料夾時，除了基本結構的設計外，還需要考慮如何動態管理與維護，以下是具體的實踐方法與建議。&lt;/p>
+&lt;h2 id="操作與維護">操作與維護&lt;/h2>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>動態管理&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>當某個項目完成後，將其從 &lt;code>/Projects&lt;/code> 移動到 &lt;code>/Archive/Completed-Projects&lt;/code>。&lt;/li>
+&lt;li>當某個領域的內容不再需要時，移動到 &lt;code>/Archive&lt;/code>。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>統一命名規則&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>使用清晰的命名方式（如 &lt;code>CloudApp-Development&lt;/code> 而非 &lt;code>App1&lt;/code>），方便快速定位。&lt;/li>
+&lt;li>盡量避免過於深層的資料夾結構（3-4 層即可）。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>定期整理&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>每季度或半年檢查一次 &lt;code>/Projects&lt;/code> 和 &lt;code>/Areas&lt;/code>，確認是否有需要移動到 &lt;code>/Archive&lt;/code> 的內容。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h2 id="實際應用">實際應用&lt;/h2>
+&lt;h3 id="情境一">情境一&lt;/h3>
+&lt;p>假設 &lt;code>Projects/CloudApp-Development&lt;/code> 需要 &lt;code>Areas/Cloud-Computing&lt;/code>、&lt;code>Areas/Databases&lt;/code>、&lt;code>Areas/Programming&lt;/code> 的內容，要怎麼簡單地將 &lt;strong>Projects&lt;/strong> 和 &lt;strong>Areas&lt;/strong> 做關聯，可以通過以下幾種方式來實現，確保資料夾結構清晰且易於維護。&lt;/p>
+&lt;p>資料夾結構總覽：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">/PARA
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> /Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> /CloudApp-Development
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> /Database-Optimization
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> /AI-ML-Experimentation
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> /Kubernetes-Migration
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> /Areas
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> /Cloud-Computing
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> /Databases
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> /AI-ML
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> /Programming
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> /Resources
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> /Books
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> /Tutorials
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> /Tools
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> /Research-Papers
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> /Archive
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> /Completed-Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> /Old-Resources
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="方法-1在-projects-中建立指向-areas-的快捷方式或符號連結">&lt;strong>方法 1：在 Projects 中建立指向 Areas 的快捷方式（或符號連結）&lt;/strong>&lt;/h4>
+&lt;p>你可以在每個項目的資料夾內，建立指向相關 Areas 子資料夾的&lt;strong>快捷方式（Windows）&lt;strong>或&lt;/strong>符號連結（macOS/Linux）&lt;/strong>。&lt;/p>
+&lt;h5 id="操作步驟">&lt;strong>操作步驟&lt;/strong>：&lt;/h5>
+&lt;ol>
+&lt;li>在 &lt;strong>Projects&lt;/strong> 資料夾內，例如 &lt;code>/Projects/CloudApp-Development&lt;/code>。&lt;/li>
+&lt;li>建立指向 &lt;code>/Areas/Cloud-Computing&lt;/code>、&lt;code>/Areas/Databases&lt;/code> 和 &lt;code>/Areas/Programming&lt;/code> 的快捷方式或符號連結。&lt;/li>
+&lt;li>快捷方式的名稱可以加上描述性標籤，例如：
+&lt;ul>
+&lt;li>&lt;code>Cloud-Computing (shortcut)&lt;/code>&lt;/li>
+&lt;li>&lt;code>Databases (shortcut)&lt;/code>&lt;/li>
+&lt;li>&lt;code>Programming (shortcut)&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h5 id="效果">&lt;strong>效果&lt;/strong>：&lt;/h5>
+&lt;p>資料夾結構如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> /CloudApp-Development
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> /Frontend
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> /Backend
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> /Infrastructure
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> /Cloud-Computing (shortcut)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> /Databases (shortcut)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl"> /Programming (shortcut)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="優點">&lt;strong>優點&lt;/strong>：&lt;/h5>
+&lt;ul>
+&lt;li>&lt;strong>簡單直觀&lt;/strong>：只需點擊快捷方式，即可快速跳轉到相關領域的內容。&lt;/li>
+&lt;li>&lt;strong>動態更新&lt;/strong>：當 Areas 資料夾內的內容更新時，快捷方式會自動反映最新資料。&lt;/li>
+&lt;/ul>
+&lt;h4 id="方法-2在-projects-資料夾中建立關聯文件">&lt;strong>方法 2：在 Projects 資料夾中建立「關聯文件」&lt;/strong>&lt;/h4>
+&lt;p>在每個項目資料夾中，建立一個簡單的關聯文件（如 &lt;code>related-areas.txt&lt;/code> 或 &lt;code>README.md&lt;/code>），記錄該項目所需的 Areas 資料夾。&lt;/p>
+&lt;h5 id="操作步驟-1">&lt;strong>操作步驟&lt;/strong>：&lt;/h5>
+&lt;ol>
+&lt;li>
+&lt;p>在 &lt;strong>Projects&lt;/strong> 資料夾內，例如 &lt;code>/Projects/CloudApp-Development&lt;/code>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>建立一個 &lt;code>related-areas.txt&lt;/code> 或 &lt;code>README.md&lt;/code> 文件，內容如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">Related Areas for CloudApp-Development:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">- /Areas/Cloud-Computing
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">- /Areas/Databases
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">- /Areas/Programming
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>如果需要，還可以加上具體的用途說明，例如：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">- /Areas/Cloud-Computing: 用於設計應用的雲端架構。
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">- /Areas/Databases: 用於資料庫管理和優化。
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">- /Areas/Programming: 用於後端程式開發（Golang）。
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;h5 id="效果-1">&lt;strong>效果&lt;/strong>：&lt;/h5>
+&lt;p>資料夾結構如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> /CloudApp-Development
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> /Frontend
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> /Backend
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> /Infrastructure
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> related-areas.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="優點-1">&lt;strong>優點&lt;/strong>：&lt;/h5>
+&lt;ul>
+&lt;li>&lt;strong>簡單且不依賴系統功能&lt;/strong>：無需建立快捷方式，適合所有操作系統。&lt;/li>
+&lt;li>&lt;strong>靈活性高&lt;/strong>：可以詳細描述每個領域的用途。&lt;/li>
+&lt;/ul>
+&lt;h4 id="方法-3在-areas-資料夾中標記關聯的-projects">&lt;strong>方法 3：在 Areas 資料夾中標記關聯的 Projects&lt;/strong>&lt;/h4>
+&lt;p>反過來，也可以在 &lt;strong>Areas&lt;/strong> 資料夾內，對應的子資料夾中建立一個文件，標記與該領域相關的 Projects。&lt;/p>
+&lt;h5 id="操作步驟-2">&lt;strong>操作步驟&lt;/strong>：&lt;/h5>
+&lt;ol>
+&lt;li>
+&lt;p>在 &lt;strong>Areas&lt;/strong> 資料夾內，例如 &lt;code>/Areas/Cloud-Computing&lt;/code>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>建立一個 &lt;code>related-projects.txt&lt;/code> 或 &lt;code>README.md&lt;/code> 文件，內容如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">Related Projects for Cloud-Computing:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">- /Projects/CloudApp-Development
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">- /Projects/Kubernetes-Migration
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>每個領域可以記錄多個相關的項目。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h5 id="效果-2">&lt;strong>效果&lt;/strong>：&lt;/h5>
+&lt;p>資料夾結構如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/Areas
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> /Cloud-Computing
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> related-projects.txt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> /Databases
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> related-projects.txt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> /Programming
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> related-projects.txt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="優點-2">&lt;strong>優點&lt;/strong>：&lt;/h5>
+&lt;ul>
+&lt;li>&lt;strong>雙向關聯&lt;/strong>：讓你可以從 Areas 資料夾中快速找到相關的 Projects。&lt;/li>
+&lt;li>&lt;strong>清晰的文檔化&lt;/strong>：適合需要記錄和追蹤的場景。&lt;/li>
+&lt;/ul>
+&lt;h4 id="方法-4使用統一命名規則進行隱式關聯">&lt;strong>方法 4：使用統一命名規則進行隱式關聯&lt;/strong>&lt;/h4>
+&lt;p>通過統一的命名規則，讓 Projects 和 Areas 的關聯更加直觀。例如，為相關的資料夾名稱添加標籤或前綴。&lt;/p>
+&lt;h5 id="操作步驟-3">&lt;strong>操作步驟&lt;/strong>：&lt;/h5>
+&lt;ol>
+&lt;li>在 &lt;strong>Projects&lt;/strong> 和 &lt;strong>Areas&lt;/strong> 資料夾中使用相似的命名規則。例如：
+&lt;ul>
+&lt;li>&lt;code>/Projects/CloudApp-Development&lt;/code> 對應 &lt;code>/Areas/Cloud-Computing&lt;/code>&lt;/li>
+&lt;li>&lt;code>/Projects/Database-Optimization&lt;/code> 對應 &lt;code>/Areas/Databases&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>如果一個項目涉及多個領域，可以在名稱中加入標籤：
+&lt;ul>
+&lt;li>&lt;code>/Projects/CloudApp-Development [Cloud-Computing, Databases, Programming]&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h5 id="效果-3">&lt;strong>效果&lt;/strong>：&lt;/h5>
+&lt;p>資料夾結構如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> /CloudApp-Development [Cloud-Computing, Databases, Programming]
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> /Kubernetes-Migration [Cloud-Computing]
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">/Areas
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> /Cloud-Computing
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> /Databases
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> /Programming
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="優點-3">&lt;strong>優點&lt;/strong>：&lt;/h5>
+&lt;ul>
+&lt;li>&lt;strong>無需額外文件或快捷方式&lt;/strong>：直接通過命名即可快速辨識關聯。&lt;/li>
+&lt;li>&lt;strong>視覺化清晰&lt;/strong>：適合需要快速掃描資料夾的情境。&lt;/li>
+&lt;/ul>
+&lt;h3 id="情境二">情境二&lt;/h3>
+&lt;p>學習 AWS 文件，並生產出使用教學跟測試報告，那是屬於 Areas 還是 Resources?
+請明確該活動屬於以下哪一類別：&lt;/p>
+&lt;ul>
+&lt;li>Areas：包含技術領域的知識、技巧或能力&lt;/li>
+&lt;li>Resources：包含工具、資料或參考資料等支持性信息&lt;/li>
+&lt;/ul></description></item><item><title>The para mothed</title><link>https://chiehting.com/posts/what-is-the-para-method/</link><pubDate>Fri, 23 Jun 2023 02:28:08 +0800</pubDate><guid>https://chiehting.com/posts/what-is-the-para-method/</guid><description>
+&lt;p>The PARA Method 是一種簡單且高效的數位資訊管理系統，它的目的是幫助人們有效地組織和管理數位資訊，從而提升工作效率並減輕資訊過載的壓力。&lt;/p>
+&lt;p>主要是四個分類 &lt;code>Projects (專案)&lt;/code>、&lt;code>Areas (領域)&lt;/code>、&lt;code>Resources (資源)&lt;/code>、&lt;code>Archive (檔案)&lt;/code>，可以靈活調整細節，但核心原則是保持結構簡單且易於維護！&lt;/p>
+&lt;p>&lt;strong>PARA&lt;/strong> 是以下四個分類的縮寫：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>Projects (專案)&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>包含你目前正在進行的、需要完成的目標或任務。&lt;/li>
+&lt;li>例如：寫一篇報告、完成一個設計、策劃一場活動。&lt;/li>
+&lt;li>專案是有明確目標和期限的。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Areas (領域)&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>包含你需要負責的持續性責任或關注的領域，但沒有明確的期限。&lt;/li>
+&lt;li>例如：健康管理、財務規劃、職業發展、家庭生活。&lt;/li>
+&lt;li>這些領域是你生活中需要定期維護的部分。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Resources (資源)&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>包含你感興趣的或可能在未來有用的參考資料或資訊。&lt;/li>
+&lt;li>例如：學習筆記、文章收藏、書籍摘錄、教程資料。&lt;/li>
+&lt;li>資源是支持你專案和領域的知識庫。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Archive (檔案)&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>包含已完成的專案或不再活躍的資訊。&lt;/li>
+&lt;li>例如：完成的報告、過期的活動計畫、舊的參考資料。&lt;/li>
+&lt;li>這是用來存放過去的內容，方便未來查閱。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="para-的核心理念">PARA 的核心理念&lt;/h3>
+&lt;ul>
+&lt;li>&lt;strong>專注於行動&lt;/strong>：將資訊根據用途分類，而不是根據來源（例如文件夾、應用程式）。&lt;/li>
+&lt;li>&lt;strong>減少混亂&lt;/strong>：將資訊分為活躍（Projects, Areas, Resources）和非活躍（Archive）兩部分，避免資訊堆積。&lt;/li>
+&lt;li>&lt;strong>靈活性&lt;/strong>：可以適用於不同的工具（如 Notion、Evernote、Google Drive 等）和不同的工作流。&lt;/li>
+&lt;/ul>
+&lt;h4 id="如何實施-para-method">如何實施 PARA Method&lt;/h4>
+&lt;ol>
+&lt;li>&lt;strong>整理你的數位資訊&lt;/strong>：
+&lt;ul>
+&lt;li>將所有文件、筆記、待辦事項等，分類到 Projects、Areas、Resources 或 Archive 中。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;strong>定期檢查和更新&lt;/strong>：
+&lt;ul>
+&lt;li>每週或每月回顧你的專案和領域，確保它們是最新的。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;strong>選擇適合的工具&lt;/strong>：
+&lt;ul>
+&lt;li>使用數位筆記應用程式（如 Notion、Obsidian）或雲端存儲工具（如 Google Drive）來實現 PARA 系統。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="實際應用">實際應用&lt;/h3>
+&lt;p>假設我要在電腦科學的領域深耕，要如何規劃一個基於 PARA 方法論的資料夾結構。&lt;/p>
+&lt;ul>
+&lt;li>操作多個雲的應用項目&lt;/li>
+&lt;li>做資料庫的操作與管理&lt;/li>
+&lt;li>AI、ML 議題的研究&lt;/li>
+&lt;li>我有 MySQL、Golang、AWS、Huawei、Terraform、Kubernetes、AI、ML 等等的研究項目。&lt;/li>
+&lt;/ul>
+&lt;h4 id="頂層資料夾">頂層資料夾&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/PARA
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> /Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> /Areas
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> /Resources
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> /Archive
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="projects">Projects&lt;/h4>
+&lt;p>&lt;strong>目標&lt;/strong>：存放當前正在進行的具體項目，這些項目是短期且有明確目標的。&lt;/p>
+&lt;p>&lt;strong>資料夾結構&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">/Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> /CloudApp-Development
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> /Frontend
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> /Backend
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> /Infrastructure
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> /Database-Optimization
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> /MySQL-Tuning
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> /PostgreSQL-Indexing
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> /AI-ML-Experimentation
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> /Image-Classification
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> /NLP-Chatbot
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> /Kubernetes-Migration
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> /Cluster-Setup
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> /Service-Migration
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>示例說明&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>CloudApp-Development&lt;/strong>：一個專注於多雲應用開發的項目，細分為前端、後端和基礎設施。&lt;/li>
+&lt;li>&lt;strong>AI-ML-Experimentation&lt;/strong>：一個專注於 AI 和 ML 的實驗性項目，根據具體研究方向（如圖像分類、自然語言處理）進一步細分。&lt;/li>
+&lt;/ul>
+&lt;h4 id="areas">Areas&lt;/h4>
+&lt;p>&lt;strong>目標&lt;/strong>：存放需要長期維護的專業領域或責任範疇，這些內容與你的專業方向緊密相關。&lt;/p>
+&lt;p>&lt;strong>資料夾結構&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">/Areas
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> /Cloud-Computing
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> /AWS
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> /Huawei
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> /Terraform
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> /Databases
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> /MySQL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> /PostgreSQL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> /MongoDB
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> /AI-ML
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> /Deep-Learning
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> /Reinforcement-Learning
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> /Programming
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> /Golang
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> /Python
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> /Rust
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>示例說明&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Cloud-Computing&lt;/strong>：專注於雲端計算的研究和實踐，根據不同平台（如 AWS、Huawei）進行分類。&lt;/li>
+&lt;li>&lt;strong>AI-ML&lt;/strong>：AI 和 ML 的長期研究方向，根據不同技術（如深度學習、強化學習）進行劃分。&lt;/li>
+&lt;li>&lt;strong>Programming&lt;/strong>：長期學習和使用的程式語言，每種語言可存放相關的學習資源、工具或範例程式碼。&lt;/li>
+&lt;/ul>
+&lt;h4 id="resources">Resources&lt;/h4>
+&lt;p>&lt;strong>目標&lt;/strong>：存放可以重複使用的參考資料、教程、工具文檔或學習資源。&lt;/p>
+&lt;p>&lt;strong>資料夾結構&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">/Resources
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> /Books
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> /AI-Books
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> /Cloud-Computing-Books
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> /Tutorials
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> /Golang-Tutorials
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> /AWS-Tutorials
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> /Tools
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> /Terraform-Scripts
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> /Kubernetes-Helm-Charts
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> /Research-Papers
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> /AI-ML
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> /Databases
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>示例說明&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Books&lt;/strong>：電子書或 PDF 文件，根據主題分類。&lt;/li>
+&lt;li>&lt;strong>Tools&lt;/strong>：常用工具的腳本或配置文件，例如 Terraform 腳本、Kubernetes Helm Charts。&lt;/li>
+&lt;li>&lt;strong>Research-Papers&lt;/strong>：研究論文集合，按主題（如 AI/ML、資料庫）進一步劃分。&lt;/li>
+&lt;/ul>
+&lt;h4 id="archive檔案庫">&lt;strong>Archive（檔案庫）&lt;/strong>&lt;/h4>
+&lt;p>&lt;strong>目標&lt;/strong>：存放已完成的項目或暫時不需要的資料，方便未來查閱。&lt;/p>
+&lt;p>&lt;strong>資料夾結構&lt;/strong>：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/Archive
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> /Completed-Projects
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> /Old-CloudApp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> /Legacy-Database-Scripts
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> /Old-Resources
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> /Deprecated-Tools
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> /Archived-Books
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>示例說明&lt;/strong>：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Completed-Projects&lt;/strong>：存放已完成或關閉的項目。&lt;/li>
+&lt;li>&lt;strong>Old-Resources&lt;/strong>：存放過時的資源或工具，供未來參考。&lt;/li>
+&lt;/ul>
+&lt;h3 id="問題">問題&lt;/h3>
+&lt;p>在 PARA 系統中，&lt;strong>Areas&lt;/strong> 和 &lt;strong>Resources&lt;/strong> 是兩個核心的資料夾類別，它們的主要區別在於用途和內容的性質。&lt;/p>
+&lt;h3 id="areas-與-resources-的主要區別">&lt;strong>Areas 與 Resources 的主要區別&lt;/strong>&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>特徵&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Areas（領域）&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>Resources（資源）&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;strong>目的&lt;/strong>&lt;/td>
+&lt;td>維持某個領域的穩定性與標準&lt;/td>
+&lt;td>提供支持或參考資料&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>性質&lt;/strong>&lt;/td>
+&lt;td>動態、需要定期檢查與更新&lt;/td>
+&lt;td>靜態、不需要頻繁更新&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>與角色的關聯性&lt;/strong>&lt;/td>
+&lt;td>與你的生活或工作角色直接相關&lt;/td>
+&lt;td>與角色無直接關聯，更多是主題性資料&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>使用方式&lt;/strong>&lt;/td>
+&lt;td>持續管理，處理當前進行中的責任&lt;/td>
+&lt;td>作為工具或參考資料，支持項目或領域&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>範例&lt;/strong>&lt;/td>
+&lt;td>健康管理、財務管理、專業技能&lt;/td>
+&lt;td>書籍、教程、研究論文、工具模板&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>如何正確分類 Areas 與 Resources&lt;/strong>&lt;/p>
+&lt;p>以下是一些實際操作的建議，幫助你正確區分資料應該放在 Areas 還是 Resources：&lt;/p>
+&lt;h4 id="1-問自己一個問題">&lt;strong>1. 問自己一個問題&lt;/strong>&lt;/h4>
+&lt;ul>
+&lt;li>&lt;strong>「這是我需要持續管理的責任嗎？」&lt;/strong>
+&lt;ul>
+&lt;li>如果答案是「是」，那麼它屬於 Areas。&lt;/li>
+&lt;li>如果答案是「否」，那麼它屬於 Resources。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="2-具體情境分析">&lt;strong>2. 具體情境分析&lt;/strong>&lt;/h4>
+&lt;ul>
+&lt;li>&lt;strong>健康管理&lt;/strong>：
+&lt;ul>
+&lt;li>健康計畫（如運動紀錄、飲食追蹤）屬於 Areas，因為需要定期維護。&lt;/li>
+&lt;li>健康相關的文章或運動指南屬於 Resources，因為這些是靜態參考資料。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;strong>專業技能&lt;/strong>：
+&lt;ul>
+&lt;li>你正在學習的技能（如程式語言學習進度）屬於 Areas。&lt;/li>
+&lt;li>教程、書籍或程式碼片段屬於 Resources。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h4 id="3-避免混淆">&lt;strong>3. 避免混淆&lt;/strong>&lt;/h4>
+&lt;ul>
+&lt;li>如果某個資料夾同時包含動態管理的內容和靜態參考資料，建議將它們拆分：
+&lt;ul>
+&lt;li>將動態內容放入 Areas。&lt;/li>
+&lt;li>將靜態內容放入 Resources。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul></description></item><item><title>The para mothed</title><link>https://chiehting.com/posts/%E5%A6%82%E4%BD%95%E5%88%86%E9%A1%9E%E7%AD%86%E8%A8%98%E4%B8%80%E5%A5%97%E7%B0%A1%E5%96%AE%E5%8F%88%E9%80%9A%E7%94%A8%E7%9A%84%E5%88%86%E9%A1%9E%E6%9E%B6%E6%A7%8B-para/</link><pubDate>Fri, 23 Jun 2023 02:28:08 +0800</pubDate><guid>https://chiehting.com/posts/%E5%A6%82%E4%BD%95%E5%88%86%E9%A1%9E%E7%AD%86%E8%A8%98%E4%B8%80%E5%A5%97%E7%B0%A1%E5%96%AE%E5%8F%88%E9%80%9A%E7%94%A8%E7%9A%84%E5%88%86%E9%A1%9E%E6%9E%B6%E6%A7%8B-para/</guid><description>
+&lt;p>文章中 &lt;a href="https://medium.com/pm%E7%9A%84%E7%94%9F%E7%94%A2%E5%8A%9B%E5%B7%A5%E5%85%B7%E7%AE%B1/%E5%A6%82%E4%BD%95%E5%88%86%E9%A1%9E%E7%AD%86%E8%A8%98-e25c4cc39dba">如何分類筆記？一套簡單又通用的分類架構-PARA&lt;/a> 說講述了筆記分類碰到的問題，以及如何應用 PARA 的分類架構來解決問題。&lt;/p>
+&lt;h3 id="para--架構">PARA 架構&lt;/h3>
+&lt;p>PARA 是由四個單字組成的，如下：&lt;/p>
+&lt;ul>
+&lt;li>Projects&lt;/li>
+&lt;li>Areas of responsibility (下方講解均簡稱 Area)&lt;/li>
+&lt;li>Resources&lt;/li>
+&lt;li>Archives&lt;/li>
+&lt;/ul>
+&lt;p>這套架構是由生產力專家 — Tiago Forte 所提出，有以下 5 點特色讓作者覺得很棒：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>泛用性&lt;/strong>：適用在任何型態的資源，你不但可以用在筆記軟體、也可以用在雲端硬碟、個人電腦的檔案分類。&lt;/li>
+&lt;li>&lt;strong>行動性&lt;/strong>：筆記不再只是死板的資訊，而是可以讓你知道下一步的行動是什麼。&lt;/li>
+&lt;li>&lt;strong>產出導向&lt;/strong>：分類的目標是提升你的產出能力。&lt;/li>
+&lt;li>&lt;strong>可縮放性&lt;/strong>：可以讓你依據需求調整檢視筆記內容的顆粒度，可以快速總覽也可以深入細節。&lt;/li>
+&lt;li>&lt;strong>機動性&lt;/strong>：可直接從既有的筆記開始使用，不需要大幅顛覆整個既有的筆記系統。&lt;/li>
+&lt;/ul>
+&lt;h3 id="筆記的可行動性-actionable">筆記的可行動性 (actionable)&lt;/h3>
+&lt;p>我們寫下的筆記，只有少數的筆記我們會花時間更新與維護 ; 而大多數都不會再被看第二遍，更不用說在上面記錄待辦清單、思考過程。&lt;/p>
+&lt;p>然而人的專注力是有限制的。在現實生活中，我一段時間 ( 2–3 個月) 只能專注在 1–3 個子專案，其他的子專案筆記可能 1 個月都不會開啟一次。&lt;/p>
+&lt;p>上述的結果會讓筆記的維護性變低；資料內容變舊，不容易讓知識累積。&lt;/p>
+&lt;h3 id="作者心得">作者心得&lt;/h3>
+&lt;p>這篇文章快速地介紹了 PARA 這套筆記架構。就算已經有自己的分類方式，但想要讓自己的筆記更有行動力，也可以採用 PARA 的架構做分類。&lt;/p>
+&lt;p>在文章的一開頭提到了 PARA 的 5 個特點：&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>泛用性&lt;/strong>：適用在任何型態的資源，你不但可以用在筆記軟體、也可以用在雲端硬碟、個人電腦的檔案分類。&lt;/li>
+&lt;li>&lt;strong>行動性&lt;/strong>：筆記不再只是死板的資訊，而是可以讓你知道下一步的行動是什麼。&lt;/li>
+&lt;li>&lt;strong>產出導向&lt;/strong>：分類的目標是提升你的產出能力。&lt;/li>
+&lt;li>&lt;strong>可縮放性&lt;/strong>：可以讓你依據需求調整檢視筆記內容的顆粒度，可以快速總覽也可以深入細節。&lt;/li>
+&lt;li>&lt;strong>可立即開始的&lt;/strong>：可直接從既有的筆記開始使用，不需要大幅顛覆整個既有的筆記系統。&lt;/li>
+&lt;/ul></description></item></channel></rss>

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>testing on Chiehting</title><link>https://chiehting.com/tags/testing/</link><description>Recent content in testing on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 10 May 2024 10:34:42 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/testing/index.xml" rel="self" type="application/rss+xml"/><item><title>CURL</title><link>https://chiehting.com/posts/network-curl-test-the-request-time/</link><pubDate>Fri, 10 May 2024 10:34:42 +0800</pubDate><guid>https://chiehting.com/posts/network-curl-test-the-request-time/</guid><description>
+&lt;p>使用 CURL 工具從客戶端測試請求速，觀察多個指標評估網路效率問題。&lt;/p>
+&lt;h3 id="請求時間">請求時間&lt;/h3>
+&lt;p>建立檔案 curl-format.txt 內容如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">time_namelookup: %{time_namelookup}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">time_connect: %{time_connect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_appconnect: %{time_appconnect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_pretransfer: %{time_pretransfer}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_redirect: %{time_redirect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_starttransfer: %{time_starttransfer}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">----------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">time_total: %{time_total}\n
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
+&lt;li>time_namelookup（DNS 解析時間）：從發起請求到 DNS 解析完成的時間，單位是秒。&lt;/li>
+&lt;li>time_connect（連接建立時間）：從發起連接請求到建立 TCP 連接完成的時間，單位是秒。&lt;/li>
+&lt;li>time_appconnect（應用層連接時間）：從發起連接請求到 SSL/TLS 握手完成的時間，單位是秒。如果沒有使用 SSL/TLS，這個時間通常為 0。&lt;/li>
+&lt;li>time_pretransfer（預傳輸時間）：從發起請求到開始傳輸數據之前的時間，包括 DNS 解析、連接建立、SSL/TLS 握手等時間，單位是秒。&lt;/li>
+&lt;li>time_redirect（重定向時間）：如果請求中發生了重定向，從開始重定向到最後一個重定向完成的時間，單位是秒。&lt;/li>
+&lt;li>time_starttransfer（開始傳輸時間）：從發起請求到接收到第一個字節的時間，單位是秒。這表示請求開始接收響應的時間。&lt;/li>
+&lt;li>time_total（總時間）：從發起請求到接收完整響應的總時間，包括所有的階段，單位是秒。&lt;/li>
+&lt;/ol>
+&lt;p>透過命令查詢請求時間&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 輸出 format 時間&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ curl -w &lt;span class="s2">&amp;#34;@curl-format.txt&amp;#34;&lt;/span> -o /dev/null -s https://www.bitdegree.org/courses/course/kubernetes-docker-tutorial
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_namelookup: 0.002607
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_connect: 0.154302
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_appconnect: 0.315024
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_pretransfer: 0.315320
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">time_starttransfer: 2.718007
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">----------time_total: 3.364941
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 直接輸出總時間&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ curl -o /dev/null -s -w &lt;span class="s2">&amp;#34;Total time: %{time_total}\n&amp;#34;&lt;/span> https://www.bitdegree.org/courses/course/kubernetes-docker-tutorial
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Total time: 2.906125
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>iPerf</title><link>https://chiehting.com/posts/iperf-internet-performance-testing/</link><pubDate>Thu, 09 May 2024 18:22:16 +0800</pubDate><guid>https://chiehting.com/posts/iperf-internet-performance-testing/</guid><description>
+&lt;p>如何使用 iPerf 工具測試 client/server 的網路頻寬。&lt;/p>
+&lt;h3 id="iperf-command">iPerf command&lt;/h3>
+&lt;p>&lt;a href="https://github.com/esnet/iperf/issues">Github&lt;/a> 原始碼。&lt;/p>
+&lt;p>iPerf 是一個網絡性能測試工具，用於測量網絡帶寬、延遲和數據包丟失率等性能指標。它可以在兩個網絡節點之間進行通信，是 Client/Server 的架構，可測量數據在網絡上的傳輸速率和延遲等性能參數。&lt;/p>
+&lt;h4 id="server">Server&lt;/h4>
+&lt;p>有公開的服務提供 &lt;a href="https://iperf.fr/iperf-servers.php">iperf public server&lt;/a> 使用。&lt;/p>
+&lt;p>可以運行下面命令啟動 Server，預測 port 為 5210，可以透過 &lt;code>-p&lt;/code> 做調整。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">➜ iperf3 -s
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">-----------------------------------------------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Server listening on &lt;span class="m">5201&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="nb">test&lt;/span> &lt;span class="c1">#1)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">-----------------------------------------------------------
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="client">Client&lt;/h4>
+&lt;p>下面命令的含義是使用 iperf3 工具連接到 google.com 主機的指定埠號 5201，進行網絡帶寬測試，測試持續時間為 30 秒。iperf3 將在測試期間測量網絡連接的帶寬、延遲等性能指標，並在測試完成後顯示結果。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iperf3 -t &lt;span class="m">30&lt;/span> -c 127.0.0.1 -p &lt;span class="m">5201&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
+&lt;p>-t 30：表示指定測試的持續時間為 30 秒。這個選項告訴 iperf3 在連接建立后持續運行 30 秒，進行網絡帶寬測試。&lt;/p>
+&lt;p>-c google.com：表示指定測試的目標主機為 127.0.0.1。這個選項告訴 iperf3 在測試時連接到 google.com 主機，進行網絡帶寬測試。&lt;/p>
+&lt;p>-p 5201：表示指定測試的端口號為 5201。這個選項告訴 iperf3 在進行測試時使用指定的端口號。&lt;/p>
+&lt;/blockquote>
+&lt;p>在 iperf3 的輸出中，包括欄位&lt;code>[ ID]&lt;/code>、&lt;code>Interval&lt;/code>、&lt;code>Transfer&lt;/code>、&lt;code>Bitrate&lt;/code>、&lt;code>Retr&lt;/code>、`Cwnd，每個字段的含義如下：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>ID：標識每個連接的唯一編號。當進行多個併發連接測試時，每個連接都會分配一個唯一的 ID。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Interval：顯示測試間隔的時間。默認情況下，iperf3 將在每個間隔內顯示一次性能統計信息。間隔時間可以通過 -i 選項進行設置，默認為 1 秒。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Transfer：顯示在測試期間傳輸的數據量。單位為字節（Bytes）。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Bitrate：顯示在測試期間的平均 bit 率，即數據傳輸速率。單位為bits/每秒（bits per second，bps）或者兆比特每秒（Mbps）。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Retr：顯示在測試期間發生的重傳次數。重傳次數表示在數據傳輸過程中發生丟包或錯誤，需要重新發送的次數。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Cwnd：顯示在測試期間的擁塞窗口大小（Congestion Window）。擁塞窗口是 TCP 協議中的一個概念，用於控制數據流量的發送速率。它表示在任意時間點內，發送方允許在網絡上的未確認數據量的最大值。單位可以是字節（Bytes）或者數據包個數，具體取決於 iperf3 輸出的格式和設置。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>這些字段提供了關於每個連接的性能統計信息，包括數據傳輸量、傳輸速率、重傳次數和擁塞窗口大小等。通過分析這些信息，可以評估網絡連接的質量和性能表現。&lt;/p></description></item><item><title>如何做網際網路的效能測試</title><link>https://chiehting.com/posts/how-to-test-internet-efficiency/</link><pubDate>Thu, 09 May 2024 13:58:56 +0800</pubDate><guid>https://chiehting.com/posts/how-to-test-internet-efficiency/</guid><description>
+&lt;p>如何做跨區線路測試，分析兩區域網路傳輸的狀況。例如 ap-southeast-1 到 us-east-1 的網路效率。&lt;/p>
+&lt;h3 id="解題方向">解題方向&lt;/h3>
+&lt;p>在進行跨區的網路線路測試時，不考慮服務運行時間的情況下，可能會關注以下指標：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>延遲（Latency）&lt;/strong>：延遲是從發送請求到收到響應所需的時間。你會測試不同地區之間的平均延遲、最大延遲和最小延遲，以評估網路的反應速度。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 來做測試。&lt;/li>
+&lt;li>&lt;strong>丟包率（Packet Loss Rate）&lt;/strong>：丟包率是指在網絡傳輸過程中丟失的數據包的比率。你會關注丟包率的高低，因為高丟包率可能導致數據傳輸的不完整和延遲增加。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 來做測試。&lt;/li>
+&lt;li>&lt;strong>頻寬利用率（Bandwidth Utilization）&lt;/strong>：帶寬利用率是指在一定時間內使用的網絡帶寬的比率。你會測試網絡的帶寬利用率，以確保帶寬資源充足並且沒有過度使用。可用工具 &lt;code>iperf&lt;/code>、&lt;code>speedtest-cli&lt;/code>做測試。&lt;/li>
+&lt;li>&lt;strong>往返時間（Round-Trip Time，RTT）&lt;/strong>：RTT 是從發送一個數據包到收到對應的響應所需的時間。你會關注不同地區之間的平均 RTT，以評估網路的往返時間。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 、&lt;code>iperf&lt;/code>來做測試。&lt;/li>
+&lt;li>&lt;strong>連通性和穩定性（Connectivity and Stability）&lt;/strong>：你會測試不同地區之間的連通性和穩定性，確保網路連接的可靠性和持久性。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 來做測試。&lt;/li>
+&lt;li>&lt;strong>DNS 解析時間（DNS Resolution Time）&lt;/strong>：DNS 解析時間是指從域名解析請求開始到獲得對應 IP 地址的時間。你會測試 DNS 解析時間，以評估域名解析的效率和穩定性。可使用工具 &lt;code>dig&lt;/code>、&lt;code>nslookup&lt;/code> 來做測試。&lt;/li>
+&lt;/ol>
+&lt;h3 id="收集資訊">收集資訊&lt;/h3>
+&lt;p>DNS Resloutiime Time&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># Google&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# dig @8.8.8.8 example.com &lt;span class="p">|&lt;/span> grep Query
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">;;&lt;/span> Query time: &lt;span class="m">220&lt;/span> msec
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1"># Cloudflare&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# dig @1.1.1.1 example.com &lt;span class="p">|&lt;/span> grep Query
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">;;&lt;/span> Query time: &lt;span class="m">152&lt;/span> msec
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bandwidth&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># Display a list of speedtest.net servers sorted by distance&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# speedtest-cli --list
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Retrieving speedtest.net configuration...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">17336&lt;span class="o">)&lt;/span> ETISALAT-UAE &lt;span class="o">(&lt;/span>Dubai, United Arab Emirates&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>19.67 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">33712&lt;span class="o">)&lt;/span> ETISALAT-UAE &lt;span class="o">(&lt;/span>Sharjah, United Arab Emirates&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>32.80 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">34238&lt;span class="o">)&lt;/span> ETISALAT-UAE &lt;span class="o">(&lt;/span>Ajman, United Arab Emirates&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>42.82 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">11271&lt;span class="o">)&lt;/span> Ooredoo Oman &lt;span class="o">(&lt;/span>Seeb, Oman&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>330.64 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 6193&lt;span class="o">)&lt;/span> Ooredoo Qatar &lt;span class="o">(&lt;/span>Doha, Qatar&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>379.79 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">36046&lt;span class="o">)&lt;/span> stc Bahrain &lt;span class="o">(&lt;/span>Seef, Bahrain&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>489.93 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">25379&lt;span class="o">)&lt;/span> Mobily &lt;span class="o">(&lt;/span>Khobar, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>526.86 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">16051&lt;span class="o">)&lt;/span> Saudi Telecom Company &lt;span class="o">(&lt;/span>STC&lt;span class="o">)&lt;/span> &lt;span class="o">(&lt;/span>Dammam, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>528.27 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">17373&lt;span class="o">)&lt;/span> Salam &lt;span class="o">(&lt;/span>Dammam, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>528.27 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">24200&lt;span class="o">)&lt;/span> Saudi Telecom Company &lt;span class="o">(&lt;/span>STC&lt;span class="o">)&lt;/span> &lt;span class="o">(&lt;/span>Al Hofuf, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>575.26 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# speedtest-cli
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">Retrieving speedtest.net configuration...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Testing from Amazon.com &lt;span class="o">(&lt;/span>51.112.52.76&lt;span class="o">)&lt;/span>...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">Retrieving speedtest.net server list...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">Selecting best server based on ping...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">Hosted by ETISALAT-UAE &lt;span class="o">(&lt;/span>Dubai&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>19.67 km&lt;span class="o">]&lt;/span>: 5.772 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">Testing download speed................................................................................
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">Download: 1908.86 Mbit/s
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">Testing upload speed......................................................................................................
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">Upload: 1475.68 Mbit/s
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Request time&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-4-174:~# curl -4 -w &amp;#34;@curl-format.txt&amp;#34; -o /dev/null -s https://example.com/api
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">time_namelookup: 0.155062
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_connect: 0.351696
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_appconnect: 0.586982
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_pretransfer: 0.587111
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">time_starttransfer: 0.781766
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">----------time_total: 0.781826
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>到 Server IP &lt;code>1.2.3.4&lt;/code> 的線路測試&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# traceroute -T 1.2.3.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">traceroute to 1.2.3.4 &lt;span class="o">(&lt;/span>1.2.3.4&lt;span class="o">)&lt;/span>, &lt;span class="m">30&lt;/span> hops max, &lt;span class="m">60&lt;/span> byte packets
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="m">1&lt;/span> * * *
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="m">2&lt;/span> 240.1.24.4 &lt;span class="o">(&lt;/span>240.1.24.4&lt;span class="o">)&lt;/span> 0.211 ms 240.1.24.5 &lt;span class="o">(&lt;/span>240.1.24.5&lt;span class="o">)&lt;/span> 0.225 ms 0.486 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="m">3&lt;/span> 242.3.43.1 &lt;span class="o">(&lt;/span>242.3.43.1&lt;span class="o">)&lt;/span> 3.451 ms 242.3.43.5 &lt;span class="o">(&lt;/span>242.3.43.5&lt;span class="o">)&lt;/span> 2.972 ms 242.3.42.7 &lt;span class="o">(&lt;/span>242.3.42.7&lt;span class="o">)&lt;/span> 2.963 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="m">4&lt;/span> 52.93.68.29 &lt;span class="o">(&lt;/span>52.93.68.29&lt;span class="o">)&lt;/span> 1.320 ms 52.93.68.79 &lt;span class="o">(&lt;/span>52.93.68.79&lt;span class="o">)&lt;/span> 8.062 ms 52.93.68.97 &lt;span class="o">(&lt;/span>52.93.68.97&lt;span class="o">)&lt;/span> 0.557 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> &lt;span class="m">5&lt;/span> 100.91.177.167 &lt;span class="o">(&lt;/span>100.91.177.167&lt;span class="o">)&lt;/span> 190.061 ms 100.106.85.41 &lt;span class="o">(&lt;/span>100.106.85.41&lt;span class="o">)&lt;/span> 191.664 ms 100.91.176.251 &lt;span class="o">(&lt;/span>100.91.176.251&lt;span class="o">)&lt;/span> 190.035 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl"> &lt;span class="m">6&lt;/span> * 240.0.184.13 &lt;span class="o">(&lt;/span>240.0.184.13&lt;span class="o">)&lt;/span> 1860.666 ms 240.0.236.34 &lt;span class="o">(&lt;/span>240.0.236.34&lt;span class="o">)&lt;/span> 1901.460 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl"> &lt;span class="m">7&lt;/span> 242.2.212.33 &lt;span class="o">(&lt;/span>242.2.212.33&lt;span class="o">)&lt;/span> 191.295 ms 242.3.84.161 &lt;span class="o">(&lt;/span>242.3.84.161&lt;span class="o">)&lt;/span> 192.339 ms 242.3.85.33 &lt;span class="o">(&lt;/span>242.3.85.33&lt;span class="o">)&lt;/span> 191.432 ms
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# mtr -b -T -r -c &lt;span class="m">30&lt;/span> 1.2.3.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Start: 2024-05-09T10:16:58+0000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">HOST: ip-172-31-41-190 Loss% Snt Last Avg Best Wrst StDev
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> 1.&lt;span class="p">|&lt;/span>-- ??? 100.0 &lt;span class="m">30&lt;/span> 0.0 0.0 0.0 0.0 0.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> 2.&lt;span class="p">|&lt;/span>-- 240.1.24.5 0.0% &lt;span class="m">30&lt;/span> 0.3 0.3 0.3 0.4 0.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 240.1.24.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 240.1.24.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 240.1.24.6
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> 3.&lt;span class="p">|&lt;/span>-- 242.3.42.135 0.0% &lt;span class="m">30&lt;/span> 2.8 5.7 2.5 20.4 5.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> 242.3.42.129
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> 242.3.43.3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> 242.3.43.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> 242.3.43.133
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> 242.3.43.131
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> 242.3.43.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> 242.3.42.131
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> 4.&lt;span class="p">|&lt;/span>-- 52.93.68.95 0.0% &lt;span class="m">30&lt;/span> 0.7 4.7 0.6 21.9 5.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> 52.93.68.93
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> 52.93.68.45
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> 52.93.68.125
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> 52.93.68.79
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> 52.93.68.129
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> 52.93.68.143
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> 52.93.68.65
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> 5.&lt;span class="p">|&lt;/span>-- 100.106.85.13 0.0% &lt;span class="m">30&lt;/span> 193.4 193.8 190.2 211.9 5.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> 100.91.177.73
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> 100.91.176.243
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> 100.91.177.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> 100.91.176.221
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> 100.91.177.93
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> 100.106.86.73
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> 100.106.85.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> 100.91.177.113
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# iperf3 -t &lt;span class="m">30&lt;/span> -c 1.2.3.4 -p &lt;span class="m">31987&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Connecting to host 1.2.3.4, port &lt;span class="m">31987&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> &lt;span class="nb">local&lt;/span> 172.31.41.190 port &lt;span class="m">42998&lt;/span> connected to 1.2.3.4 port &lt;span class="m">31987&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> ID&lt;span class="o">]&lt;/span> Interval Transfer Bitrate Retr Cwnd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 0.00-1.00 sec 2.25 MBytes 18.9 Mbits/sec &lt;span class="m">0&lt;/span> &lt;span class="m">440&lt;/span> KBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 1.00-2.00 sec 9.81 MBytes 82.3 Mbits/sec &lt;span class="m">61&lt;/span> 3.88 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 2.00-3.00 sec 10.0 MBytes 83.9 Mbits/sec &lt;span class="m">303&lt;/span> 2.84 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 3.00-4.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 4.00-5.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 5.00-6.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 6.00-7.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 7.00-8.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 8.00-9.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 9.00-10.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 10.00-11.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 11.00-12.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 12.00-13.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 13.00-14.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 14.00-15.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 15.00-16.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 16.00-17.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 17.00-18.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 18.00-19.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 19.00-20.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 20.00-21.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 21.00-22.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 22.00-23.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 23.00-24.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 24.00-25.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 25.00-26.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 26.00-27.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 27.00-28.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 28.00-29.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 29.00-30.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">- - - - - - - - - - - - - - - - - - - - - - - - -
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> ID&lt;span class="o">]&lt;/span> Interval Transfer Bitrate Retr
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 0.00-30.00 sec &lt;span class="m">430&lt;/span> MBytes &lt;span class="m">120&lt;/span> Mbits/sec &lt;span class="m">364&lt;/span> sender
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 0.00-30.19 sec &lt;span class="m">429&lt;/span> MBytes &lt;span class="m">119&lt;/span> Mbits/sec receiver
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Apache Jmeter</title><link>https://chiehting.com/posts/testing-apache-jmeter/</link><pubDate>Thu, 16 Nov 2023 10:30:51 +0800</pubDate><guid>https://chiehting.com/posts/testing-apache-jmeter/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 紀錄 Apache Jmeter 的使用筆記。&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>理解 Apache Jmeter 壓工具，研究其中的的元件&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 Java([[moc-java]]) 編譯好的應用程式。&lt;/p>
+&lt;h4 id="install">Install&lt;/h4>
+&lt;p>當前版本為 Jmeter 5.6.2 的版本，下面操作皆是以這個版本為基礎。&lt;/p>
+&lt;h5 id="required">Required&lt;/h5>
+&lt;ol>
+&lt;li>由於是 Java 編譯，所以需要先配置好 Jar([[moc-java#Jar]]) 環境。&lt;/li>
+&lt;/ol>
+&lt;h5 id="download-jmeter">Download Jmeter&lt;/h5>
+&lt;p>配置好環境後下載即可使用，下面為下載命令。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> /opt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">tar zxf apache-jmeter-5.6.2.tgz
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="how-to-use">How to use&lt;/h4>
+&lt;h5 id="編寫腳本">編寫腳本&lt;/h5>
+&lt;p>Jmeter 有 IDE 可以使用，開啟 &lt;code>./bin/ApacheJMeter.jar&lt;/code> 就可以看到介面，可以透過 IDE 配置壓測流程。
+官方也有提供一些範例在 &lt;code>./bin/examples&lt;/code> 底下，以及樣板 &lt;code>./bin/templates&lt;/code>，可以參考。&lt;/p>
+&lt;p>&lt;em>Thread Group&lt;/em> 中有個配置 &lt;em>Ramp-up period&lt;/em>，這欄位的目的在於在 N 秒內執行指定的 thread number。
+設定的話 thread 會線性執行，由於線性起初的壓力不會過大，產出的報表也相對好看；如果沒設定的話 thread 會在同一時間放行，在壓測的開始會對服務造成滿大的壓力，適合搶票的情境。&lt;/p>
+&lt;p>&lt;em>JSR223 Sampler&lt;/em> 是滿好用的元件之一，可以使用多種語言（groovy、javascript, etc...）來編輯。&lt;/p>
+&lt;p>&lt;em>If Controller&lt;/em> 可以做流程的判別式，要注意選項 &lt;em>Interpret Condition as Variable Expression?&lt;/em>，用來解義變數的擴展語言。使用 true or false 的變數內容的話，建議是開啟。&lt;/p>
+&lt;h5 id="壓測機器">壓測機器&lt;/h5>
+&lt;p>提升 Ubuntu server 22.04 的主機效能，設定配置。&lt;/p>
+&lt;p>增加 ulimit 的配置，使主機能使用的 &lt;em>open file&lt;/em>、&lt;em>process&lt;/em> 都加大。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">vim /etc/pam.d/common-session
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">session required pam_limits.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">vim /etc/security/limits.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">* soft nproc &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">* hard nproc &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">* soft nofile &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">* hard nofile &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">root soft nofile &lt;span class="m">64000&lt;/span> &lt;span class="c1"># option&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">root hard nofile &lt;span class="m">64000&lt;/span> &lt;span class="c1"># option&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>調整 kernel 的配置。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">vim /etc/sysctl.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">net.ipv4.ip_local_port_range&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;15000 61000&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">net.ipv4.tcp_fin_timeout&lt;span class="o">=&lt;/span>&lt;span class="m">30&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">net.ipv4.tcp_tw_recycle&lt;span class="o">=&lt;/span>&lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">net.ipv4.tcp_tw_reuse&lt;span class="o">=&lt;/span>&lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 添加或修改以下参数，提高 TCP 缓冲区大小&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">net.core.rmem_max &lt;span class="o">=&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">net.core.wmem_max &lt;span class="o">=&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">net.ipv4.tcp_rmem &lt;span class="o">=&lt;/span> &lt;span class="m">4096&lt;/span> &lt;span class="m">87380&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">net.ipv4.tcp_wmem &lt;span class="o">=&lt;/span> &lt;span class="m">4096&lt;/span> &lt;span class="m">87380&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="c1"># 可開啟檔案數量&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">fs.file-max &lt;span class="o">=&lt;/span> &lt;span class="m">100000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">vm.swappiness&lt;span class="o">=&lt;/span>&lt;span class="m">10&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>調整 &lt;em>transparent huge page&lt;/em> 策略。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">vim /etc/default/grub
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">GRUB_CMDLINE_LINUX&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;transparent_hugepage=never&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="壓力測試">壓力測試&lt;/h5>
+&lt;p>可以直接使用 IDE 或 Command 來執行壓測，下面為使用 Command 的方式做執行。&lt;/p>
+&lt;p>腳本編寫完成後保存成 jmx 檔案，jmeter 會使用腳本去執行壓測流程。壓測完成後會產生 jtl 檔案為壓測結果，dashboard 為 htlm 的報告書。&lt;/p>
+&lt;p>其中有配置 &lt;em>JVM_ARGS&lt;/em> 參數，開大 &lt;em>-Xms&lt;/em>、&lt;em>-Xmx&lt;/em> 為記憶體可使用量。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">JVM_ARGS&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;-Dnashorn.args=--no-deprecation-warning -Xms15g -Xmx15g&amp;#34;&lt;/span> apache-jmeter-5.6.2/bin/jmeter -n -t jmeter.jmx -l jmeter-result.jtl -e -o dashboard
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

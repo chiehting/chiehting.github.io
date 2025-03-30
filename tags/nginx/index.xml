@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>nginx on Chiehting</title><link>https://chiehting.com/tags/nginx/</link><description>Recent content in nginx on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 02 Apr 2019 13:00:49 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/nginx/index.xml" rel="self" type="application/rss+xml"/><item><title>Create a Self-Signed SSL Certificate for Nginx</title><link>https://chiehting.com/posts/nginx-self-signed-ssl-certificate/</link><pubDate>Tue, 02 Apr 2019 13:00:49 +0800</pubDate><guid>https://chiehting.com/posts/nginx-self-signed-ssl-certificate/</guid><description>
+&lt;p>紀錄在 Nginx 安裝自簽的 SSL 憑證.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 生成私钥&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">openssl genpkey -algorithm RSA -out ca.key -aes256
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 生成自签名 CA 证书&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">openssl req -new -x509 -key ca.key -out ca.crt -days &lt;span class="m">3650&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 生成私钥&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">openssl genpkey -algorithm RSA -out registry.key
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 生成证书签署请求 (CSR)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">openssl req -new -key registry.key -out registry.csr
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 使用 CA 证书签署请求，生成 Docker registry 证书&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">openssl x509 -req -in registry.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out registry.crt -days &lt;span class="m">3650&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">openssl x509 -req -in registry.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out registry.crt -days &lt;span class="m">3650&lt;/span> -extensions v3_usr -extfile openssl.cnf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="使用-openssl-建立自簽憑證">使用 openssl 建立自簽憑證&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo openssl req -x509 -nodes -days &lt;span class="m">3650&lt;/span> -newkey rsa:2048 -keyout /etc/nginx/certs/nginx-selfsigned.key -out /etc/nginx/certs/nginx-selfsigned.crt
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo openssl dhparam -out /etc/nginx/certs/dhparam.pem &lt;span class="m">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="生成带有-sans-的证书">生成带有 SANs 的证书&lt;/h4>
+&lt;p>如果你使用 OpenSSL 生成自簽名證書 &lt;code>openssl.cnf&lt;/code>，確保包含 SANs，可以通過以下命令實現：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-toml" data-lang="toml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="p">[&lt;/span> &lt;span class="nx">req&lt;/span> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="nx">default_bits&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="nx">distinguished_name&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">lindu&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="nx">req_extensions&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">req_ext&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="nx">x509_extensions&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">v3_ca&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="nx">default_bits&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">2048&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="nx">default_keyfile&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">registry&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">key&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="nx">default_md&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">sha256&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="nx">default_days&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">365&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="nx">distinguished_name&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">lindu&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="nx">req_extensions&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">req_ext&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="nx">x509_extensions&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">v3_usr&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="p">[&lt;/span> &lt;span class="nx">lindu&lt;/span> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="nx">countryName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">CN&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="nx">countryName_default&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">CN&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="nx">stateOrProvinceName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">Shenzhen&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="nx">stateOrProvinceName_default&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">Shenzhen&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="nx">localityName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">Shenzhen&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="nx">localityName_default&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">Shenzhen&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="nx">organizationName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">Lindu&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="nx">organizationName_default&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">Lindu&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&lt;span class="nx">commonName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">lindu-lab&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">com&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="nx">commonName_max&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mi">64&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">&lt;span class="p">[&lt;/span> &lt;span class="nx">req_ext&lt;/span> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="nx">subjectAltName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="err">@&lt;/span>&lt;span class="nx">alt_names&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="p">[&lt;/span> &lt;span class="nx">v3_ca&lt;/span> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">&lt;span class="nx">subjectAltName&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="err">@&lt;/span>&lt;span class="nx">alt_names&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&lt;span class="p">[&lt;/span> &lt;span class="nx">alt_names&lt;/span> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">&lt;span class="nx">DNS&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="mi">1&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">lindu-lab&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">com&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">&lt;span class="nx">DNS&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="mi">2&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="nx">reg&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">lindu-lab&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">com&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">&lt;span class="nx">IP&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="mi">1&lt;/span> &lt;span class="p">=&lt;/span> &lt;span class="mf">192.168&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="mf">2.8&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo openssl req -x509 -nodes -days &lt;span class="m">3650&lt;/span> -newkey rsa:2048 -keyout /etc/nginx/certs/nginx-selfsigned-reg.key -out /etc/nginx/certs/nginx-selfsigned-reg.crt -config openssl.cnf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="setting-nginx-configuration">Setting Nginx configuration&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">ssl_certificate /etc/nginx/certs/nginx-selfsigned.crt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">ssl_certificate_key /etc/nginx/certs/nginx-selfsigned.key;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">ssl_dhparam /etc/nginx/certs/dhparam.pem;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">server {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> listen 443 ssl;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> server_name _;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> index index.html index.php;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> access_log /var/log/nginx/access.log main;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> error_log /var/log/nginx/error.log error;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> location / {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> proxy_pass http://backend;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> location ~ /\.ht {
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> deny all;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> }
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="references">References&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="http://nginx.org/en/docs/http/configuring_https_servers.html">configuring https servers of Nginx&lt;/a>&lt;/li>
+&lt;/ul></description></item></channel></rss>

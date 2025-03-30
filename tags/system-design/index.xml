@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>system-design on Chiehting</title><link>https://chiehting.com/tags/system-design/</link><description>Recent content in system-design on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 08 Sep 2023 17:35:51 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/system-design/index.xml" rel="self" type="application/rss+xml"/><item><title>使用 Raspberry Pi 4 Model B 做反向代理伺服器</title><link>https://chiehting.com/posts/raspberry-pi-4b-setting-reverse-proxy/</link><pubDate>Fri, 08 Sep 2023 17:35:51 +0800</pubDate><guid>https://chiehting.com/posts/raspberry-pi-4b-setting-reverse-proxy/</guid><description>
+&lt;p>目標是要使用硬體 Raspberry Pi 4 Model B - 8G 來做反向代理伺服器, 並且服務需要可以轉發 TCP 與 UDP.&lt;/p>
+&lt;p>此方案適用於少人數的反向代理伺服器, 且成本較低.&lt;/p>
+&lt;h3 id="初始化">初始化&lt;/h3>
+&lt;p>由於是反向代理伺服器, 所以需要 IP 固定. 硬體為 Raspberry Pi 4 Model B, 安裝了 OS ubuntu 22.04, 設定方式如下.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">apt -y update &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> apt upgrade &lt;span class="c1"># 主機套件更新&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">ip a &lt;span class="c1"># 確認網路卡為 eth0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">vim /etc/netplan/50-cloud-init.yaml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nt">network&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">ethernets&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">eth0&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">dhcp4&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">no&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">addresses&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="m">192.168.1.100&lt;/span>&lt;span class="l">/24 &lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># Set your desired static IP address and subnet mask&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">routes&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="nt">to&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">0.0.0.0&lt;/span>&lt;span class="l">/0 &lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># Define the default route&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">via&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">192.168.1.1&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c"># Set your gateway/router IP address&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">optional&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">version&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="m">2&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">netplan apply &lt;span class="c1"># 重新啟動服務&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>發現一個現象, 透過設定 IP address, 可以發送非本地的 IP. 當設定 dhcp4: yes 且配置了 addresses 時, 會是 dhcp 還是 static IP. 測試下來機器的 IP 會是 dhcp 所配的 IP; 發出去的封包會是以 addresses 所設定, 且這現象無法跨網段.&lt;/p>
+&lt;p>從上面的範例為案例, 紀錄測試的結果, 如下:&lt;/p>
+&lt;ol>
+&lt;li>dhcp 使用的網段是 192.168.1.0/24 被分配到的 IP 是 192.168.1.195, addresses 設定的是 192.168.1.100 的話, 發出去的封包來源 IP 會是 192.168.1.100.&lt;/li>
+&lt;li>dhcp 使用的網段是 192.168.1.0/24 被分配到的 IP 是 192.168.1.195, addresses 設定的是 192.168.2.100 的話, 發出去的封包來源 IP 會是 192.168.1.195.&lt;/li>
+&lt;/ol>
+&lt;h3 id="反向代理伺服器">反向代理伺服器&lt;/h3>
+&lt;h4 id="nginx">Nginx&lt;/h4>
+&lt;p>結果: 成功代理, upstream 收到的都是 reverse proxy 的 IP&lt;/p>
+&lt;p>官方演示 &lt;a href="https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-udp-load-balancer/"># TCP and UDP Load Balancing&lt;/a>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">apt install nginx
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> /etc/nginx
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">cp -rf nginx.conf nginx.conf.origin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">cat &amp;gt;&amp;gt; sites-available/default &lt;span class="s">&amp;lt;&amp;lt; EOF
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="s">stream {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="s"> upstream backend {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="s"># hash $remote_addr consistent;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="s"> server 192.168.1.133:80 weight=5;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="s"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="s">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="s"> upstream dns {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="s"># hash $remote_addr consistent;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="s"> server 192.168.1.133:53;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="s"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="s">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="s"> server {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="s"> listen 80;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="s"> proxy_pass backend;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="s"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="s">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="s"> server {
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="s"> listen 53 udp reuseport;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="s"> proxy_pass dns;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&lt;span class="s"> }
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="s">}
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="s">EOF&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="haproxy">HAProxy&lt;/h4>
+&lt;p>結果: 失敗代理, 不支援 UDP.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">apt install haproxy
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">vim /etc/haproxy/haproxy.cfg
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="l">frontend external_tcp&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">bind *:80&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">mode tcp&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">default_backend internal_tcp&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="l">backend internal_tcp&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">mode tcp&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">server webserver1 192.168.1.133:80&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">service haproxy restart
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Design a distributed job scheduler</title><link>https://chiehting.com/posts/system-desing-distributed-job-scheduler/</link><pubDate>Tue, 27 Jun 2023 10:44:44 +0800</pubDate><guid>https://chiehting.com/posts/system-desing-distributed-job-scheduler/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 文章主要在做系統設計, 使用排成系統做範例來設計分散式架構服務. 這邊從 &lt;em>需求-&amp;gt;規格分析-&amp;gt;系統架構-&amp;gt;軟體設計&lt;/em> 的脈絡來做演示.&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>文章中, 作者規劃如何設計排程系統.&lt;/p>
+&lt;p>首先分析排程系統的需求. 需求分成兩個面向, 其一為功能性, 列出系統該有的功能; 另一為非功能性但也相對重要的系統穩定度.&lt;/p>
+&lt;p>再來依據規格, 期望一天有 100 萬 (or 1000 QPS) 個任務量, 來佐證這個量級的任務, 單台機器與單體式架構是不能使用的. 所以需要設計分散式架構.&lt;/p>
+&lt;p>接著文章開始做整個排程系統的架構設計, 這邊文章中作者採用 &lt;code>poll tasks&lt;/code> 做撈取任務的機制, 也就是說任務排成設定的最小單位就是 &lt;code>poll tasks&lt;/code> 的單位.&lt;/p>
+&lt;p>最後是設計排成軟體的細節,&lt;/p>
+&lt;ul>
+&lt;li>API 開了三個接口 &lt;code>submitJob&lt;/code> ，&lt;code>viewJob&lt;/code> 與 &lt;code>listJobs&lt;/code>.&lt;/li>
+&lt;li>DB 這邊選用 NoSQL, 原因是在於規模、維護和成本方面有明顯優勢, 所以選擇使用 DynamoDb 的 NoSQL 解決方案.&lt;/li>
+&lt;li>系統的穩定度需求, 設計成 HA 架構 與監控服務來保證. 但這邊也要注意 &lt;code>health checker service&lt;/code> 也是系統的一環, 若異常也會造成穩定度下降.&lt;/li>
+&lt;li>檔案系統採用 S3 做異地儲存.&lt;/li>
+&lt;/ul>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c">System Design - Design a distributed job scheduler (KISS Interview series)&lt;/a>&lt;/p>
+&lt;h4 id="introduction">Introduction&lt;/h4>
+&lt;p>Job scheduling is a well known system design interview question. Below are some areas where one might need to design a job scheduler.&lt;/p>
+&lt;ul>
+&lt;li>Design a system for payment processing. (i.e. monthly/weekly/daily payout etc.)&lt;/li>
+&lt;li>Design a code deployment system. (i.e. code pipeline)&lt;/li>
+&lt;/ul>
+&lt;h4 id="requirement">Requirement&lt;/h4>
+&lt;p>功能性需求&lt;/p>
+&lt;ul>
+&lt;li>使用者可以安排任務與檢視任務.&lt;/li>
+&lt;li>使用者可以檢視任務清單跟任務當前狀態.&lt;/li>
+&lt;li>任務可以執行一次或多次. 且可以定義任務 X 時間後結束任務. (let x = 15 minutes)&lt;/li>
+&lt;li>任務的執行時間不可抄錯超過 X 分鐘. (let x = 5 minutes)&lt;/li>
+&lt;li>任務有權重配置, 權重高須比權限低的優先執行.&lt;/li>
+&lt;li>任務結果需要儲存在檔案系統中.&lt;/li>
+&lt;/ul>
+&lt;p>非功能性需求&lt;/p>
+&lt;ul>
+&lt;li>高可用性, 系統任何時刻都可讓使用者做新增任務與檢視任務.&lt;/li>
+&lt;li>可擴展性, 系統要可以擴展以容納數百萬的任務.&lt;/li>
+&lt;li>可靠性, 如有多程序時, 系統在同一時間至少執行一次, 但不可重複執行.&lt;/li>
+&lt;li>耐用性, 如果出現任何故障, 系統不應遺失任務訊息.&lt;/li>
+&lt;li>即時性, 系統需立即納入使用者接受的任務. 使用者不需等待任務完成.&lt;/li>
+&lt;/ul>
+&lt;h4 id="traffic--storage-estimation-back-of-envelope-calculation">Traffic &amp;amp; Storage Estimation (Back of envelope calculation)&lt;/h4>
+&lt;ul>
+&lt;li>Total submitted jobs daily = 100 M (or 1000 QPS)&lt;/li>
+&lt;/ul>
+&lt;p>如果每個單獨的任務最多只可以執行 5 分鐘, 則可以看出 CPU 的限制.&lt;/p>
+&lt;p>&lt;strong>CPU 限制&lt;/strong>&lt;/p>
+&lt;p>假設使用的 CPU 為 16 核, 且每個核心可跑 2 個線程, 每個任務最多可以跑 5 分鐘.&lt;/p>
+&lt;blockquote>
+&lt;p># jobs can be executed by one machine = (16 cores * 2 threads)/ (5 minutes * 60) = &lt;strong>0.10 jobs per second&lt;/strong> (or ~8000 jobs per day)&lt;/p>
+&lt;p># of machines needed to run 1000 QPS = 1000/0.10 = &lt;strong>10000&lt;/strong> (wow 😮 !)&lt;/p>
+&lt;/blockquote>
+&lt;p>也就是每一次可以執行 32 個 jobs, 且每個 job 執行 300 秒. 上面的公式等式如下.
+$$ (16 * 2) * (24 * 60^2) / (5 * 60) = 9216 $$&lt;/p>
+&lt;p>&lt;strong>Memory 限制&lt;/strong>&lt;/p>
+&lt;p>假設使用 16 GB 的記憶體, 假設每個任務使用 5 MB 的記憶體&lt;/p>
+&lt;blockquote>
+&lt;p>A modern machine with 16 GB ram can hold up-to = (16 GB / (5 MB * 5 minutes * 60)) =&lt;strong>10 jobs per second&lt;/strong>&lt;/p>
+&lt;p># of machines needed to run 1000 QPS = 1000 / 10= &lt;strong>100&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;p>&lt;strong>架構分析&lt;/strong>&lt;/p>
+&lt;p>分析上述的條件, 如果使用單機不可擴展的機器是不可能設計出排程系統, 結論是必須設計分散式架構系統&lt;/p>
+&lt;h3 id="system-interface">System interface&lt;/h3>
+&lt;p>Three APIs can be exposed to the user&lt;/p>
+&lt;ol>
+&lt;li>submitJob(api_key, user_id, job_schedule_time, job_type, priority, result_location)&lt;/li>
+&lt;/ol>
+&lt;p>Here, &lt;em>job_type = ONCE or RECURRING,&lt;/em> and &lt;em>result_location&lt;/em> could be s3 location&lt;/p>
+&lt;p>API can return http response code 202 after accepting the job&lt;/p>
+&lt;ol start="2">
+&lt;li>viewJob(api_key, user_id, job_id)&lt;/li>
+&lt;/ol>
+&lt;p>Response includes the status as NOT_STARTED, STARTED or COMPLETED&lt;/p>
+&lt;ol start="3">
+&lt;li>listJobs(api_key, user_id, pagination_token)&lt;/li>
+&lt;/ol>
+&lt;p>User can query all jobs submitted, and a paginated response is returned&lt;/p></description></item><item><title>keep it simple stupid.!</title><link>https://chiehting.com/posts/keep-it-simple-stupid/</link><pubDate>Mon, 26 Jun 2023 13:38:19 +0800</pubDate><guid>https://chiehting.com/posts/keep-it-simple-stupid/</guid><description>
+&lt;p>&lt;em>KISS&lt;/em> 全名為 &lt;code>Keep it simple, stupid!&lt;/code>, 在 &lt;a href="https://en.wikipedia.org/wiki/KISS_principle">Wiki&lt;/a> 上寫說為一種 &lt;strong>設計原則&lt;/strong>, 但個人體悟也為一種思考模式, 目的在於 &amp;quot;化繁為簡&amp;quot;. 這邊的 stupid 不是貶義詞, 是表示易於理解.&lt;/p>
+&lt;p>在可能的情況下, 避免寫出複雜的邏輯、命名、結構、排版, 讓程式碼保持淺顯易懂.&lt;/p>
+&lt;h3 id="範例">範例&lt;/h3>
+&lt;h4 id="python-範例">python 範例&lt;/h4>
+&lt;p>下面為計算 &lt;strong>購物車含稅總金額&lt;/strong> 的範例碼, 邏輯為將車裡的所有品項做加總.&lt;/p>
+&lt;p>before&lt;/p>
+&lt;p>可以看到修改前的邏輯為 &lt;strong>取物&lt;/strong> 後做 &lt;strong>計算&lt;/strong>, 並將每次的結果加入到總金額中.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">calculate_total_price&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">cart&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="n">total&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="k">for&lt;/span> &lt;span class="n">item&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="n">cart&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;quantity&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span> &lt;span class="o">&amp;gt;&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="n">price&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;price&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="n">quantity&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;quantity&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="n">tax&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;tax&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="n">discount&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;discount&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="n">total&lt;/span> &lt;span class="o">+=&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">price&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="n">quantity&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="n">tax&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">-&lt;/span> &lt;span class="n">discount&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">total&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>after&lt;/p>
+&lt;p>修改後將 &lt;strong>取物&lt;/strong> 與 &lt;strong>計算&lt;/strong> 的邏輯拆成兩個函示, 保持函式的單一職責性.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-python" data-lang="python">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">calculate_total_price&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">cart&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="n">total&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="k">for&lt;/span> &lt;span class="n">item&lt;/span> &lt;span class="ow">in&lt;/span> &lt;span class="n">cart&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="n">total&lt;/span> &lt;span class="o">+=&lt;/span> &lt;span class="n">calculate_item_price&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">item&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">total&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="k">def&lt;/span> &lt;span class="nf">calculate_item_price&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">item&lt;/span>&lt;span class="p">):&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="n">price&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;price&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="n">quantity&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;quantity&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="n">tax&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;tax&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="n">discount&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">item&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="s1">&amp;#39;discount&amp;#39;&lt;/span>&lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">price&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="n">quantity&lt;/span> &lt;span class="o">*&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span> &lt;span class="o">+&lt;/span> &lt;span class="n">tax&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">-&lt;/span> &lt;span class="n">discount&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>淺談加密標準</title><link>https://chiehting.com/posts/encryption-standard/</link><pubDate>Fri, 01 Oct 2021 16:35:00 +0800</pubDate><guid>https://chiehting.com/posts/encryption-standard/</guid><description>
+&lt;p>在開發上常會用到資料加密，例如雜湊函式（MD5、SHA-2）、對稱式加密（AES、DES、3DES)、非對稱式加密（RSA演算法）等方式，這篇就來研究一下這些加密方式之差異。&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://ithelp.ithome.com.tw/articles/10251031">IThome&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://zhuanlan.zhihu.com/p/26029199">知乎&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h3 id="cryptography">Cryptography&lt;/h3>
+&lt;p>在密碼學當中，加密的形式包含了下面幾種：&lt;/p>
+&lt;ul>
+&lt;li>Hash Function（雜湊函式）&lt;/li>
+&lt;li>Symmetric Encryption（對稱加密）&lt;/li>
+&lt;li>Asymmetric Encryption（非對稱加密）&lt;/li>
+&lt;/ul>
+&lt;h4 id="hash-function">Hash Function&lt;/h4>
+&lt;p>雜湊函式是將資料中的，具有不可逆的特性。但是輸入和輸出並不是為一對對應的關係，若同一個函式的雜湊值結果&lt;strong>不同&lt;/strong>，代表原始輸入值也&lt;strong>不同&lt;/strong>；若同一個函式的雜湊值結果&lt;strong>相同&lt;/strong>，不代表原始輸入值也&lt;strong>相同&lt;/strong>。&lt;/p>
+&lt;p>雜湊碰撞（collision）意指同一個函式的雜湊值結果&lt;strong>相同&lt;/strong>，但原始輸入值&lt;strong>不相同&lt;/strong>的情況，&lt;a href="https://github.com/corkami/collisions">corkami/collisions&lt;/a> 範例。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">$bash&lt;/span> python
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Python 3.9.6 &lt;span class="o">(&lt;/span>default, Jun &lt;span class="m">29&lt;/span> 2021, 05:25:02&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Clang 12.0.5 &lt;span class="o">(&lt;/span>clang-1205.0.22.9&lt;span class="o">)]&lt;/span> on darwin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">Type &lt;span class="s2">&amp;#34;help&amp;#34;&lt;/span>, &lt;span class="s2">&amp;#34;copyright&amp;#34;&lt;/span>, &lt;span class="s2">&amp;#34;credits&amp;#34;&lt;/span> or &lt;span class="s2">&amp;#34;license&amp;#34;&lt;/span> &lt;span class="k">for&lt;/span> more information.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; import crypt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; crypt.crypt&lt;span class="o">(&lt;/span>&lt;span class="s2">&amp;#34;5dUD&amp;amp;66&amp;#34;&lt;/span>, &lt;span class="s2">&amp;#34;br&amp;#34;&lt;/span>&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="s1">&amp;#39;brokenOz4KxMc&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; crypt.crypt&lt;span class="o">(&lt;/span>&lt;span class="s2">&amp;#34;O!&amp;gt;&amp;#39;,%&lt;/span>$&lt;span class="s2">&amp;#34;&lt;/span>, &lt;span class="s2">&amp;#34;br&amp;#34;&lt;/span>&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">&lt;span class="s1">&amp;#39;brokenOz4KxMc&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>常見的 Hash Function：&lt;/p>
+&lt;ul>
+&lt;li>SHA-256：生成256位元值的雜湊值，為常見的雜湊函式之一&lt;/li>
+&lt;li>MD5&lt;/li>
+&lt;/ul>
+&lt;h4 id="symmetric-encryption">Symmetric Encryption&lt;/h4>
+&lt;p>對稱式加密為使用同一把金鑰做解密／解密。&lt;/p>
+&lt;h5 id="data-encryption-standard">Data Encryption Standard&lt;/h5>
+&lt;p>Data Encryption Standard（DES）是基於 56 bits 金鑰 + 8 bits 的奇偶校驗的大小。&lt;a href="https://www.tutorialspoint.com/cryptography/data_encryption_standard.htm">此篇&lt;/a>有加密教學。&lt;/p>
+&lt;h5 id="triple-des">Triple DES&lt;/h5>
+&lt;p>然而在硬體效能越來越強的情況下，DES 已經不是安全的加密方法，然而用戶不希望花大量的時間跟成本取代 DES 加密，所以衍生出了 Triple DES（3DES）。3DES 是 DES 的變體，也就是將原本使用的金鑰大小變成 56 bits * 3 = 168 bits。&lt;a href="https://www.tutorialspoint.com/cryptography/triple_des.htm">此篇&lt;/a>有加密教學。&lt;/p>
+&lt;h5 id="advanced-encryption-standard">Advanced Encryption Standard&lt;/h5>
+&lt;p>Advanced Encryption Standard（AES）是用來替代 DES 的加密標準，由於目前的硬體設備的進步使 DES 金鑰 56 bits 已經顯得過小，然後延生的 3DES 雖然可以解決安全性問題但付出的是時間成本。AES 金鑰大小為 128 bits，而效率也比 3DES 來得快，&lt;a href="https://www.tutorialspoint.com/cryptography/advanced_encryption_standard.htm">此篇&lt;/a>有加密教學。&lt;/p>
+&lt;h4 id="asymmetric-encryption">Asymmetric Encryption&lt;/h4>
+&lt;p>由於對稱式加／解密的金鑰是同一把，若是其中一方金鑰洩露了，就會破壞原本的安全機制。而非對稱式加密是改良了這點，採用了公鑰（public key）與私鑰（private key），公鑰作加密；私鑰做解密。值得注意的是一對鑰匙只能做單向的加解密，大部分的內文加密／解密是採用 &lt;a href="https://ithelp.ithome.com.tw/articles/10188528">RSA + AES&lt;/a> 達到雙向加密。&lt;/p>
+&lt;h5 id="rsa">RSA&lt;/h5>
+&lt;p>RSA 是基於大數因數分解的加密方式。另外 RSA-155 (512 bits) 被成功分解，所以已經威脅到 1024-bit 金鑰的安全性，普遍認為使用者應儘快升級到2048-bit或以上。&lt;/p>
+&lt;h5 id="elliptic-curve-cryptography">Elliptic Curve Cryptography&lt;/h5>
+&lt;p>ECC 可以透過較小的密鑰長度提供相當的安全性，但實作起來較複雜。&lt;/p></description></item></channel></rss>

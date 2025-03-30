@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>redis on Chiehting</title><link>https://chiehting.com/category/redis/</link><description>Recent content in redis on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 14 Jan 2020 10:56:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/redis/index.xml" rel="self" type="application/rss+xml"/><item><title>Creating Redis Cluster</title><link>https://chiehting.com/posts/redis-cluster-install-again/</link><pubDate>Tue, 14 Jan 2020 10:56:00 +0800</pubDate><guid>https://chiehting.com/posts/redis-cluster-install-again/</guid><description>
+&lt;p>後端服務需要使用 Redis Cluster, 此篇紀錄在 Centos 7 安裝 Redis Cluster 的過程.&lt;/p>
+&lt;p>Cluster教學 &lt;code>https://redis.io/topics/cluster-tutorial&lt;/code>&lt;/p>
+&lt;h3 id="注意-binary-file放置位置會造成selinux異常">注意: binary file放置位置,會造成SELinux異常&lt;/h3>
+&lt;p>在 Build Redis 時,其中有一個參數 PREFIX 是編譯完成後 binary 的位置,如下. 使用 Centos7 時,有變更這個參數,導致 redis-server 無法在 &lt;code>/var/log/redis&lt;/code> 底下建立檔案,碰到 &lt;code>avc denied open&lt;/code>,若不異動則正常, 原因是SELinux引起的.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-cache redis-5.0.7&lt;span class="o">]&lt;/span>$ cat src/Makefile
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">PREFIX?&lt;span class="o">=&lt;/span>/usr/local
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="nv">INSTALL_BIN&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="k">$(&lt;/span>PREFIX&lt;span class="k">)&lt;/span>/bin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="nv">INSTALL&lt;/span>&lt;span class="o">=&lt;/span>install
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="注意-建置-redis-cluster-群集時-密碼配置時要注意">注意: 建置 Redis Cluster 群集時, 密碼配置時要注意&lt;/h3>
+&lt;p>建立 Redis Cluster 時有配置密碼, 第一次建立沒問題, 但是若做restart時, 報錯誤說&lt;code>NOAUTH Authentication required.&lt;/code>,原因是因為設定檔內只有配置 requirepass 參數未配置 masterauth 參數導致的,補上排除.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-cache redis&lt;span class="o">]&lt;/span>&lt;span class="c1"># cat /etc/redis/redis_7000.conf&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">requirepass &lt;span class="o">{{&lt;/span> redis_config_requirepass &lt;span class="o">}}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="c1"># If the master is password protected (using the &amp;#34;requirepass&amp;#34; configuration&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="c1"># directive below) it is possible to tell the replica to authenticate before&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="c1"># starting the replication synchronization process, otherwise the master will&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="c1"># refuse the replica request.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">masterauth &lt;span class="o">{{&lt;/span> redis_config_requirepass &lt;span class="o">}}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>error log&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-cache redis&lt;span class="o">]&lt;/span>&lt;span class="c1"># cat /var/log/redis/redis_7004.log&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:51.238 &lt;span class="c1"># MASTER aborted replication with an error: NOAUTH Authentication required.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 * Connecting to MASTER 192.168.20.188:7002
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 * MASTER &amp;lt;-&amp;gt; REPLICA sync started
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 * Non blocking connect &lt;span class="k">for&lt;/span> SYNC fired the event.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 * Master replied to PING, replication can &lt;span class="k">continue&lt;/span>...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 * &lt;span class="o">(&lt;/span>Non critical&lt;span class="o">)&lt;/span> Master does not understand REPLCONF listening-port: -NOAUTH Authentication required.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 * &lt;span class="o">(&lt;/span>Non critical&lt;span class="o">)&lt;/span> Master does not understand REPLCONF capa: -NOAUTH Authentication required.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 * Partial resynchronization not possible &lt;span class="o">(&lt;/span>no cached master&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">10920:S &lt;span class="m">20&lt;/span> Jan &lt;span class="m">2020&lt;/span> 02:29:52.240 &lt;span class="c1"># Unexpected reply to PSYNC from master: -NOAUTH Authentication required.&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="確認主機配置">確認主機配置&lt;/h3>
+&lt;h4 id="firewall">firewall&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ sudo firewall-cmd --list-all
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">public &lt;span class="o">(&lt;/span>active&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> target: default
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> icmp-block-inversion: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> interfaces: ens192
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> sources:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> services: ssh dhcpv6-client
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> ports:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> protocols:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> masquerade: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> forward-ports:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> source-ports:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> icmp-blocks:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> rich rules:
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="ip-address">ip address&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ ip a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">65536&lt;/span> qdisc noqueue state UNKNOWN group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> inet 127.0.0.1/8 scope host lo
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> inet6 ::1/128 scope host
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">2: ens192: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc mq state UP group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> link/ether 00:0c:29:90:78:61 brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> inet 192.168.20.189/24 brd 192.168.20.255 scope global noprefixroute ens192
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> inet6 fe80::13b6:9f1a:cc9f:b263/64 scope link noprefixroute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="before-starting">before starting&lt;/h3>
+&lt;h4 id="redis-cluster-tcp-ports">Redis Cluster TCP ports&lt;/h4>
+&lt;blockquote>
+&lt;p>Every Redis Cluster node requires two TCP connections open. The normal Redis TCP port used to serve clients, for example 6379, plus the port obtained by adding 10000 to the data port, so 16379 in the example.&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="redis-cluster-data-sharding">Redis Cluster data sharding&lt;/h4>
+&lt;blockquote>
+&lt;p>Redis Cluster does not use consistent hashing, but a different form of sharding where every key is conceptually part of what we call an hash slot.&lt;/p>
+&lt;/blockquote>
+&lt;blockquote>
+&lt;p>There are 16384 hash slots in Redis Cluster, and to compute what is the hash slot of a given key, we simply take the CRC16 of the key modulo 16384.&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="install-redis-507">install Redis 5.0.7&lt;/h3>
+&lt;p>安裝 remi-release-7.rpm&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ yum.repos.d&lt;span class="o">]&lt;/span>$ sudo yum install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>安裝Redis 5.0.7-1.el7.remi&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ sudo yum list redis --enablerepo&lt;span class="o">=&lt;/span>remi --showduplicates
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ sudo yum install redis-5.0.7-1.el7.remi --enablerepo&lt;span class="o">=&lt;/span>remi
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Redis service disable&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ sudo systemctl disable redis
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="setting-redis-configuration">setting Redis configuration&lt;/h3>
+&lt;p>配置其中一個 redis.conf, 其中7000單一個 Redis 的 port 號. 其他的 redis.conf 就依序更改 7000 的數字.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># Redis 5.0.7 configuration file example.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="nb">bind&lt;/span> 0.0.0.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">protected-mode no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">port &lt;span class="m">7000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">daemonize yes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">pidfile /var/run/redis_7000.pid
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">logfile /var/log/redis/redis_7000.log
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">dir /var/lib/redis
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">appendonly yes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">cluster-enabled yes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">cluster-config-file nodes-6379.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">cluster-node-timeout &lt;span class="m">15000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">cluster-require-full-coverage no
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>確認 port 後, 必須開啟防火牆, 例如 port 7000, 就必須要開起 7000/tcp 跟 17000/tcp.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-cache ~&lt;span class="o">]&lt;/span>$ sudo firewall-cmd --add-port&lt;span class="o">=&lt;/span>7000/tcp --permanent
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-cache ~&lt;span class="o">]&lt;/span>$ sudo firewall-cmd --add-port&lt;span class="o">=&lt;/span>17000/tcp --permanent
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-cache ~&lt;span class="o">]&lt;/span>$ sudo firewall-cmd --reload
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-cache ~&lt;span class="o">]&lt;/span>$ sudo firewall-cmd --list-all
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="creating-the-cluster">Creating the cluster&lt;/h3>
+&lt;p>最少需要 3 個 master, 參數&lt;code>--cluster-replicas&lt;/code>為一個 master 需要幾個 slave, 如下依此類推.&lt;/p>
+&lt;p>每群Redis Cluster&lt;/p>
+&lt;ul>
+&lt;li>--cluster-replicas 0, 1 master 0 slave&lt;/li>
+&lt;li>--cluster-replicas 1, 1 master 1 slave&lt;/li>
+&lt;li>--cluster-replicas 2, 1 master 2 slave&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ redis-cli --cluster &lt;span class="nb">help&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ redis-cli --cluster create 192.168.20.189:7000 192.168.20.189:7001 192.168.20.189:7002 192.168.20.189:7003 192.168.20.189:7004 192.168.20.189:7005 --cluster-replicas &lt;span class="m">1&lt;/span> -a password
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Performing &lt;span class="nb">hash&lt;/span> slots allocation on &lt;span class="m">6&lt;/span> nodes...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">Master&lt;span class="o">[&lt;/span>0&lt;span class="o">]&lt;/span> -&amp;gt; Slots &lt;span class="m">0&lt;/span> - &lt;span class="m">5460&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">Master&lt;span class="o">[&lt;/span>1&lt;span class="o">]&lt;/span> -&amp;gt; Slots &lt;span class="m">5461&lt;/span> - &lt;span class="m">10922&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">Master&lt;span class="o">[&lt;/span>2&lt;span class="o">]&lt;/span> -&amp;gt; Slots &lt;span class="m">10923&lt;/span> - &lt;span class="m">16383&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">Adding replica 127.0.0.1:7004 to 127.0.0.1:7000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">Adding replica 127.0.0.1:7005 to 127.0.0.1:7001
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">Adding replica 127.0.0.1:7003 to 127.0.0.1:7002
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Trying to optimize slaves allocation &lt;span class="k">for&lt;/span> anti-affinity
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>WARNING&lt;span class="o">]&lt;/span> Some slaves are in the same host as their master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">M: 99ff53a04d977692016e7df517533226ff3bd218 127.0.0.1:7000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> slots:&lt;span class="o">[&lt;/span>0-5460&lt;span class="o">]&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="m">5461&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">M: 4f9af42e6c6e2239e46cf9cd14af3e8c688638d5 127.0.0.1:7001
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> slots:&lt;span class="o">[&lt;/span>5461-10922&lt;span class="o">]&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="m">5462&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">M: 01279d2e588ac7b25da2df232412153b26950184 127.0.0.1:7002
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> slots:&lt;span class="o">[&lt;/span>10923-16383&lt;span class="o">]&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="m">5461&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">S: c12c3b7aed21133f078a3262ec201ec9106a6ae0 127.0.0.1:7003
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> replicates 99ff53a04d977692016e7df517533226ff3bd218
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">S: ea108846aba5cd010feebe8482f29babcbc51ee0 127.0.0.1:7004
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> replicates 4f9af42e6c6e2239e46cf9cd14af3e8c688638d5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">S: 7ea79aec309af8048453c6059d3cd35da57468df 127.0.0.1:7005
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> replicates 01279d2e588ac7b25da2df232412153b26950184
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="驗證">驗證&lt;/h3>
+&lt;p>連至其中一台Redis後可以開始做查詢,例如下面的命令.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 ~&lt;span class="o">]&lt;/span>$ redis-cli -c -p &lt;span class="m">7000&lt;/span> -h 192.168.20.189 -a password
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">192.168.20.189:7000&amp;gt; cluster info
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">192.168.20.189:7000&amp;gt; cluster nodes
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>查看log,發現有些warning,依照建議去調整主機配置.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>Justin.Lee@dev-db2 redis&lt;span class="o">]&lt;/span>$ cat redis_7000.log
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">2030:C &lt;span class="m">16&lt;/span> Jan &lt;span class="m">2020&lt;/span> 01:27:43.297 &lt;span class="c1"># Redis version=5.0.7, bits=64, commit=00000000, modified=0, pid=2030, just started&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">2031:M &lt;span class="m">16&lt;/span> Jan &lt;span class="m">2020&lt;/span> 01:27:43.301 &lt;span class="c1"># WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">2031:M &lt;span class="m">16&lt;/span> Jan &lt;span class="m">2020&lt;/span> 01:27:43.301 &lt;span class="c1"># WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &amp;#39;vm.overcommit_memory = 1&amp;#39; to /etc/sysctl.conf and then reboot or run the command &amp;#39;sysctl vm.overcommit_memory=1&amp;#39; for this to take effect.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">2031:M &lt;span class="m">16&lt;/span> Jan &lt;span class="m">2020&lt;/span> 01:27:43.301 &lt;span class="c1"># WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command &amp;#39;echo never &amp;gt; /sys/kernel/mm/transparent_hugepage/enabled&amp;#39; as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>redis-trib.rb reshard problem</title><link>https://chiehting.com/posts/redis-trib-reshard-problem/</link><pubDate>Sun, 07 Apr 2019 00:38:19 +0800</pubDate><guid>https://chiehting.com/posts/redis-trib-reshard-problem/</guid><description>
+&lt;p>Redis 跟 redis-trib.rb 遷移工具有版本不相容, 這邊紀錄解決過程.&lt;/p>
+&lt;h3 id="redis-版本問題">Redis 版本問題&lt;/h3>
+&lt;blockquote>
+&lt;p>We also used redis-cluster ver3.0.6, but redis.trib.rb reshard did not work as 3.0.6 MIGRATE command returns an ASK response.
+redis.trib.rb reshard would always fail, and nodes.conf would be corrupted at that time.
+This problem has been fixed in 3.0.7. In redis-cluster ver 3.0.7, redsi-trib.rb works fine at all.&lt;/p>
+&lt;/blockquote>
+&lt;p>在做slot轉移時,碰到異常,網路上說v3.0.6會出現這錯誤,需要做升級.
+之後決定升級到4.0版本, 下面為升級過程.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 碰到error,先做下面加入ARRAY&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1"># W: mdadm: /etc/mdadm/mdadm.conf defines no arrays.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">sudo vim /etc/mdadm/mdadm.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1"># add line : ARRAY &amp;lt;ignore&amp;gt; devices=/dev/sda&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">sudo add-apt-repository ppa:chris-lea/redis-server
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">sudo apt-get update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">sudo apt-get upgrade redis-server
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1"># 裡面有個選擇&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="c1"># Y保留正在運行的服務,並將redis.conf複製成redis.blk.conf&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="c1"># N終止服務,並直接將新的設定檔覆蓋redis.conf&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="redis-釋出版本-408">Redis 釋出版本 4.0.8&lt;/h3>
+&lt;p>官方釋出版本 4.0.8, 但 apt 套件安裝工具並未更新的這麼即時.
+所以選擇自行編譯原始碼來安裝 redis-cli 4.0.8.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">wget -c http://download.redis.io/releases/redis-4.0.8.tar.gz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">tar -xvf redis-4.0.8.tar.gz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> redis-4.0.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">mv redis-4.0.8 /etc/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">make
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">sudo make install
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> utils/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">sudo ./install_server.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">sudo systemctl status redis
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">redis-cli -v
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="gem-版本問題">gem 版本問題&lt;/h3>
+&lt;p>在做 reshard 的 slot 遷移時碰到錯誤 [ERR] Calling MIGRATE: ERR Syntax error, try CLIENT (LIST | KILL | GETNAME | SETNAME | PAUSE | REPLY)&lt;/p>
+&lt;p>Fix:&lt;/p>
+&lt;blockquote>
+&lt;p>Just installing an earlier version of redis.rb fixes the issue. This worked for me:
+gem install redis -v 3.3.3&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># install redis.rb&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo gem install redis -v 3.3.3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># list all package&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">sudo gem list &lt;span class="p">|&lt;/span>grep redis
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># uninstall old version of redis.rb&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">sudo gem uninstall redis --version 4.0.1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="其他指令">其他指令&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 加入slave節點&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">./redis-trib.rb add-node --slave --master-id 38ad774c7edaff3e93cf1a07926cd00312b93db7 10.0.2.12:6380 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Install Redis Cluster</title><link>https://chiehting.com/posts/redis-cluster-install/</link><pubDate>Tue, 02 Apr 2019 21:45:40 +0800</pubDate><guid>https://chiehting.com/posts/redis-cluster-install/</guid><description>
+&lt;p>在 Ubuntu 上安裝 Redis cluster 過程紀錄.&lt;/p>
+&lt;h3 id="setting-ubuntu">setting Ubuntu&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo apt-get update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1"># 北京時區+8&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">sudo dpkg-reconfigure tzdata
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>配置 ulimit 來解除 Linux 系統的最大進程數和最大文件打開數限制, *代表針對所有用戶，noproc 是代表最大進程數，nofile 是代表最大文件打開數.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 編輯檔案 /etc/security/limits.conf&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">* soft noproc &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">* hard noproc &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">* soft nofile &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">* hard nofile &lt;span class="m">65535&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>編輯檔案 &lt;code>/etc/pam.d/common-session&lt;/code> 讓 Ubuntu 使用 &lt;code>pam_limits.so&lt;/code> 模組.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># required pam_limits.so at common-session file&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo vim /etc/pam.d/common-session
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">session required pam_limits.so
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># required pam_limits.so at common-session-noninteractive file&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo vim /etc/pam.d/common-session-noninteractive
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">session required pam_limits.so
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>開啟指定的 port , 讓 Redis cluster 可以做網路的溝通.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># redis集群不僅需要開通redis客戶端連接的端口，而且需要開通集群總線端口&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1"># 集群總線端口為redis客戶端連接的端口+ 10000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="c1"># 如redis端口為6379&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 則集群總線端口為16379,故，所有服務器的點需要開通redis的客戶端連接端口和集群總線端口&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">sudo ufw allow &lt;span class="m">6379&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">sudo ufw allow &lt;span class="m">16379&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">sudo ufw allow &lt;span class="m">6380&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">sudo ufw allow &lt;span class="m">16380&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="c1"># 啟動防火牆&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">sudo ufw &lt;span class="nb">enable&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="c1"># 刪除防火牆用&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="c1"># sudo ufw delete allow 6379,6380/tcp&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>重新啟動, 並確認上面的設定有再重開機後有啟用.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo reboot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="install-redis-cluster">Install Redis cluster&lt;/h3>
+&lt;h4 id="方法一-透過套件安裝工具安裝">方法一: 透過套件安裝工具安裝&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 安裝套件&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo apt-get install redis-server redis-tools ruby
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 確認版本&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">redis-server --version
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">Redis server &lt;span class="nv">v&lt;/span>&lt;span class="o">=&lt;/span>3.0.6 &lt;span class="nv">sha&lt;/span>&lt;span class="o">=&lt;/span>00000000:0 &lt;span class="nv">malloc&lt;/span>&lt;span class="o">=&lt;/span>jemalloc-3.6.0 &lt;span class="nv">bits&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="m">64&lt;/span> &lt;span class="nv">build&lt;/span>&lt;span class="o">=&lt;/span>687a2a319020fa42
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">&lt;span class="c1"># 安裝完成後,應該就會看到process再跑&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">sudo ss -ln &lt;span class="p">|&lt;/span> grep &lt;span class="m">6379&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="方法二-下載原始碼編譯">方法二: 下載原始碼編譯&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># install build base&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">sudo apt-get update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">sudo apt-get install build-essential ruby
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">wget http://download.redis.io/releases/redis-4.0.11.tar.gz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">tar xzf redis-4.0.11.tar.gz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> redis-4.0.11
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">sudo make &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> make install
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> utils
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">sudo ./install_server.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="setting-redis-configuration">setting Redis configuration&lt;/h3>
+&lt;p>配置 Redis 服務, 有三台 host, 每台主機上有兩個 Redis 服務, 下面為一台主機的設定：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 先將服務停止&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo systemctl stop redis
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 複製redis的設定檔案&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo cp /etc/redis/redis.conf /etc/redis/redis_6379.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">sudo cp /etc/redis/redis.conf /etc/redis/redis_6380.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">sudo vim /etc/redis/redis_6379.conf /etc/redis/redis_6380.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1"># modified content&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">pidfile /var/run/redis/redi_6379.pid &lt;span class="c1"># 依據master,slave起 redi_6379.pid,redi_6380.pid&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">port &lt;span class="m">6379&lt;/span> &lt;span class="c1"># 依據master,slave起 6379,6380兩個port&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="c1"># bind 0.0.0.0 # 取消綁定網段&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">protected-mode no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">logfile /var/log/redis/redis_6379.log &lt;span class="c1"># redis_6379.log,redis_6380.log&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">dbfilename dump.rdb &lt;span class="c1"># 統一dump.rdb&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">dir /www/redis_6379 &lt;span class="c1"># 變更目錄redis_6379,redis_6380&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">appendonly yes &lt;span class="c1"># 啟用持久化&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">cluster-enabled yes &lt;span class="c1"># 啟用Redis Cluster&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">cluster-config-file nodes.conf &lt;span class="c1"># 指定Redis Cluster Config存放檔案,nodes_6379.conf,nodes_6380.conf&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">cluster-node-timeout &lt;span class="m">5000&lt;/span> &lt;span class="c1"># Cluster Node TimeOut，超過視為Fail Node&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">repl-diskless-sync no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">appendfsync no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">hash-max-ziplist-value &lt;span class="m">1024&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 若有變更目錄記得建立,可以不用複製原目錄 sudo cp -r /var/lib/redis /www/&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">sudo mkdir -p /www/redis_6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">sudo chown -R redis:redis /www/redis_6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">sudo chown redis:redis /etc/redis/redis_6379.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">sudo mkdir -p /www/redis_6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">sudo chown -R redis:redis /www/redis_6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">sudo chown redis:redis /etc/redis/redis_6380.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="c1"># 關閉deamon&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">sudo systemctl stop redis
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">sudo systemctl disable redis
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="c1"># sudo systemctl start redis&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="c1"># 記得起動服務&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">sudo redis-server /etc/redis/redis_6379.conf &lt;span class="c1"># 若systemctl遇到異常,採用systemctl啟動不了,採用此方式啟動&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">sudo redis-server /etc/redis/redis_6380.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>所有 host 都完成上述步驟之後, 在其中一部建立 Redis cluster&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo gem install redis
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo gem install redis -v 3.3.3 &lt;span class="c1"># 指定版本&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">sudo find / -name redis-trib.rb
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="c1"># --replicas 1 表示每個Master帶有一個Slave&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">sudo ./redis-trib.rb create --replicas &lt;span class="m">0&lt;/span> 10.0.0.17:6379 10.0.0.11:6379 10.0.0.16:6379 &lt;span class="c1"># 這是Master,Master,Master的架構&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">sudo ./redis-trib.rb create --replicas &lt;span class="m">1&lt;/span> 10.0.0.5:6379 10.0.0.5:6380 10.0.0.11:6379 10.0.0.11:6380 10.0.0.16:6379 10.0.0.16:6380 &lt;span class="c1"># 這是Master,Slave,Master,Slave,Master,Slave的架構&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="c1"># 若被中斷,遇到ERR Slot 0 is already busy (Redis::CommandError),對所有node執行下面命令&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1"># 127.0.0.1:6379&amp;gt; FLUSHALL&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="c1"># 127.0.0.1:6380&amp;gt; CLUSTER RESET SOFT&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="c1"># 添加節點&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="c1"># ruby ./redis-trib.rb add-node 192.168.3.15:6390 192.168.3.12:6390&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="c1"># 分配槽空間，根據嚮導分配對應的槽給心得節點&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="c1"># ruby ./redis-trib.rb reshard 192.168.3.15:6390&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="c1"># 確認群集狀態&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">redis-cli -c
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">127.0.0.1:6379&amp;gt; CLUSTER NODES
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">a1c717fe107 10.0.0.16:6380 slave fa1685991b3 &lt;span class="m">0&lt;/span> &lt;span class="m">1515476872739&lt;/span> &lt;span class="m">6&lt;/span> connected
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">fa1685991b3 10.0.0.16:6379 master - &lt;span class="m">0&lt;/span> &lt;span class="m">1515476872238&lt;/span> &lt;span class="m">5&lt;/span> connected 10923-16383
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">e356bc7bc46 10.0.0.11:6379 master - &lt;span class="m">0&lt;/span> &lt;span class="m">1515476873241&lt;/span> &lt;span class="m">3&lt;/span> connected 5461-10922
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">e3423dd62fa 10.0.0.17:6379 myself,master - &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">1&lt;/span> connected 0-5460
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">63a93b44330 10.0.0.11:6380 slave e3423dd62fa &lt;span class="m">0&lt;/span> &lt;span class="m">1515476873241&lt;/span> &lt;span class="m">4&lt;/span> connected
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">590885b4164 10.0.0.17:6380 slave e356bc7bc46 &lt;span class="m">0&lt;/span> &lt;span class="m">1515476873742&lt;/span> &lt;span class="m">3&lt;/span> connected
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># automation start redis service at reboot&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo vim /etc/rc.local
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">sudo redis-server /etc/redis/redis_6379.conf &lt;span class="c1"># append content&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">sudo redis-server /etc/redis/redis_6380.conf &lt;span class="c1"># append content&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>執行測試&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">redis-cli -c -p &lt;span class="m">6379&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">127.0.0.1:6379&amp;gt; &lt;span class="nb">set&lt;/span> foo bar
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">OK
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">127.0.0.1:6379&amp;gt; get goo
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">-&amp;gt; Redirected to slot &lt;span class="o">[&lt;/span>6310&lt;span class="o">]&lt;/span> located at 10.0.0.11:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="o">(&lt;/span>nil&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">10.0.0.11:6379&amp;gt; get foo
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">-&amp;gt; Redirected to slot &lt;span class="o">[&lt;/span>12182&lt;span class="o">]&lt;/span> located at 10.0.0.16:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="s2">&amp;#34;bar&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">10.0.0.16:6379&amp;gt; &lt;span class="nb">set&lt;/span> hello world
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">-&amp;gt; Redirected to slot &lt;span class="o">[&lt;/span>866&lt;span class="o">]&lt;/span> located at 10.0.0.17:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">OK
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">10.0.0.17:6379&amp;gt; get hello world
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="o">(&lt;/span>error&lt;span class="o">)&lt;/span> ERR wrong number of arguments &lt;span class="k">for&lt;/span> &lt;span class="s1">&amp;#39;get&amp;#39;&lt;/span> &lt;span class="nb">command&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">10.0.0.17:6379&amp;gt; get hello
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="s2">&amp;#34;world&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">10.0.0.17:6379&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>測試完畢後可以查閱 log 確認有沒有異常, 若看到警告 warning 可以做排除.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">7439:M &lt;span class="m">19&lt;/span> Jun 14:11:51.373 &lt;span class="c1"># WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add &amp;#39;vm.overcommit_memory = 1&amp;#39; to /etc/sysctl.conf and then reboot or run the command &amp;#39;sysctl vm.overcommit_memory=1&amp;#39; for this to take effect.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">sudo &lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;vm.overcommit_memory = 1&amp;#34;&lt;/span> &amp;gt;&amp;gt; /etc/sysctl.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">sudo sysctl vm.overcommit_memory&lt;span class="o">=&lt;/span>&lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;h3 id="一主二從三衛兵">一主二從三衛兵&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo apt-get update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">//北京時區+8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">sudo dpkg-reconfigure tzdata
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo apt-get install redis-server redis-sentinel
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">//安裝完成後,應該就會看到process再跑
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">sudo ss -ln &lt;span class="p">|&lt;/span> grep &lt;span class="m">6379&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Redis cluster reshard slots</title><link>https://chiehting.com/posts/redis-cluster-reshard-slots/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://chiehting.com/posts/redis-cluster-reshard-slots/</guid><description>
+&lt;p>修復 Redis cluster 節點異常過程紀錄.&lt;/p>
+&lt;h3 id="建立新節點">建立新節點&lt;/h3>
+&lt;p>進入 Redis cluster&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">redis-cli -c -h 10.0.0.11 -p &lt;span class="m">6379&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>查看 Redis 資訊&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">sudo find / -name redis-trib.rb
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="c1"># 確認節點狀態,這邊發現節點有異常&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1"># [WARNING] Node 10.0.2.12:6379 has slots in migrating state (5489).&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="c1"># [WARNING] Node 10.0.2.13:6380 has slots in importing state (5489).&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="c1"># [WARNING] The following slots are open: 5489&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">./redis-trib.rb check 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1"># ubuntu @ cache-lottery-staging1 in /usr/share/doc/redis-tools/examples [13:29:42]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">$ ./redis-trib.rb check 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">./redis-trib.rb:1573: warning: key &lt;span class="s2">&amp;#34;threshold&amp;#34;&lt;/span> is duplicated and overwritten on line &lt;span class="m">1573&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Performing Cluster Check &lt;span class="o">(&lt;/span>using node 10.0.2.12:6379&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">M: 752a7943a7a9d1be5e25b73766a2362f89870b87 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">slots:5564-10922 &lt;span class="o">(&lt;/span>&lt;span class="m">5359&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> additional replica&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">S: 6375a4556ac673c41392e08ca48d43d74b37b3c2 10.0.2.11:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">slots: &lt;span class="o">(&lt;/span>&lt;span class="m">0&lt;/span> slots&lt;span class="o">)&lt;/span> slave
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">replicates 92dd7f73bb6b3aba30b527744057308bc869d48f
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">M: 92dd7f73bb6b3aba30b527744057308bc869d48f 10.0.2.12:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">slots:297-5460 &lt;span class="o">(&lt;/span>&lt;span class="m">5164&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> additional replica&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">M: 3729b01a6feb9e7b674458355615c17dc2291a12 10.0.2.13:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">slots:0-296,5461-5563,10923-16383 &lt;span class="o">(&lt;/span>&lt;span class="m">5861&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> additional replica&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">S: ddfe4daca54b3d07ed3bbd5cb751ea2802ecaec2 10.0.2.13:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">slots: &lt;span class="o">(&lt;/span>&lt;span class="m">0&lt;/span> slots&lt;span class="o">)&lt;/span> slave
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">replicates 3729b01a6feb9e7b674458355615c17dc2291a12
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">S: c5433165800a6c0019436891663aa3e9e2da8532 10.0.2.11:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">slots: &lt;span class="o">(&lt;/span>&lt;span class="m">0&lt;/span> slots&lt;span class="o">)&lt;/span> slave
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">replicates 752a7943a7a9d1be5e25b73766a2362f89870b87
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>OK&lt;span class="o">]&lt;/span> All nodes agree about slots configuration.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Check &lt;span class="k">for&lt;/span> open slots...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Check slots coverage...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>OK&lt;span class="o">]&lt;/span> All &lt;span class="m">16384&lt;/span> slots covered.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">&lt;span class="c1"># 修復節點&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl">./redis-trib.rb fix 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl">./redis-trib.rb fix 10.0.2.13:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl">&lt;span class="c1"># delete solts&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">CLUSTER DELSLOTS &lt;span class="m">297&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl">CLUSTER ADDSLOTS &lt;span class="m">297&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl">CLUSTER SETSLOT &lt;span class="m">297&lt;/span> STABLE
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>刪除 slave 節點&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">./redis-trib.rb del-node 10.0.2.11:6379 6375a4556ac673c41392e08ca48d43d74b37b3c2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">./redis-trib.rb del-node 10.0.2.11:6380 c5433165800a6c0019436891663aa3e9e2da8532
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>加入節點&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">./redis-trib.rb add-node 10.0.2.11:6379 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">./redis-trib.rb add-node 10.0.2.11:6380 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="將-master-的-slots-移到其他-master-節點上">將 master 的 slots 移到其他 master 節點上&lt;/h3>
+&lt;p>過程:&lt;/p>
+&lt;p>How many slots do you want to move (from 1 to 16384)? 5331 # 移除多少個hash,10.0.2.12:6380有5331個 全部移走&lt;/p>
+&lt;p>What is the receiving node ID? 3729b01a6feb9e7b674458355615c17dc2291a12 //接收10.0.2.12:6380節點slot的master 我用10.0.2.13:6380来接收&lt;/p>
+&lt;p>Source node #1:92dd7f73bb6b3aba30b527744057308bc869d48f //被删除master的node-id&lt;/p>
+&lt;p>Source node #2:done&lt;/p>
+&lt;p>Do you want to proceed with the proposed reshard plan (yes/no)? yes //取消slot后，reshard&lt;/p>
+&lt;p>執行:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">$ ./redis-trib.rb reshard 10.0.2.12:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">./redis-trib.rb:1573: warning: key &lt;span class="s2">&amp;#34;threshold&amp;#34;&lt;/span> is duplicated and overwritten on line &lt;span class="m">1573&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Performing Cluster Check &lt;span class="o">(&lt;/span>using node 10.0.2.12:6380&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">M: 92dd7f73bb6b3aba30b527744057308bc869d48f 10.0.2.12:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">slots:130-5460 &lt;span class="o">(&lt;/span>&lt;span class="m">5331&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> additional replica&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">M: 752a7943a7a9d1be5e25b73766a2362f89870b87 10.0.2.12:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">slots:5490-10922 &lt;span class="o">(&lt;/span>&lt;span class="m">5433&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> additional replica&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">S: ddfe4daca54b3d07ed3bbd5cb751ea2802ecaec2 10.0.2.13:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">slots: &lt;span class="o">(&lt;/span>&lt;span class="m">0&lt;/span> slots&lt;span class="o">)&lt;/span> slave
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">replicates 3729b01a6feb9e7b674458355615c17dc2291a12
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">S: c5433165800a6c0019436891663aa3e9e2da8532 10.0.2.11:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">slots: &lt;span class="o">(&lt;/span>&lt;span class="m">0&lt;/span> slots&lt;span class="o">)&lt;/span> slave
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">replicates 752a7943a7a9d1be5e25b73766a2362f89870b87
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">S: 6375a4556ac673c41392e08ca48d43d74b37b3c2 10.0.2.11:6379
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">slots: &lt;span class="o">(&lt;/span>&lt;span class="m">0&lt;/span> slots&lt;span class="o">)&lt;/span> slave
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">replicates 92dd7f73bb6b3aba30b527744057308bc869d48f
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">M: 3729b01a6feb9e7b674458355615c17dc2291a12 10.0.2.13:6380
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">slots:0-129,5461-5489,10923-16383 &lt;span class="o">(&lt;/span>&lt;span class="m">5620&lt;/span> slots&lt;span class="o">)&lt;/span> master
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> additional replica&lt;span class="o">(&lt;/span>s&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>OK&lt;span class="o">]&lt;/span> All nodes agree about slots configuration.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Check &lt;span class="k">for&lt;/span> open slots...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&amp;gt;&amp;gt;&amp;gt; Check slots coverage...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>OK&lt;span class="o">]&lt;/span> All &lt;span class="m">16384&lt;/span> slots covered.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">How many slots &lt;span class="k">do&lt;/span> you want to move &lt;span class="o">(&lt;/span>from &lt;span class="m">1&lt;/span> to 16384&lt;span class="o">)&lt;/span>? &lt;span class="m">5331&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">What is the receiving node ID? 3729b01a6feb9e7b674458355615c17dc2291a12
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">Please enter all the &lt;span class="nb">source&lt;/span> node IDs.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">Type &lt;span class="s1">&amp;#39;all&amp;#39;&lt;/span> to use all the nodes as &lt;span class="nb">source&lt;/span> nodes &lt;span class="k">for&lt;/span> the &lt;span class="nb">hash&lt;/span> slots.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">Type &lt;span class="s1">&amp;#39;done&amp;#39;&lt;/span> once you entered all the &lt;span class="nb">source&lt;/span> nodes IDs.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">Source node &lt;span class="c1">#1:92dd7f73bb6b3aba30b527744057308bc869d48f&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">Source node &lt;span class="c1">#2:done&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

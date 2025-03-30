@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>network on Chiehting</title><link>https://chiehting.com/category/network/</link><description>Recent content in network on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 10 May 2024 10:34:42 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/network/index.xml" rel="self" type="application/rss+xml"/><item><title>CURL</title><link>https://chiehting.com/posts/network-curl-test-the-request-time/</link><pubDate>Fri, 10 May 2024 10:34:42 +0800</pubDate><guid>https://chiehting.com/posts/network-curl-test-the-request-time/</guid><description>
+&lt;p>使用 CURL 工具從客戶端測試請求速，觀察多個指標評估網路效率問題。&lt;/p>
+&lt;h3 id="請求時間">請求時間&lt;/h3>
+&lt;p>建立檔案 curl-format.txt 內容如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">time_namelookup: %{time_namelookup}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">time_connect: %{time_connect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_appconnect: %{time_appconnect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_pretransfer: %{time_pretransfer}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_redirect: %{time_redirect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_starttransfer: %{time_starttransfer}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">----------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">time_total: %{time_total}\n
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
+&lt;li>time_namelookup（DNS 解析時間）：從發起請求到 DNS 解析完成的時間，單位是秒。&lt;/li>
+&lt;li>time_connect（連接建立時間）：從發起連接請求到建立 TCP 連接完成的時間，單位是秒。&lt;/li>
+&lt;li>time_appconnect（應用層連接時間）：從發起連接請求到 SSL/TLS 握手完成的時間，單位是秒。如果沒有使用 SSL/TLS，這個時間通常為 0。&lt;/li>
+&lt;li>time_pretransfer（預傳輸時間）：從發起請求到開始傳輸數據之前的時間，包括 DNS 解析、連接建立、SSL/TLS 握手等時間，單位是秒。&lt;/li>
+&lt;li>time_redirect（重定向時間）：如果請求中發生了重定向，從開始重定向到最後一個重定向完成的時間，單位是秒。&lt;/li>
+&lt;li>time_starttransfer（開始傳輸時間）：從發起請求到接收到第一個字節的時間，單位是秒。這表示請求開始接收響應的時間。&lt;/li>
+&lt;li>time_total（總時間）：從發起請求到接收完整響應的總時間，包括所有的階段，單位是秒。&lt;/li>
+&lt;/ol>
+&lt;p>透過命令查詢請求時間&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 輸出 format 時間&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ curl -w &lt;span class="s2">&amp;#34;@curl-format.txt&amp;#34;&lt;/span> -o /dev/null -s https://www.bitdegree.org/courses/course/kubernetes-docker-tutorial
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_namelookup: 0.002607
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_connect: 0.154302
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_appconnect: 0.315024
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_pretransfer: 0.315320
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">time_starttransfer: 2.718007
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">----------time_total: 3.364941
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 直接輸出總時間&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ curl -o /dev/null -s -w &lt;span class="s2">&amp;#34;Total time: %{time_total}\n&amp;#34;&lt;/span> https://www.bitdegree.org/courses/course/kubernetes-docker-tutorial
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Total time: 2.906125
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

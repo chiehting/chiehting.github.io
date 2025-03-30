@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>testing on Chiehting</title><link>https://chiehting.com/category/testing/</link><description>Recent content in testing on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 09 May 2024 18:22:16 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/testing/index.xml" rel="self" type="application/rss+xml"/><item><title>iPerf</title><link>https://chiehting.com/posts/iperf-internet-performance-testing/</link><pubDate>Thu, 09 May 2024 18:22:16 +0800</pubDate><guid>https://chiehting.com/posts/iperf-internet-performance-testing/</guid><description>
+&lt;p>如何使用 iPerf 工具測試 client/server 的網路頻寬。&lt;/p>
+&lt;h3 id="iperf-command">iPerf command&lt;/h3>
+&lt;p>&lt;a href="https://github.com/esnet/iperf/issues">Github&lt;/a> 原始碼。&lt;/p>
+&lt;p>iPerf 是一個網絡性能測試工具，用於測量網絡帶寬、延遲和數據包丟失率等性能指標。它可以在兩個網絡節點之間進行通信，是 Client/Server 的架構，可測量數據在網絡上的傳輸速率和延遲等性能參數。&lt;/p>
+&lt;h4 id="server">Server&lt;/h4>
+&lt;p>有公開的服務提供 &lt;a href="https://iperf.fr/iperf-servers.php">iperf public server&lt;/a> 使用。&lt;/p>
+&lt;p>可以運行下面命令啟動 Server，預測 port 為 5210，可以透過 &lt;code>-p&lt;/code> 做調整。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">➜ iperf3 -s
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">-----------------------------------------------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Server listening on &lt;span class="m">5201&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="nb">test&lt;/span> &lt;span class="c1">#1)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">-----------------------------------------------------------
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="client">Client&lt;/h4>
+&lt;p>下面命令的含義是使用 iperf3 工具連接到 google.com 主機的指定埠號 5201，進行網絡帶寬測試，測試持續時間為 30 秒。iperf3 將在測試期間測量網絡連接的帶寬、延遲等性能指標，並在測試完成後顯示結果。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iperf3 -t &lt;span class="m">30&lt;/span> -c 127.0.0.1 -p &lt;span class="m">5201&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
+&lt;p>-t 30：表示指定測試的持續時間為 30 秒。這個選項告訴 iperf3 在連接建立后持續運行 30 秒，進行網絡帶寬測試。&lt;/p>
+&lt;p>-c google.com：表示指定測試的目標主機為 127.0.0.1。這個選項告訴 iperf3 在測試時連接到 google.com 主機，進行網絡帶寬測試。&lt;/p>
+&lt;p>-p 5201：表示指定測試的端口號為 5201。這個選項告訴 iperf3 在進行測試時使用指定的端口號。&lt;/p>
+&lt;/blockquote>
+&lt;p>在 iperf3 的輸出中，包括欄位&lt;code>[ ID]&lt;/code>、&lt;code>Interval&lt;/code>、&lt;code>Transfer&lt;/code>、&lt;code>Bitrate&lt;/code>、&lt;code>Retr&lt;/code>、`Cwnd，每個字段的含義如下：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>ID：標識每個連接的唯一編號。當進行多個併發連接測試時，每個連接都會分配一個唯一的 ID。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Interval：顯示測試間隔的時間。默認情況下，iperf3 將在每個間隔內顯示一次性能統計信息。間隔時間可以通過 -i 選項進行設置，默認為 1 秒。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Transfer：顯示在測試期間傳輸的數據量。單位為字節（Bytes）。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Bitrate：顯示在測試期間的平均 bit 率，即數據傳輸速率。單位為bits/每秒（bits per second，bps）或者兆比特每秒（Mbps）。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Retr：顯示在測試期間發生的重傳次數。重傳次數表示在數據傳輸過程中發生丟包或錯誤，需要重新發送的次數。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Cwnd：顯示在測試期間的擁塞窗口大小（Congestion Window）。擁塞窗口是 TCP 協議中的一個概念，用於控制數據流量的發送速率。它表示在任意時間點內，發送方允許在網絡上的未確認數據量的最大值。單位可以是字節（Bytes）或者數據包個數，具體取決於 iperf3 輸出的格式和設置。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>這些字段提供了關於每個連接的性能統計信息，包括數據傳輸量、傳輸速率、重傳次數和擁塞窗口大小等。通過分析這些信息，可以評估網絡連接的質量和性能表現。&lt;/p></description></item><item><title>Apache Jmeter</title><link>https://chiehting.com/posts/testing-apache-jmeter/</link><pubDate>Thu, 16 Nov 2023 10:30:51 +0800</pubDate><guid>https://chiehting.com/posts/testing-apache-jmeter/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 紀錄 Apache Jmeter 的使用筆記。&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>理解 Apache Jmeter 壓工具，研究其中的的元件&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 Java([[moc-java]]) 編譯好的應用程式。&lt;/p>
+&lt;h4 id="install">Install&lt;/h4>
+&lt;p>當前版本為 Jmeter 5.6.2 的版本，下面操作皆是以這個版本為基礎。&lt;/p>
+&lt;h5 id="required">Required&lt;/h5>
+&lt;ol>
+&lt;li>由於是 Java 編譯，所以需要先配置好 Jar([[moc-java#Jar]]) 環境。&lt;/li>
+&lt;/ol>
+&lt;h5 id="download-jmeter">Download Jmeter&lt;/h5>
+&lt;p>配置好環境後下載即可使用，下面為下載命令。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nb">cd&lt;/span> /opt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">tar zxf apache-jmeter-5.6.2.tgz
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="how-to-use">How to use&lt;/h4>
+&lt;h5 id="編寫腳本">編寫腳本&lt;/h5>
+&lt;p>Jmeter 有 IDE 可以使用，開啟 &lt;code>./bin/ApacheJMeter.jar&lt;/code> 就可以看到介面，可以透過 IDE 配置壓測流程。
+官方也有提供一些範例在 &lt;code>./bin/examples&lt;/code> 底下，以及樣板 &lt;code>./bin/templates&lt;/code>，可以參考。&lt;/p>
+&lt;p>&lt;em>Thread Group&lt;/em> 中有個配置 &lt;em>Ramp-up period&lt;/em>，這欄位的目的在於在 N 秒內執行指定的 thread number。
+設定的話 thread 會線性執行，由於線性起初的壓力不會過大，產出的報表也相對好看；如果沒設定的話 thread 會在同一時間放行，在壓測的開始會對服務造成滿大的壓力，適合搶票的情境。&lt;/p>
+&lt;p>&lt;em>JSR223 Sampler&lt;/em> 是滿好用的元件之一，可以使用多種語言（groovy、javascript, etc...）來編輯。&lt;/p>
+&lt;p>&lt;em>If Controller&lt;/em> 可以做流程的判別式，要注意選項 &lt;em>Interpret Condition as Variable Expression?&lt;/em>，用來解義變數的擴展語言。使用 true or false 的變數內容的話，建議是開啟。&lt;/p>
+&lt;h5 id="壓測機器">壓測機器&lt;/h5>
+&lt;p>提升 Ubuntu server 22.04 的主機效能，設定配置。&lt;/p>
+&lt;p>增加 ulimit 的配置，使主機能使用的 &lt;em>open file&lt;/em>、&lt;em>process&lt;/em> 都加大。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">vim /etc/pam.d/common-session
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">session required pam_limits.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">vim /etc/security/limits.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">* soft nproc &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">* hard nproc &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">* soft nofile &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">* hard nofile &lt;span class="m">64000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">root soft nofile &lt;span class="m">64000&lt;/span> &lt;span class="c1"># option&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">root hard nofile &lt;span class="m">64000&lt;/span> &lt;span class="c1"># option&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>調整 kernel 的配置。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">vim /etc/sysctl.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">net.ipv4.ip_local_port_range&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;15000 61000&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">net.ipv4.tcp_fin_timeout&lt;span class="o">=&lt;/span>&lt;span class="m">30&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">net.ipv4.tcp_tw_recycle&lt;span class="o">=&lt;/span>&lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">net.ipv4.tcp_tw_reuse&lt;span class="o">=&lt;/span>&lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 添加或修改以下参数，提高 TCP 缓冲区大小&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">net.core.rmem_max &lt;span class="o">=&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">net.core.wmem_max &lt;span class="o">=&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">net.ipv4.tcp_rmem &lt;span class="o">=&lt;/span> &lt;span class="m">4096&lt;/span> &lt;span class="m">87380&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">net.ipv4.tcp_wmem &lt;span class="o">=&lt;/span> &lt;span class="m">4096&lt;/span> &lt;span class="m">87380&lt;/span> &lt;span class="m">16777216&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="c1"># 可開啟檔案數量&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">fs.file-max &lt;span class="o">=&lt;/span> &lt;span class="m">100000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">vm.swappiness&lt;span class="o">=&lt;/span>&lt;span class="m">10&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>調整 &lt;em>transparent huge page&lt;/em> 策略。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">vim /etc/default/grub
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">GRUB_CMDLINE_LINUX&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;transparent_hugepage=never&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="壓力測試">壓力測試&lt;/h5>
+&lt;p>可以直接使用 IDE 或 Command 來執行壓測，下面為使用 Command 的方式做執行。&lt;/p>
+&lt;p>腳本編寫完成後保存成 jmx 檔案，jmeter 會使用腳本去執行壓測流程。壓測完成後會產生 jtl 檔案為壓測結果，dashboard 為 htlm 的報告書。&lt;/p>
+&lt;p>其中有配置 &lt;em>JVM_ARGS&lt;/em> 參數，開大 &lt;em>-Xms&lt;/em>、&lt;em>-Xmx&lt;/em> 為記憶體可使用量。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nv">JVM_ARGS&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;-Dnashorn.args=--no-deprecation-warning -Xms15g -Xmx15g&amp;#34;&lt;/span> apache-jmeter-5.6.2/bin/jmeter -n -t jmeter.jmx -l jmeter-result.jtl -e -o dashboard
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

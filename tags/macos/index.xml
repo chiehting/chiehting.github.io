@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>macos on Chiehting</title><link>https://chiehting.com/tags/macos/</link><description>Recent content in macos on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 10 Aug 2023 17:51:21 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/macos/index.xml" rel="self" type="application/rss+xml"/><item><title>MacOS permissions for microphone and camera</title><link>https://chiehting.com/posts/macos-apps-dont-show-in-camera-and-microphone-privacy-security/</link><pubDate>Thu, 10 Aug 2023 17:51:21 +0800</pubDate><guid>https://chiehting.com/posts/macos-apps-dont-show-in-camera-and-microphone-privacy-security/</guid><description>
+&lt;h1 id="macos-相機和麥克風權限設定問題與解決方案">macOS 相機和麥克風權限設定問題與解決方案&lt;/h1>
+&lt;h2 id="references">References&lt;/h2>
+&lt;p>&lt;a href="https://apple.stackexchange.com/questions/459474/macos-ventura-13-3-apps-dont-show-in-camera-and-microphone-privacy-security-s">MacOS Ventura 13.3 apps don't show in Camera and Microphone Privacy &amp;amp; Security settings&lt;/a>&lt;/p>
+&lt;h2 id="問題背景">問題背景&lt;/h2>
+&lt;ul>
+&lt;li>&lt;strong>系統版本&lt;/strong>：MacOS Ventura 13.3&lt;/li>
+&lt;li>&lt;strong>問題描述&lt;/strong>：應用程式無法在「系統設定 &amp;gt; 隱私權與安全性 &amp;gt; 麥克風和相機」中顯示&lt;/li>
+&lt;li>&lt;strong>常見場景&lt;/strong>：使用 OpenCore Patcher 升級的舊 Mac 設備&lt;/li>
+&lt;li>&lt;strong>根本原因&lt;/strong>：與 SIP（系統完整性保護）被關閉有關，特別是在使用 OpenCore 時必須關閉 SIP 的情況&lt;/li>
+&lt;/ul>
+&lt;h2 id="解決方案使用-tcc-資料庫">解決方案：使用 TCC 資料庫&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 備份 TCC 資料庫&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">cp ~/Library/Application&lt;span class="se">\ &lt;/span>Support/com.apple.TCC/TCC.db ~/TCC.db.bak
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 1. 開啟 TCC 資料庫&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">sudo sqlite3 ~/Library/Application&lt;span class="se">\ &lt;/span>Support/com.apple.TCC/TCC.db
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 2. 插入權限設定&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">INSERT into access &lt;span class="o">(&lt;/span>service, client, client_type, auth_value, auth_reason, auth_version&lt;span class="o">)&lt;/span> VALUES &lt;span class="o">(&lt;/span>&lt;span class="s1">&amp;#39;kTCCServiceCamera&amp;#39;&lt;/span>,&lt;span class="s1">&amp;#39;com.google.Chrome&amp;#39;&lt;/span>,0,2,0,1&lt;span class="o">)&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">INSERT into access &lt;span class="o">(&lt;/span>service, client, client_type, auth_value, auth_reason, auth_version&lt;span class="o">)&lt;/span> VALUES &lt;span class="o">(&lt;/span>&lt;span class="s1">&amp;#39;kTCCServiceMicrophone&amp;#39;&lt;/span>,&lt;span class="s1">&amp;#39;com.google.Chrome&amp;#39;&lt;/span>,0,2,0,1&lt;span class="o">)&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="c1"># 3. 退出資料庫&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">.quit
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>注意：將 &lt;code>&amp;lt;AppBundleURLname&amp;gt;&lt;/code> 替換為實際的應用程式 Bundle ID&lt;/p>
+&lt;h2 id="獲取應用程式識別碼-appbundleurlname">獲取應用程式識別碼 AppBundleURLname&lt;/h2>
+&lt;ol>
+&lt;li>獲取應用程式識別碼 identifier：&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">codesign -dr - /Applications/應用程式.app
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="macos-sonoma-特別說明">macOS Sonoma 特別說明&lt;/h2>
+&lt;h3 id="準備工作">準備工作&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 備份 TCC 資料庫&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">cp ~/Library/Application&lt;span class="se">\ &lt;/span>Support/com.apple.TCC/TCC.db ~/TCC.db.bak
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="重要提醒">重要提醒&lt;/h2>
+&lt;ul>
+&lt;li>在進行任何修改前，務必先備份 TCC.db 檔案&lt;/li>
+&lt;li>確保正確獲取應用程式的 Bundle ID&lt;/li>
+&lt;li>修改完成後可能需要重新啟動應用程式或系統&lt;/li>
+&lt;/ul></description></item><item><title>Script management with launchd in Terminal on Mac</title><link>https://chiehting.com/posts/macos-script-management-with-launchd/</link><pubDate>Thu, 12 Nov 2020 17:45:00 +0800</pubDate><guid>https://chiehting.com/posts/macos-script-management-with-launchd/</guid><description>
+&lt;p>在 macOS 上使用 launchd 來管理服務與進程. 使用者不會直接與 launchd 做互動, 是透過 launchctl 指令來載入或取消載入 launchd 服務程式和代理程式.&lt;/p>
+&lt;h2 id="references">References&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://support.apple.com/guide/terminal/script-management-with-launchd-apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac">在Mac 上的「終端機」中使用launchd 管理腳本&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/Introduction.html#//apple_ref/doc/uid/10000172i-SW1-SW1">about daemons and services
+&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://support.apple.com/zh-tw/guide/terminal/apdc6c1077b-5d5d-4d35-9c19-60f2397b2369/mac">launchd&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://support.apple.com/zh-hk/guide/terminal/apda49a1bb2-577e-4721-8f25-ffc0836f6997/mac">plist&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="launchd">launchd&lt;/h2>
+&lt;p>使用 launchdctl 指令來管理守護程式。&lt;/p>
+&lt;p>例如:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 查看資源限制&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">$ launchctl limit
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 列出服務清單&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">$ launchctl list
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># 列出服務說明&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">$ launchctl print system/com.apple.timed
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="plists-property-list">plists (property list)&lt;/h3>
+&lt;p>plist 檔案是用來定義服務的屬性檔案, 可分系統服務與第三方服務, 而 plist 檔案會放置在下面路徑.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>檔案夾&lt;/th>
+&lt;th>使用情況&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>/System/Library/LaunchDaemons&lt;/td>
+&lt;td>Apple 提供的系統服務程式&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/System/Library/LaunchAgents&lt;/td>
+&lt;td>Apple 提供的代理程式，適用於以使用者為基礎的所有使用者&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/Library/LaunchDaemons&lt;/td>
+&lt;td>第三方系統服務程式&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>/Library/LaunchAgents&lt;/td>
+&lt;td>第三方代理程式，適用於以使用者為基礎的所有使用者&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>~/Library/LaunchAgents&lt;/td>
+&lt;td>第三方代理程式，僅適用於已登入的使用者&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>如下指令,查看 dock 服務的 plist 檔案內容. 可以看到是 DTD (Document Type Definition) 格式.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 查看 plist&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">cat /System/Library/LaunchAgents/com.apple.Dock.plist
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &amp;lt;key&amp;gt;Program&amp;lt;/key&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &amp;lt;string&amp;gt;/System/Library/CoreServices/Dock.app/Contents/MacOS/Dock&amp;lt;/string&amp;gt;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">...
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>設定 macOS 的 open files 上限</title><link>https://chiehting.com/posts/macos-open-files-limit/</link><pubDate>Mon, 27 Apr 2020 12:21:00 +0800</pubDate><guid>https://chiehting.com/posts/macos-open-files-limit/</guid><description>
+&lt;p>今天在做壓力測試,使用 command line 做 websocket client connection.
+大約到250左右的連線數後回應錯誤 too many open files, 盤查後發現 macOS 預設的配置不敷使用, 需要加大 maxfiles 的限制.&lt;/p>
+&lt;h3 id="環境">環境&lt;/h3>
+&lt;p>macOS Catalina 10.15.4&lt;/p>
+&lt;h3 id="查看">查看&lt;/h3>
+&lt;p>可以看到被 LaunchDaemons([[macos-script-management-with-launchd]]) 給限制住了 maxfiles&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:30:01 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">➜ sysctl kern.maxfiles
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">kern.maxfiles: &lt;span class="m">200000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:30:08 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">➜ sysctl kern.maxfilesperproc
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">kern.maxfilesperproc: &lt;span class="m">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:30:24 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">➜ launchctl limit maxfiles
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">maxfiles &lt;span class="m">256&lt;/span> unlimited
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:31:06 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">➜ &lt;span class="nb">ulimit&lt;/span> -n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="m">65536&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="解決方法">解決方法&lt;/h3>
+&lt;h4 id="新增文件">新增文件&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:35:49 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ sudo vim /Library/LaunchDaemons/limit.maxfiles.plist
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="cp">&amp;lt;?xml version=&amp;#34;1.0&amp;#34; encoding=&amp;#34;UTF-8&amp;#34;?&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="cp">&amp;lt;!DOCTYPE plist PUBLIC &amp;#34;-//Apple//DTD PLIST 1.0//EN&amp;#34; &amp;#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&amp;#34;&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;plist&lt;/span> &lt;span class="na">version=&lt;/span>&lt;span class="s">&amp;#34;1.0&amp;#34;&lt;/span>&lt;span class="nt">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;dict&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>Label&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>limit.maxfiles&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>ProgramArguments&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;array&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>launchctl&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>limit&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>maxfiles&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>64000&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;string&amp;gt;&lt;/span>200000&lt;span class="nt">&amp;lt;/string&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;/array&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>RunAtLoad&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;true/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;key&amp;gt;&lt;/span>ServiceIPC&lt;span class="nt">&amp;lt;/key&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;false/&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;/dict&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;/plist&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="修改權限">修改權限&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:36:34 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ sudo chown root:wheel /Library/LaunchDaemons/limit.maxfiles.plist
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 12:36:44 &lt;span class="o">]&lt;/span> ./
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">➜ sudo chmod &lt;span class="m">644&lt;/span> /Library/LaunchDaemons/limit.maxfiles.plist
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="重啟系統">重啟系統&lt;/h4>
+&lt;p>重啟完成後再次執行程序,問題排除&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo reboot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
