@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>network on Chiehting</title><link>https://chiehting.com/tags/network/</link><description>Recent content in network on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Fri, 10 May 2024 10:34:42 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/network/index.xml" rel="self" type="application/rss+xml"/><item><title>CURL</title><link>https://chiehting.com/posts/network-curl-test-the-request-time/</link><pubDate>Fri, 10 May 2024 10:34:42 +0800</pubDate><guid>https://chiehting.com/posts/network-curl-test-the-request-time/</guid><description>
+&lt;p>使用 CURL 工具從客戶端測試請求速，觀察多個指標評估網路效率問題。&lt;/p>
+&lt;h3 id="請求時間">請求時間&lt;/h3>
+&lt;p>建立檔案 curl-format.txt 內容如下：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">time_namelookup: %{time_namelookup}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">time_connect: %{time_connect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_appconnect: %{time_appconnect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_pretransfer: %{time_pretransfer}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_redirect: %{time_redirect}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_starttransfer: %{time_starttransfer}\n
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">----------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">time_total: %{time_total}\n
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
+&lt;li>time_namelookup（DNS 解析時間）：從發起請求到 DNS 解析完成的時間，單位是秒。&lt;/li>
+&lt;li>time_connect（連接建立時間）：從發起連接請求到建立 TCP 連接完成的時間，單位是秒。&lt;/li>
+&lt;li>time_appconnect（應用層連接時間）：從發起連接請求到 SSL/TLS 握手完成的時間，單位是秒。如果沒有使用 SSL/TLS，這個時間通常為 0。&lt;/li>
+&lt;li>time_pretransfer（預傳輸時間）：從發起請求到開始傳輸數據之前的時間，包括 DNS 解析、連接建立、SSL/TLS 握手等時間，單位是秒。&lt;/li>
+&lt;li>time_redirect（重定向時間）：如果請求中發生了重定向，從開始重定向到最後一個重定向完成的時間，單位是秒。&lt;/li>
+&lt;li>time_starttransfer（開始傳輸時間）：從發起請求到接收到第一個字節的時間，單位是秒。這表示請求開始接收響應的時間。&lt;/li>
+&lt;li>time_total（總時間）：從發起請求到接收完整響應的總時間，包括所有的階段，單位是秒。&lt;/li>
+&lt;/ol>
+&lt;p>透過命令查詢請求時間&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 輸出 format 時間&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ curl -w &lt;span class="s2">&amp;#34;@curl-format.txt&amp;#34;&lt;/span> -o /dev/null -s https://www.bitdegree.org/courses/course/kubernetes-docker-tutorial
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_namelookup: 0.002607
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_connect: 0.154302
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_appconnect: 0.315024
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_pretransfer: 0.315320
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">time_starttransfer: 2.718007
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">----------time_total: 3.364941
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 直接輸出總時間&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">➜ curl -o /dev/null -s -w &lt;span class="s2">&amp;#34;Total time: %{time_total}\n&amp;#34;&lt;/span> https://www.bitdegree.org/courses/course/kubernetes-docker-tutorial
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Total time: 2.906125
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>使用 iPerf 測試網路頻寬</title><link>https://chiehting.com/posts/iperf-internet-performance-testing/</link><pubDate>Thu, 09 May 2024 18:22:16 +0800</pubDate><guid>https://chiehting.com/posts/iperf-internet-performance-testing/</guid><description>
+&lt;p>如何使用 iPerf 工具測試 client/server 的網路頻寬。&lt;/p>
+&lt;h3 id="iperf-command">iPerf command&lt;/h3>
+&lt;p>&lt;a href="https://github.com/esnet/iperf/issues">Github&lt;/a> 原始碼。&lt;/p>
+&lt;p>iPerf 是一個網絡性能測試工具，用於測量網絡帶寬、延遲和數據包丟失率等性能指標。它可以在兩個網絡節點之間進行通信，是 Client/Server 的架構，可測量數據在網絡上的傳輸速率和延遲等性能參數。&lt;/p>
+&lt;h4 id="server">Server&lt;/h4>
+&lt;p>有公開的服務提供 &lt;a href="https://iperf.fr/iperf-servers.php">iperf public server&lt;/a> 使用。&lt;/p>
+&lt;p>可以運行下面命令啟動 Server，預測 port 為 5210，可以透過 &lt;code>-p&lt;/code> 做調整。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">➜ iperf3 -s
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">-----------------------------------------------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Server listening on &lt;span class="m">5201&lt;/span> &lt;span class="o">(&lt;/span>&lt;span class="nb">test&lt;/span> &lt;span class="c1">#1)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">-----------------------------------------------------------
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="client">Client&lt;/h4>
+&lt;p>下面命令的含義是使用 iperf3 工具連接到 google.com 主機的指定埠號 5201，進行網絡帶寬測試，測試持續時間為 30 秒。iperf3 將在測試期間測量網絡連接的帶寬、延遲等性能指標，並在測試完成後顯示結果。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iperf3 -t &lt;span class="m">30&lt;/span> -c 127.0.0.1 -p &lt;span class="m">5201&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;blockquote>
+&lt;p>-t 30：表示指定測試的持續時間為 30 秒。這個選項告訴 iperf3 在連接建立后持續運行 30 秒，進行網絡帶寬測試。&lt;/p>
+&lt;p>-c google.com：表示指定測試的目標主機為 127.0.0.1。這個選項告訴 iperf3 在測試時連接到 google.com 主機，進行網絡帶寬測試。&lt;/p>
+&lt;p>-p 5201：表示指定測試的端口號為 5201。這個選項告訴 iperf3 在進行測試時使用指定的端口號。&lt;/p>
+&lt;/blockquote>
+&lt;p>在 iperf3 的輸出中，包括欄位&lt;code>[ ID]&lt;/code>、&lt;code>Interval&lt;/code>、&lt;code>Transfer&lt;/code>、&lt;code>Bitrate&lt;/code>、&lt;code>Retr&lt;/code>、`Cwnd，每個字段的含義如下：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>ID：標識每個連接的唯一編號。當進行多個併發連接測試時，每個連接都會分配一個唯一的 ID。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Interval：顯示測試間隔的時間。默認情況下，iperf3 將在每個間隔內顯示一次性能統計信息。間隔時間可以通過 -i 選項進行設置，默認為 1 秒。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Transfer：顯示在測試期間傳輸的數據量。單位為字節（Bytes）。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Bitrate：顯示在測試期間的平均 bit 率，即數據傳輸速率。單位為bits/每秒（bits per second，bps）或者兆比特每秒（Mbps）。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Retr：顯示在測試期間發生的重傳次數。重傳次數表示在數據傳輸過程中發生丟包或錯誤，需要重新發送的次數。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Cwnd：顯示在測試期間的擁塞窗口大小（Congestion Window）。擁塞窗口是 TCP 協議中的一個概念，用於控制數據流量的發送速率。它表示在任意時間點內，發送方允許在網絡上的未確認數據量的最大值。單位可以是字節（Bytes）或者數據包個數，具體取決於 iperf3 輸出的格式和設置。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>這些字段提供了關於每個連接的性能統計信息，包括數據傳輸量、傳輸速率、重傳次數和擁塞窗口大小等。通過分析這些信息，可以評估網絡連接的質量和性能表現。&lt;/p></description></item><item><title>Linux kernel 的網路參數 rp_filter</title><link>https://chiehting.com/posts/linux-kernel-rp-filter/</link><pubDate>Thu, 24 Jun 2021 14:39:00 +0800</pubDate><guid>https://chiehting.com/posts/linux-kernel-rp-filter/</guid><description>
+&lt;p>這篇來記錄有關 Linux kernel 的 network 參數。&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;p>&lt;a href="https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt">ip-sysctl&lt;/a>&lt;/p>
+&lt;h3 id="rp_filter">rp_filter&lt;/h3>
+&lt;p>為逆向路徑過濾 (Reverse Path Filtering)，其作用為為過濾反向不通的封包，將其丟棄。
+而原理為由 NIC1 (network interface card) 進來的封包，reverse path filtering 模塊會將其封包的源地址（source ip）與目標地址（destination ip）做對調，然後再路由表中查找，如果出去的介面是 NIC1 則通過；反之不是 NIC1 則丟棄該封包。&lt;/p>
+&lt;h4 id="功能概述">功能概述&lt;/h4>
+&lt;p>&lt;code>rp_filter&lt;/code> 的主要作用是檢查接收到的資料包的來源位址是否是通過正確的網路介面到達的。如果資料包的來源位址與路由表中的反向路徑不匹配，&lt;code>rp_filter&lt;/code> 就會丟棄該資料包，從而防止偽造的 IP 資料包進入系統。&lt;/p>
+&lt;h3 id="工作原理">工作原理&lt;/h3>
+&lt;ol>
+&lt;li>當系統接收到一個資料包時，&lt;code>rp_filter&lt;/code> 會檢查該資料包的來源位址。&lt;/li>
+&lt;li>它根據路由表計算，若系統要將一個資料包發送到該來源位址，會使用哪個網路介面。&lt;/li>
+&lt;li>如果接收到的資料包實際上是通過另一個介面到達的，而不是路由表中計算出的介面，&lt;code>rp_filter&lt;/code> 會認為這個資料包是偽造的，並將其丟棄。&lt;/li>
+&lt;/ol>
+&lt;p>可以從 &lt;a href="https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt">ip-sysctl&lt;/a> 文件中找到參數的用法。其中該參數為整數型，其值包括了 0：不做來源驗證；1：嚴謹認證模式；2：寬鬆認證模式。&lt;/p>
+&lt;pre>&lt;code>rp_filter - INTEGER
+0 - No source validation.
+1 - Strict mode as defined in RFC3704 Strict Reverse Path
+Each incoming packet is tested against the FIB and if the interface
+is not the best reverse path the packet check will fail.
+By default failed packets are discarded.
+2 - Loose mode as defined in RFC3704 Loose Reverse Path
+Each incoming packet's source address is also tested against the FIB
+and if the source address is not reachable via any interface
+the packet check will fail.
+Current recommended practice in RFC3704 is to enable strict mode
+to prevent IP spoofing from DDos attacks. If using asymmetric routing
+or other complicated routing, then loose mode is recommended.
+The max value from conf/{all,interface}/rp_filter is used
+when doing source validation on the {interface}.
+Default value is 0. Note that some distributions enable it
+in startup scripts.
+&lt;/code>&lt;/pre>
+&lt;h4 id="source-code">Source code&lt;/h4>
+&lt;p>可以上網找到原始碼 &lt;a href="https://elixir.bootlin.com/linux/latest/source/net/ipv4/fib_frontend.c#L419">fib_frontend.c&lt;/a>，這邊來看一下實作方法。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="cm">/* Ignore rp_filter for packets protected by IPsec. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="kt">int&lt;/span> &lt;span class="nf">fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 是否啟用反向封包過濾功能，這邊注意如果封包受 IPSec 保護則忽略反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">r&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">secpath_exists&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">IN_DEV_RPFILTER&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">fib_num_tclassid_users&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_TX_REDIRECTS&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 本地源的封包不執行反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">ok&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* with custom local routes in place, checking local addresses
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="cm"> * only will be too optimistic, with custom rules, checking
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="cm"> * local addresses only can be too strict, e.g. due to vrf
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ipv4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fib_has_custom_local_routes&lt;/span> &lt;span class="o">||&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fib4_has_custom_rules&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">full_check&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">inet_lookup_ifaddr_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="nl">ok&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="nl">full_check&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">r&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">itag&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">static&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="nf">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">rpf&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flow_keys&lt;/span> &lt;span class="n">flkeys&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">no_addr&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">fib_result&lt;/span> &lt;span class="n">res&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flowi4&lt;/span> &lt;span class="n">fl4&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="kt">bool&lt;/span> &lt;span class="n">dev_match&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">l3mdev_master_ifindex_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">LOOPBACK_IFINDEX&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 可以看到這邊做反轉了 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">daddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">saddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tos&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_scope&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">RT_SCOPE_UNIVERSE&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tun_key&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">tun_id&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_flags&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_uid&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">sock_net_uid&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_multipath_hash&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="n">no_addr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifa_list&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_mark&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">IN_DEV_SRC_VMARK&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="nl">mark&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fib4_rules_early_flow_dissect&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">flkeys&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_proto&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_sport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_dport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_inval&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl"> &lt;span class="n">fib_combine_itag&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">fib_info_nh_uses_dev&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fi&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* This is not common, loopback packets retain skb_dst so normally they
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl">&lt;span class="cm"> * would not even hit this slow path.
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl"> &lt;span class="n">dev&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">loopback_dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">48&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">dev_match&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">49&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">50&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">51&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">52&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">no_addr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">53&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">54&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">55&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">56&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">57&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">58&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">59&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">FIB_LOOKUP_IGNORE_LINKSTATE&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">60&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">61&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">62&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">63&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">64&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">65&lt;/span>&lt;span class="cl">&lt;span class="nl">last_resort&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">66&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">67&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">68&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">69&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">70&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">71&lt;/span>&lt;span class="cl">&lt;span class="nl">e_inval&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">72&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">73&lt;/span>&lt;span class="cl">&lt;span class="nl">e_rpf&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">74&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EXDEV&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">75&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>參數：&lt;/p>
+&lt;ul>
+&lt;li>struct sk_buff - socket buffer&lt;/li>
+&lt;li>__be32 src - source&lt;/li>
+&lt;li>__be32 dst - destination&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/netdevice.h#L1853">struct net_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/inetdevice.h#L25">struct in_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>saddr - start address&lt;/li>
+&lt;li>daddr - destination address&lt;/li>
+&lt;/ul>
+&lt;p>科普：&lt;/p>
+&lt;ul>
+&lt;li>__bet32 - le 與 be 分別表示 little endian 和 big endian&lt;/li>
+&lt;li>u8、u32 - 表示無符號 char 字符類型&lt;/li>
+&lt;/ul>
+&lt;h4 id="作用">作用&lt;/h4>
+&lt;p>當前RFC3704文檔建議使用嚴謹認證模式。如果網路是非對稱網路或複雜的網路 rp_filter 建議配置為 2，做寬鬆認證。
+而 rp_filter 配置作用通常為下列：&lt;/p>
+&lt;ol>
+&lt;li>減少 DDoS 攻擊，注意是減少不是防止&lt;/li>
+&lt;li>防止 IP Spoofing&lt;/li>
+&lt;/ol>
+&lt;h3 id="問題">問題&lt;/h3>
+&lt;h4 id="當系統只有一個網路介面時是否需要開啟-rp_filter-取決於具體的需求和安全性考量">當系統只有一個網路介面時，是否需要開啟 &lt;code>rp_filter&lt;/code> 取決於具體的需求和安全性考量。&lt;/h4>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>只有一個網路介面，且無特殊路由需求&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>如果系統只有一個網路介面，且路由配置相對簡單（例如，所有流量都通過該介面進出），那麼來源 IP 位址欺騙的風險較低。&lt;/li>
+&lt;li>在這種情況下，開啟 &lt;code>rp_filter&lt;/code> 的作用有限，因為所有資料包都只能通過這唯一的網路介面進出。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>只有一個網路介面，但存在潛在的安全威脅&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>即使系統只有一個網路介面，攻擊者仍可能試圖通過偽造來源 IP 位址向系統發送惡意資料包。&lt;/li>
+&lt;li>開啟 &lt;code>rp_filter&lt;/code> 可以增加一層安全性，確保接收到的資料包符合路由規則，從而防止這類攻擊。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>未來可能擴展到多網路介面&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>如果系統未來可能會增加更多網路介面，建議養成良好的安全習慣，提前配置 &lt;code>rp_filter&lt;/code>，以避免多介面時的安全漏洞。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol></description></item><item><title>Understanding Docker network through iptables</title><link>https://chiehting.com/posts/docker-understanding-network-through-iptables/</link><pubDate>Mon, 21 Jun 2021 16:46:00 +0800</pubDate><guid>https://chiehting.com/posts/docker-understanding-network-through-iptables/</guid><description>
+&lt;p>Docker 為主流的容器化技術之一，而 Docker 則是使用 iptables 做 provide network isolation。
+這篇來了解 Docker 預設的 iptables 規則是什麼。&lt;/p>
+&lt;p>之前有寫過 iptables guide([[iptables-guide]])，知道 iptables 底層是使用 Netfilter 模組作封包的控制。&lt;/p>
+&lt;p>官方也有相關的資料可以參考 &lt;a href="https://docs.docker.com/network/iptables/">Docker and iptables&lt;/a>&lt;/p>
+&lt;blockquote>
+&lt;p>On Linux, Docker manipulates &lt;code>iptables&lt;/code> rules to provide network isolation. While this is an implementation detail and you should not modify the rules Docker inserts into your &lt;code>iptables&lt;/code> policies, it does have some implications on what you need to do if you want to have your own policies in addition to those managed by Docker.&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="思路">思路&lt;/h3>
+&lt;ol>
+&lt;li>建立虛擬機，確認初始 network interface 與 iptables&lt;/li>
+&lt;li>安裝 Docker 並確認 network interface 與 iptables&lt;/li>
+&lt;li>建置 nginx 容器，測試封包走向&lt;/li>
+&lt;/ol>
+&lt;h3 id="環境與版本">環境與版本&lt;/h3>
+&lt;p>OS：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# cat /etc/os-release
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="nv">NAME&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;Ubuntu&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="nv">VERSION&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;20.04.2 LTS (Focal Fossa)&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Docker：&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# docker version
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Client: Docker Engine - Community
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> Version: 20.10.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> API version: 1.41
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">Server: Docker Engine - Community
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> Engine:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> Version: 20.10.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> API version: 1.41 &lt;span class="o">(&lt;/span>minimum version 1.12&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> containerd:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> Version: 1.4.6
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> GitCommit: d71fcd7d8303cbf684402823e425e9dd2e99285d
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> runc:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> Version: 1.0.0-rc95
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> GitCommit: b9ee9c6314599f1b4a7f497e1f1f856fe433d3b7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> docker-init:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> Version: 0.19.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> GitCommit: de40ad0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="確認初始的-iptables-rules">確認初始的 iptables rules&lt;/h3>
+&lt;p>在一個新的虛擬機中，一開始的網路介面有 lo 跟 eth0。
+其中 lo 為這虛擬機的 LOOPBACK 使用; 而 eth0 則為可廣播的網路介面使用。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">65536&lt;/span> qdisc noqueue state UNKNOWN group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> inet 127.0.0.1/8 scope host lo
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> inet6 ::1/128 scope host
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">9001&lt;/span> qdisc fq_codel state UP group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> link/ether 06:3d:47:e2:09:ba brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> inet 172.31.37.164/20 brd 172.31.47.255 scope global dynamic eth0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> valid_lft 3514sec preferred_lft 3514sec
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> inet6 fe80::43d:47ff:fee2:9ba/64 scope link
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>新的虛擬機中，一開始是沒有配置 Chain、Table 的。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Chain PREROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">58&lt;/span> packets, &lt;span class="m">5352&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">Chain FORWARD &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">48&lt;/span> packets, &lt;span class="m">6066&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="安裝-docker-並且確認-iptables-rules">安裝 Docker 並且確認 iptables rules&lt;/h3>
+&lt;h4 id="確認網路介面">確認網路介面&lt;/h4>
+&lt;p>Docker 安裝完成後，看到新增了一個網路介面 docker0。
+其 docker0 的網路介面 ip 位置可以看到被分配到 172.17.0.1/16 的 private ip。而 router 部分則看到 172.17.0.0/16 網段都 link src 172.17.0.1。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># ip address&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">・・・・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">3: docker0: &amp;lt;NO-CARRIER,BROADCAST,MULTICAST,UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue state DOWN group default
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> link/ether 02:42:d3:81:15:1c brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> valid_lft forever preferred_lft forever
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="c1"># ip route&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip r
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">default via 172.31.32.1 dev eth0 proto dhcp src 172.31.37.164 metric &lt;span class="m">100&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">172.31.32.0/20 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">172.31.32.1 dev eth0 proto dhcp scope link src 172.31.37.164 metric &lt;span class="m">100&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="c1"># ip route show table local&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# ip r show table &lt;span class="nb">local&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">broadcast 127.0.0.0 dev lo proto kernel scope link src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 127.0.0.0/8 dev lo proto kernel scope host src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 127.0.0.1 dev lo proto kernel scope host src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">broadcast 127.255.255.255 dev lo proto kernel scope link src 127.0.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">broadcast 172.17.0.0 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 172.17.0.1 dev docker0 proto kernel scope host src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">broadcast 172.17.255.255 dev docker0 proto kernel scope link src 172.17.0.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">broadcast 172.31.32.0 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="nb">local&lt;/span> 172.31.37.164 dev eth0 proto kernel scope host src 172.31.37.164
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">broadcast 172.31.47.255 dev eth0 proto kernel scope link src 172.31.37.164
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="確認-iptables-的-nat-table">確認 iptables 的 NAT Table&lt;/h4>
+&lt;p>下面列出了 nat table 的 Chain。看到新增了多個 Chain &lt;code>DOCKER&lt;/code>，而這 Chain 被 references 在 PREROUTING、OUTPUT 中。
+而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。&lt;/p>
+&lt;p>下面說明 nat table 的 Chain：&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>PREROUTING num 1&lt;/code> 是指如果進來的封包目的地址 match LOCAL 都跳到 Chain DOCKER，這邊要注意 LOCAL 並不是指本地，可以使用 &amp;quot;ip route show table local&amp;quot; 命令來確認哪些 ip 為 LOCAL
+&lt;ol>
+&lt;li>&lt;code>DOCKER num 1&lt;/code> 指如果封包是從 docker0 網路介面進來的，則結束 Chain DOCKER 然後返回原來的 Chain 繼續跑規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>OUTPUT num 1&lt;/code> 是指如果出去封包目的地址 match LOCAL 都跳到 Chain DOCKER，除了 127.0.0.0/8 網段
+&lt;ol>
+&lt;li>&lt;code>DOCKER num 1&lt;/code> 指如果封包是從 docker0 網路介面進來的，則結束 Chain DOCKER 然後返回原來的 Chain 繼續跑規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>POSTROUTING num 1&lt;/code> 是指如果出去封包不是 docker0 網路介面和 ip 來源是 172.17.0.0/16 時，不做修改&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Chain PREROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">14138&lt;/span> 743K DOCKER all -- * * 0.0.0.0/0 0.0.0.0/0 ADDRTYPE match dst-type LOCAL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">6&lt;/span> packets, &lt;span class="m">328&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">4&lt;/span> &lt;span class="m">240&lt;/span> DOCKER all -- * * 0.0.0.0/0 !127.0.0.0/8 ADDRTYPE match dst-type LOCAL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">34&lt;/span> &lt;span class="m">2073&lt;/span> MASQUERADE all -- * !docker0 172.17.0.0/16 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">2&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">19&lt;/span> &lt;span class="m">1140&lt;/span> RETURN all -- docker0 * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="確認-iptables-的-filter-table">確認 iptables 的 Filter Table&lt;/h4>
+&lt;p>可以看到新增了多個 Chain &lt;code>DOCKER&lt;/code>、&lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code>、&lt;code>DOCKER-ISOLATION-STAGE-2&lt;/code>、&lt;code>DOCKER-USER&lt;/code>，而這些 Chain 都被 references 在 FORWARD 中。
+可以看到 Chain FORWARD 的預設 policy 已經被改為 DROP，而我們知道 iptables 的規則是從上至下順序執行，直至匹配的的規則為止，否則執行預設 policy。&lt;/p>
+&lt;p>看到 FORWARD 的規則：&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>FORWARD num 1&lt;/code> 規則是跳到 &lt;code>DOCKER-USER&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-USER num 1&lt;/code> 規則是 RETURN 封包，回 &lt;code>FORWARD&lt;/code> 中繼續直執行其他的規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 2&lt;/code> 規則是跳到 &lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-1 num 1&lt;/code> 封包又跳到 &lt;code>DOCKER-ISOLATION-STAGE-2&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-2 num 1&lt;/code> 丟棄所有 docker0 網路介面出去的封包&lt;/li>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-2 num 2&lt;/code> RETURN 所有封包繼續執封包繼續執行 &lt;code>DOCKER-ISOLATION-STAGE-1&lt;/code> 的其他規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>DOCKER-ISOLATION-STAGE-1 num 2&lt;/code> RETURN 所有封包繼續執封包繼續執行 &lt;code>FORWARD&lt;/code> 的其他規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 3&lt;/code> 規則為允許由 docker0 網路介面出去的封包，但封包狀態是 RELATED,ESTABLISHED&lt;/li>
+&lt;li>&lt;code>FORWARD num 4&lt;/code> 規則為當封包是 docker0 網路介面出去的，則跳到 &lt;code>DOCKER&lt;/code> 鏈中
+&lt;ol>
+&lt;li>&lt;code>DOCKER&lt;/code> 暫無規則&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>&lt;code>FORWARD num 5&lt;/code>、&lt;code>FORWARD num 6&lt;/code> 為允許經由 docker0 網路介面近來的所有封包進出&lt;/li>
+&lt;li>不在上述規則中的封包全部都 drop&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t fillter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">385&lt;/span> packets, &lt;span class="m">28200&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">Chain FORWARD &lt;span class="o">(&lt;/span>policy DROP &lt;span class="m">0&lt;/span> packets, &lt;span class="m">0&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-USER all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-ISOLATION-STAGE-1 all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="m">3&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- * docker0 0.0.0.0/0 0.0.0.0/0 ctstate RELATED,ESTABLISHED
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="m">4&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER all -- * docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="m">5&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- docker0 !docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="m">6&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> ACCEPT all -- docker0 docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">304&lt;/span> packets, &lt;span class="m">59638&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">Chain DOCKER-ISOLATION-STAGE-1 &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DOCKER-ISOLATION-STAGE-2 all -- docker0 !docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">Chain DOCKER-ISOLATION-STAGE-2 &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> DROP all -- * docker0 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">Chain DOCKER-USER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> RETURN all -- * * 0.0.0.0/0 0.0.0.0/0
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="建置-nginx-容器測試封包走向">建置 nginx 容器，測試封包走向&lt;/h3>
+&lt;p>啟動 container nginx&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">docker run --name nginx -p 80:80 -d nginx
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="查看本機-listen-port">查看本機 listen port&lt;/h4>
+&lt;p>看到 port 80 被 docker-proxy 監聽著&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# netstat -tlnp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Active Internet connections &lt;span class="o">(&lt;/span>only servers&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Proto Recv-Q Send-Q Local Address Foreign Address State PID/Program name
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 0.0.0.0:80 0.0.0.0:* LISTEN 253681/docker-proxy
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 127.0.0.53:53 0.0.0.0:* LISTEN 370/systemd-resolve
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">tcp &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> 0.0.0.0:22 0.0.0.0:* LISTEN 576/sshd: /usr/sbin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">tcp6 &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> :::80 :::* LISTEN 253686/docker-proxy
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">tcp6 &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> :::22 :::* LISTEN 576/sshd: /usr/sbin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="確認網路變化">確認網路變化&lt;/h4>
+&lt;p>網路介面新增了 &lt;code>veth3ce1bed&lt;/code>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:~# ip link
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">65536&lt;/span> qdisc noqueue state UNKNOWN mode DEFAULT group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">9001&lt;/span> qdisc fq_codel state UP mode DEFAULT group default qlen &lt;span class="m">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> link/ether 06:3d:47:e2:09:ba brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">18: docker0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue state UP mode DEFAULT group default
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> link/ether 02:42:55:24:1f:ed brd ff:ff:ff:ff:ff:ff
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">22: veth3ce1bed@if21: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu &lt;span class="m">1500&lt;/span> qdisc noqueue master docker0 state UP mode DEFAULT group default
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl"> link/ether ea:ba:b9:7b:48:ea brd ff:ff:ff:ff:ff:ff link-netnsid &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>還有將新增的網路介面 &lt;code>veth3ce1bed&lt;/code> 橋接在 &lt;code>docker0&lt;/code> 上。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:~# brctl show
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">bridge name bridge id STP enabled interfaces
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">docker0 8000.024255241fed no veth3ce1bed
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>iptables NAT table 新增了兩條規則。&lt;/p>
+&lt;ol>
+&lt;li>&lt;code>POSTROUTING&lt;/code> 封包來源為封包目的為 172.17.0.2 地址為裝封包內容 tcp dpt:80&lt;/li>
+&lt;li>&lt;code>DOCKER num 2&lt;/code> 規則為所有非 docker0 網路介面近來且 tcp dpt:80 的封包，改到 172.17.0.2:80&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Chain POSTROUTING &lt;span class="o">(&lt;/span>policy ACCEPT &lt;span class="m">266&lt;/span> packets, &lt;span class="m">17090&lt;/span> bytes&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">0&lt;/span> &lt;span class="m">0&lt;/span> MASQUERADE tcp -- * * 172.17.0.2 172.17.0.2 tcp dpt:80
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">2&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">&lt;span class="m">2&lt;/span> &lt;span class="m">136&lt;/span> &lt;span class="m">7472&lt;/span> DNAT tcp -- !docker0 * 0.0.0.0/0 0.0.0.0/0 tcp dpt:80 to:172.17.0.2:80
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">Chain DOCKER &lt;span class="o">(&lt;/span>&lt;span class="m">1&lt;/span> references&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">num pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="m">1&lt;/span> &lt;span class="m">123&lt;/span> &lt;span class="m">6692&lt;/span> ACCEPT tcp -- !docker0 docker0 0.0.0.0/0 172.17.0.2 tcp dpt:80
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="測試封包走向">測試封包走向&lt;/h4>
+&lt;p>在不同 client 端嘗試連上 nginx 服務，觀察封包所經過的網路規則。&lt;/p>
+&lt;p>監控 iptalbes 的 pkts 變化。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# watch iptables -L -n -v --line-numbers -t nat
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@ip-172-31-37-164:/home/ubuntu# watch iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>監控 docker0 網路介面的封包裝況。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">tcpdump -i docker0 -q -v tcp port &lt;span class="m">80&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

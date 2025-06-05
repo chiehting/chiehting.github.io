@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ssl on Chiehting</title><link>https://chiehting.com/category/ssl/</link><description>Recent content in ssl on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Sun, 07 Jul 2024 15:37:56 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/ssl/index.xml" rel="self" type="application/rss+xml"/><item><title>Create the locally trusted development certificates</title><link>https://chiehting.com/posts/mkcert-tool-create-local-cert/</link><pubDate>Sun, 07 Jul 2024 15:37:56 +0800</pubDate><guid>https://chiehting.com/posts/mkcert-tool-create-local-cert/</guid><description>
+&lt;p>開源專案 &lt;a href="https://github.com/FiloSottile/mkcert">mkcert&lt;/a>，建立本機信任憑證供開發時使用。&lt;/p>
+&lt;p>透過 brew 安裝 mkcert 命令。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">brew install mkcert
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">brew install nss &lt;span class="c1"># if you use Firefox&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>建立 local CA。&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>Warning&lt;/strong>: the &lt;code>rootCA-key.pem&lt;/code> file that mkcert automatically generates gives complete power to intercept secure requests from your machine. Do not share it.&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">mkcert -install
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Created a new &lt;span class="nb">local&lt;/span> CA 💥
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">The &lt;span class="nb">local&lt;/span> CA is now installed in the system trust store! ⚡️
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">The &lt;span class="nb">local&lt;/span> CA is now installed in the Firefox trust store &lt;span class="o">(&lt;/span>requires browser restart&lt;span class="o">)&lt;/span>! 🦊
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>建立憑證範例。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">mkcert example.com &lt;span class="s2">&amp;#34;*.example.com&amp;#34;&lt;/span> example.test localhost 127.0.0.1 ::1
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>How to use certbot to renew SSL certification</title><link>https://chiehting.com/posts/certbot-renew-ssl-certification/</link><pubDate>Thu, 28 Oct 2021 15:24:00 +0800</pubDate><guid>https://chiehting.com/posts/certbot-renew-ssl-certification/</guid><description>
+&lt;p>使用 Certbot 來申請 Web Site 的 SSL 憑證. Certbot 是一個開源軟體, 可以自動(手動)執行域名的驗證與透過憑證頒發機構 &lt;a href="https://letsencrypt.org/">Let’s Encrypt&lt;/a> 來取得憑證.&lt;/p>
+&lt;h3 id="安裝套件">安裝套件&lt;/h3>
+&lt;p>ubuntu 20.04 上安裝套件&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">bash$ sudo apt-get install -y certbot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Centos 7 上安裝套件&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">bash$ sudo yum -y install epel-release mod_ssl certbot
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="使用-dns-challenges-申請憑證">使用 dns challenges 申請憑證&lt;/h3>
+&lt;p>完成後憑證會在 /etc/letsencrypt/live/harbor.example.com 底下, 這邊要注意檔案是軟連結.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">certbot -d redmine.example.com --manual --preferred-challenges dns certonly
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">Please deploy a DNS TXT record under the name
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">_acme-challenge.harbor.example.com with the following value:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">go3M8xPHJKhOp2_Wuwnh4PaOUiOlMtiMiuRCX026WRo
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">Before continuing, verify the record is deployed.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">Press Enter to Continue
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">Waiting &lt;span class="k">for&lt;/span> verification...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">Cleaning up challenges
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">IMPORTANT NOTES:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> - Congratulations! Your certificate and chain have been saved at:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> /etc/letsencrypt/live/harbor.example.com/fullchain.pem
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> Your key file has been saved at:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> /etc/letsencrypt/live/harbor.example.com/privkey.pem
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> Your cert will expire on 2022-01-26. To obtain a new or tweaked
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> version of this certificate in the future, simply run certbot
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> again. To non-interactively renew *all* of your certificates, run
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;certbot renew&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> - Your account credentials have been saved in your Certbot
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> configuration directory at /etc/letsencrypt. You should make a
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> secure backup of this folder now. This configuration directory will
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> also contain certificates and private keys obtained by Certbot so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> making regular backups of this folder is ideal.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> - If you like Certbot, please consider supporting our work by:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> Donating to ISRG / Let&lt;span class="err">&amp;#39;&lt;/span>s Encrypt: https://letsencrypt.org/donate
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> Donating to EFF: https://eff.org/donate-le
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

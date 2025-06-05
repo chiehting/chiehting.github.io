@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>internet on Chiehting</title><link>https://chiehting.com/category/internet/</link><description>Recent content in internet on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 09 May 2024 13:58:56 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/internet/index.xml" rel="self" type="application/rss+xml"/><item><title>如何做網際網路的效能測試</title><link>https://chiehting.com/posts/how-to-test-internet-efficiency/</link><pubDate>Thu, 09 May 2024 13:58:56 +0800</pubDate><guid>https://chiehting.com/posts/how-to-test-internet-efficiency/</guid><description>
+&lt;p>如何做跨區線路測試，分析兩區域網路傳輸的狀況。例如 ap-southeast-1 到 us-east-1 的網路效率。&lt;/p>
+&lt;h3 id="解題方向">解題方向&lt;/h3>
+&lt;p>在進行跨區的網路線路測試時，不考慮服務運行時間的情況下，可能會關注以下指標：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>延遲（Latency）&lt;/strong>：延遲是從發送請求到收到響應所需的時間。你會測試不同地區之間的平均延遲、最大延遲和最小延遲，以評估網路的反應速度。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 來做測試。&lt;/li>
+&lt;li>&lt;strong>丟包率（Packet Loss Rate）&lt;/strong>：丟包率是指在網絡傳輸過程中丟失的數據包的比率。你會關注丟包率的高低，因為高丟包率可能導致數據傳輸的不完整和延遲增加。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 來做測試。&lt;/li>
+&lt;li>&lt;strong>頻寬利用率（Bandwidth Utilization）&lt;/strong>：帶寬利用率是指在一定時間內使用的網絡帶寬的比率。你會測試網絡的帶寬利用率，以確保帶寬資源充足並且沒有過度使用。可用工具 &lt;code>iperf&lt;/code>、&lt;code>speedtest-cli&lt;/code>做測試。&lt;/li>
+&lt;li>&lt;strong>往返時間（Round-Trip Time，RTT）&lt;/strong>：RTT 是從發送一個數據包到收到對應的響應所需的時間。你會關注不同地區之間的平均 RTT，以評估網路的往返時間。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 、&lt;code>iperf&lt;/code>來做測試。&lt;/li>
+&lt;li>&lt;strong>連通性和穩定性（Connectivity and Stability）&lt;/strong>：你會測試不同地區之間的連通性和穩定性，確保網路連接的可靠性和持久性。可使用工具 &lt;code>ping&lt;/code>、&lt;code>traceroute&lt;/code>、&lt;code>mtr&lt;/code> 來做測試。&lt;/li>
+&lt;li>&lt;strong>DNS 解析時間（DNS Resolution Time）&lt;/strong>：DNS 解析時間是指從域名解析請求開始到獲得對應 IP 地址的時間。你會測試 DNS 解析時間，以評估域名解析的效率和穩定性。可使用工具 &lt;code>dig&lt;/code>、&lt;code>nslookup&lt;/code> 來做測試。&lt;/li>
+&lt;/ol>
+&lt;h3 id="收集資訊">收集資訊&lt;/h3>
+&lt;p>DNS Resloutiime Time&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># Google&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# dig @8.8.8.8 example.com &lt;span class="p">|&lt;/span> grep Query
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="p">;;&lt;/span> Query time: &lt;span class="m">220&lt;/span> msec
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="c1"># Cloudflare&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# dig @1.1.1.1 example.com &lt;span class="p">|&lt;/span> grep Query
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="p">;;&lt;/span> Query time: &lt;span class="m">152&lt;/span> msec
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Bandwidth&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># Display a list of speedtest.net servers sorted by distance&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# speedtest-cli --list
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Retrieving speedtest.net configuration...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">17336&lt;span class="o">)&lt;/span> ETISALAT-UAE &lt;span class="o">(&lt;/span>Dubai, United Arab Emirates&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>19.67 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">33712&lt;span class="o">)&lt;/span> ETISALAT-UAE &lt;span class="o">(&lt;/span>Sharjah, United Arab Emirates&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>32.80 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">34238&lt;span class="o">)&lt;/span> ETISALAT-UAE &lt;span class="o">(&lt;/span>Ajman, United Arab Emirates&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>42.82 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">11271&lt;span class="o">)&lt;/span> Ooredoo Oman &lt;span class="o">(&lt;/span>Seeb, Oman&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>330.64 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 6193&lt;span class="o">)&lt;/span> Ooredoo Qatar &lt;span class="o">(&lt;/span>Doha, Qatar&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>379.79 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">36046&lt;span class="o">)&lt;/span> stc Bahrain &lt;span class="o">(&lt;/span>Seef, Bahrain&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>489.93 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">25379&lt;span class="o">)&lt;/span> Mobily &lt;span class="o">(&lt;/span>Khobar, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>526.86 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">16051&lt;span class="o">)&lt;/span> Saudi Telecom Company &lt;span class="o">(&lt;/span>STC&lt;span class="o">)&lt;/span> &lt;span class="o">(&lt;/span>Dammam, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>528.27 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">17373&lt;span class="o">)&lt;/span> Salam &lt;span class="o">(&lt;/span>Dammam, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>528.27 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">24200&lt;span class="o">)&lt;/span> Saudi Telecom Company &lt;span class="o">(&lt;/span>STC&lt;span class="o">)&lt;/span> &lt;span class="o">(&lt;/span>Al Hofuf, Saudi Arabia&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>575.26 km&lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# speedtest-cli
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">Retrieving speedtest.net configuration...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Testing from Amazon.com &lt;span class="o">(&lt;/span>51.112.52.76&lt;span class="o">)&lt;/span>...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">Retrieving speedtest.net server list...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">Selecting best server based on ping...
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">Hosted by ETISALAT-UAE &lt;span class="o">(&lt;/span>Dubai&lt;span class="o">)&lt;/span> &lt;span class="o">[&lt;/span>19.67 km&lt;span class="o">]&lt;/span>: 5.772 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">Testing download speed................................................................................
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">Download: 1908.86 Mbit/s
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">Testing upload speed......................................................................................................
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">Upload: 1475.68 Mbit/s
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Request time&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-4-174:~# curl -4 -w &amp;#34;@curl-format.txt&amp;#34; -o /dev/null -s https://example.com/api
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">time_namelookup: 0.155062
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">time_connect: 0.351696
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">time_appconnect: 0.586982
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">time_pretransfer: 0.587111
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">time_starttransfer: 0.781766
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">----------time_total: 0.781826
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>到 Server IP &lt;code>1.2.3.4&lt;/code> 的線路測試&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# traceroute -T 1.2.3.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">traceroute to 1.2.3.4 &lt;span class="o">(&lt;/span>1.2.3.4&lt;span class="o">)&lt;/span>, &lt;span class="m">30&lt;/span> hops max, &lt;span class="m">60&lt;/span> byte packets
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> &lt;span class="m">1&lt;/span> * * *
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl"> &lt;span class="m">2&lt;/span> 240.1.24.4 &lt;span class="o">(&lt;/span>240.1.24.4&lt;span class="o">)&lt;/span> 0.211 ms 240.1.24.5 &lt;span class="o">(&lt;/span>240.1.24.5&lt;span class="o">)&lt;/span> 0.225 ms 0.486 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl"> &lt;span class="m">3&lt;/span> 242.3.43.1 &lt;span class="o">(&lt;/span>242.3.43.1&lt;span class="o">)&lt;/span> 3.451 ms 242.3.43.5 &lt;span class="o">(&lt;/span>242.3.43.5&lt;span class="o">)&lt;/span> 2.972 ms 242.3.42.7 &lt;span class="o">(&lt;/span>242.3.42.7&lt;span class="o">)&lt;/span> 2.963 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> &lt;span class="m">4&lt;/span> 52.93.68.29 &lt;span class="o">(&lt;/span>52.93.68.29&lt;span class="o">)&lt;/span> 1.320 ms 52.93.68.79 &lt;span class="o">(&lt;/span>52.93.68.79&lt;span class="o">)&lt;/span> 8.062 ms 52.93.68.97 &lt;span class="o">(&lt;/span>52.93.68.97&lt;span class="o">)&lt;/span> 0.557 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl"> &lt;span class="m">5&lt;/span> 100.91.177.167 &lt;span class="o">(&lt;/span>100.91.177.167&lt;span class="o">)&lt;/span> 190.061 ms 100.106.85.41 &lt;span class="o">(&lt;/span>100.106.85.41&lt;span class="o">)&lt;/span> 191.664 ms 100.91.176.251 &lt;span class="o">(&lt;/span>100.91.176.251&lt;span class="o">)&lt;/span> 190.035 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl"> &lt;span class="m">6&lt;/span> * 240.0.184.13 &lt;span class="o">(&lt;/span>240.0.184.13&lt;span class="o">)&lt;/span> 1860.666 ms 240.0.236.34 &lt;span class="o">(&lt;/span>240.0.236.34&lt;span class="o">)&lt;/span> 1901.460 ms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl"> &lt;span class="m">7&lt;/span> 242.2.212.33 &lt;span class="o">(&lt;/span>242.2.212.33&lt;span class="o">)&lt;/span> 191.295 ms 242.3.84.161 &lt;span class="o">(&lt;/span>242.3.84.161&lt;span class="o">)&lt;/span> 192.339 ms 242.3.85.33 &lt;span class="o">(&lt;/span>242.3.85.33&lt;span class="o">)&lt;/span> 191.432 ms
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# mtr -b -T -r -c &lt;span class="m">30&lt;/span> 1.2.3.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Start: 2024-05-09T10:16:58+0000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">HOST: ip-172-31-41-190 Loss% Snt Last Avg Best Wrst StDev
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> 1.&lt;span class="p">|&lt;/span>-- ??? 100.0 &lt;span class="m">30&lt;/span> 0.0 0.0 0.0 0.0 0.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> 2.&lt;span class="p">|&lt;/span>-- 240.1.24.5 0.0% &lt;span class="m">30&lt;/span> 0.3 0.3 0.3 0.4 0.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 240.1.24.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 240.1.24.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 240.1.24.6
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> 3.&lt;span class="p">|&lt;/span>-- 242.3.42.135 0.0% &lt;span class="m">30&lt;/span> 2.8 5.7 2.5 20.4 5.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> 242.3.42.129
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> 242.3.43.3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> 242.3.43.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> 242.3.43.133
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> 242.3.43.131
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> 242.3.43.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> 242.3.42.131
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> 4.&lt;span class="p">|&lt;/span>-- 52.93.68.95 0.0% &lt;span class="m">30&lt;/span> 0.7 4.7 0.6 21.9 5.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> 52.93.68.93
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> 52.93.68.45
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> 52.93.68.125
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> 52.93.68.79
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> 52.93.68.129
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> 52.93.68.143
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> 52.93.68.65
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> 5.&lt;span class="p">|&lt;/span>-- 100.106.85.13 0.0% &lt;span class="m">30&lt;/span> 193.4 193.8 190.2 211.9 5.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> 100.91.177.73
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> 100.91.176.243
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> 100.91.177.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> 100.91.176.221
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> 100.91.177.93
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> 100.106.86.73
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> 100.106.85.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> 100.91.177.113
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@ip-172-31-41-190:~# iperf3 -t &lt;span class="m">30&lt;/span> -c 1.2.3.4 -p &lt;span class="m">31987&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Connecting to host 1.2.3.4, port &lt;span class="m">31987&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> &lt;span class="nb">local&lt;/span> 172.31.41.190 port &lt;span class="m">42998&lt;/span> connected to 1.2.3.4 port &lt;span class="m">31987&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> ID&lt;span class="o">]&lt;/span> Interval Transfer Bitrate Retr Cwnd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 0.00-1.00 sec 2.25 MBytes 18.9 Mbits/sec &lt;span class="m">0&lt;/span> &lt;span class="m">440&lt;/span> KBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 1.00-2.00 sec 9.81 MBytes 82.3 Mbits/sec &lt;span class="m">61&lt;/span> 3.88 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 2.00-3.00 sec 10.0 MBytes 83.9 Mbits/sec &lt;span class="m">303&lt;/span> 2.84 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 3.00-4.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 4.00-5.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 5.00-6.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 6.00-7.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 7.00-8.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 8.00-9.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 9.00-10.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 10.00-11.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 11.00-12.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 12.00-13.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 13.00-14.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 14.00-15.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 15.00-16.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 16.00-17.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 17.00-18.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 18.00-19.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 19.00-20.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 20.00-21.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 21.00-22.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 22.00-23.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 23.00-24.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 24.00-25.00 sec 13.8 MBytes &lt;span class="m">115&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 25.00-26.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 26.00-27.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 27.00-28.00 sec 16.2 MBytes &lt;span class="m">136&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 28.00-29.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 29.00-30.00 sec 15.0 MBytes &lt;span class="m">126&lt;/span> Mbits/sec &lt;span class="m">0&lt;/span> 3.05 MBytes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">- - - - - - - - - - - - - - - - - - - - - - - - -
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> ID&lt;span class="o">]&lt;/span> Interval Transfer Bitrate Retr
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 0.00-30.00 sec &lt;span class="m">430&lt;/span> MBytes &lt;span class="m">120&lt;/span> Mbits/sec &lt;span class="m">364&lt;/span> sender
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span> 5&lt;span class="o">]&lt;/span> 0.00-30.19 sec &lt;span class="m">429&lt;/span> MBytes &lt;span class="m">119&lt;/span> Mbits/sec receiver
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>DNS resolution takes a long time</title><link>https://chiehting.com/posts/dns-resolution-long-time/</link><pubDate>Fri, 19 Apr 2024 10:00:19 +0800</pubDate><guid>https://chiehting.com/posts/dns-resolution-long-time/</guid><description>
+&lt;p>最近發現 CI/CD 流程中一直發生異常通知，異常的失敗率達 50%，排查之後發現是 DNS 解析異常導致流程無法順利執行。由於伺服器在內地，所以最後將 DNS 服務器更換成百度的服務器，當下異常問題則排除，後續持續做觀察。&lt;/p>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 這篇文章主要在說什麼?&lt;/p>
+&lt;p>Answer :: 在排除 DNS 解析過慢的問題。這次的問題是阿里雲的 DNS 伺服器很慢甚至沒回應（這邊不討論阿里雲怎麼了，但...），所以要選用好的 DNS 伺服器，我通常是用 Google 的 &lt;code>8.8.8.8&lt;/code>，但是在牆內不是一個好的決定，經過一波測試後，最後選擇使用百度雲的 DNS 伺服器。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;h4 id="log-analysis">Log analysis&lt;/h4>
+&lt;p>這兩天一直發生 CI/CD 異常問題時好時壞。發生的太過頻繁近 20 筆資料的錯誤率達（10 error/20 tirgger）50%，覺得可能不是公司內部網路的問題，於是就查看了服務的 log，兩個服務的錯誤原因皆是 DNS 解析異常。&lt;/p>
+&lt;p>GitLab log 上顯示異常原因為 DNS 解析異常，下面列出一筆 log 資訊。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">curl: (6) Could not resolve host: hooks.slack.com
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Harbor log 上顯示異常原因為 DNS 解析異常，下面列出一筆 log 資訊。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">2024-04-18T02:50:02Z [ERROR] [/controller/replication/transfer/image/transfer.go:335]::: dial tcp: lookup swr.cn-east-3.myhuaweicloud.com: No address associated with hostname
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="dns-resolve">DNS resolve&lt;/h4>
+&lt;p>預設是使用阿里雲的 DNS 解析服務器 &lt;code>233.5.5.5&lt;/code>，看到解析不是超時就是過慢（約莫 1 min）。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Link 4 (eno1): 233.5.5.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">hooks.slack.com: resolve call failed: All attempts to contact name servers or networks failed
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下意識就更換了 Google 的 DNS 解析服務器 &lt;code>8.8.8.8&lt;/code>，解析時間時好時壞（約莫 25.6ms ~ 1 min），也不知道取決於什麼。但是在牆內用 Google DNS 解析可能不是好的選則。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1 8.8.8.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Link 4 (eno1): 8.8.8.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">hooks.slack.com: 52.192.46.121 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 52.196.128.139 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 35.74.58.174 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 35.73.126.78 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">-- Information acquired via protocol DNS in 25.6ms.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">-- Data is authenticated: no; Data was acquired via local or encrypted transport: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-- Data from: network
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>下面更換了百度的 DNS 解析服務器 &lt;code>180.76.76.76&lt;/code>，效果就好很多，幾乎在 200 ms 內回覆，所以就決定是你了。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-fallback" data-lang="fallback">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1 180.76.76.76
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@infra:~# resolvectl dns eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Link 4 (eno1): 180.76.76.76
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">root@infra:~# resolvectl query hooks.slack.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">hooks.slack.com: 35.74.58.174 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 35.73.126.78 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 52.196.128.139 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 52.192.46.121 -- link: eno1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">-- Information acquired via protocol DNS in 11.9ms.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">-- Data is authenticated: no; Data was acquired via local or encrypted transport: no
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">-- Data from: cache network
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>rfc6265</title><link>https://chiehting.com/posts/internet-rfc-6265-server-requirements/</link><pubDate>Fri, 16 Feb 2024 11:28:57 +0800</pubDate><guid>https://chiehting.com/posts/internet-rfc-6265-server-requirements/</guid><description>
+&lt;p>文章是在導讀 Set-Cookie header fields 規範以及重要屬性。&lt;/p>
+&lt;h3 id="referances">Referances&lt;/h3>
+&lt;p>&lt;a href="https://www.rfc-editor.org/rfc/rfc6265.html#section-4">HTTP State Management Mechanism&lt;/a>&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>第四章節是在說明 Set-Cookie 的方式，其中關鍵字為 &lt;code>Set-Cookie&lt;/code>，將 Set-Cookie 加到 response header 內容中，其格式是使用 name-value-pair，並返回給 user agent。&lt;/p>
+&lt;p>user agent 收到 Set-Cookie 後會保存其資料，如果該資料已經存在則會覆蓋。這邊也建議伺服器將資料內容做編碼，例如 base64。&lt;/p>
+&lt;p>在 4.1.2 的章節中有幾個重要的屬性，條列如下：&lt;/p>
+&lt;p>4.1.2.1. The Expires Attribute：定義 Cookies 的過期時間，過期後則不保留 cookie。&lt;/p>
+&lt;p>4.1.2.2. The Max-Age Attribute：定義 Cookies 的保留日期，過期後則不保留 cookie。&lt;/p>
+&lt;p>4.1.2.3. The Domain Attribute：定義 Cookies 的域名。&lt;/p>
+&lt;blockquote>
+&lt;p>For example, if the value of the Domain attribute is
+&amp;quot;example.com&amp;quot;, the user agent will include the cookie in the Cookie
+header when making HTTP requests to example.com, &lt;a href="https://www.example.com">www.example.com&lt;/a>, and
+&lt;a href="https://www.corp.example.com">www.corp.example.com&lt;/a>.&lt;/p>
+&lt;/blockquote>
+&lt;p>4.1.2.4. The Path Attribute：定義 Cookies 的路徑。配置 Path Attribute 後，就只會在指定的路徑中做 Cookies 的交互。&lt;/p>
+&lt;p>4.1.2.5. The Secure Attribute：限制 Cookies 只能在 &amp;quot;安全&amp;quot; 頻道中做傳輸。配置 Secure Attribute 後，就只能在 HTTPS 的請求中做 Cookies 的交互。&lt;/p>
+&lt;p>4.1.2.6. The HttpOnly Attribute：限制 Cookies 的存取方式。配置 HttpOnly Attribute 後，就只能使用 http 請求做 Cookies 的存取，否則會被省略，例如無法使用 javascript 來存取 Cookies 的內容。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.rfc-editor.org/rfc/rfc6265.html#section-4">rfc6265&lt;/a>&lt;/p>
+&lt;h4 id="4-server-requirements">4. Server Requirements&lt;/h4>
+&lt;p>This section describes the syntax and semantics of a well-behaved
+profile of the Cookie and Set-Cookie headers.&lt;/p>
+&lt;p>4.1. Set-Cookie&lt;/p>
+&lt;p>The Set-Cookie HTTP response header is used to send cookies from the
+server to the user agent.&lt;/p>
+&lt;p>4.1.1. Syntax&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red"> Informally, the Set-Cookie response header contains the header name
+&amp;quot;Set-Cookie&amp;quot; followed by a &amp;quot;:&amp;quot; and a cookie.&lt;/span> Each cookie begins with
+a name-value-pair, followed by zero or more attribute-value pairs.
+Servers SHOULD NOT send Set-Cookie headers that fail to conform to
+the following grammar:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-html" data-lang="html">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">set-cookie-header = &amp;#34;Set-Cookie:&amp;#34; SP set-cookie-string
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">set-cookie-string = cookie-pair *( &amp;#34;;&amp;#34; SP cookie-av )
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">cookie-pair = cookie-name &amp;#34;=&amp;#34; cookie-value
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">cookie-name = token
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">cookie-value = *cookie-octet / ( DQUOTE *cookie-octet DQUOTE )
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">cookie-octet = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> ; US-ASCII characters excluding CTLs,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> ; whitespace DQUOTE, comma, semicolon,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> ; and backslash
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">token = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">token&lt;/span>&lt;span class="err">,&lt;/span> &lt;span class="na">defined&lt;/span> &lt;span class="na">in&lt;/span> &lt;span class="err">[&lt;/span>&lt;span class="na">RFC2616&lt;/span>&lt;span class="err">],&lt;/span> &lt;span class="na">Section&lt;/span> &lt;span class="na">2&lt;/span>&lt;span class="err">.&lt;/span>&lt;span class="na">2&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">cookie-av = expires-av / max-age-av / domain-av /
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> path-av / secure-av / httponly-av /
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> extension-av
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">expires-av = &amp;#34;Expires=&amp;#34; sane-cookie-date
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">sane-cookie-date = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">rfc1123-date&lt;/span>&lt;span class="err">,&lt;/span> &lt;span class="na">defined&lt;/span> &lt;span class="na">in&lt;/span> &lt;span class="err">[&lt;/span>&lt;span class="na">RFC2616&lt;/span>&lt;span class="err">],&lt;/span> &lt;span class="na">Section&lt;/span> &lt;span class="na">3&lt;/span>&lt;span class="err">.&lt;/span>&lt;span class="na">3&lt;/span>&lt;span class="err">.&lt;/span>&lt;span class="na">1&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">max-age-av = &amp;#34;Max-Age=&amp;#34; non-zero-digit *DIGIT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> ; In practice, both expires-av and max-age-av
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> ; are limited to dates representable by the
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> ; user agent.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">non-zero-digit = %x31-39
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> ; digits 1 through 9
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">domain-av = &amp;#34;Domain=&amp;#34; domain-value
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">domain-value = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">subdomain&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> ; defined in [RFC1034], Section 3.5, as
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> ; enhanced by [RFC1123], Section 2.1
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">path-av = &amp;#34;Path=&amp;#34; path-value
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">path-value = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">any&lt;/span> &lt;span class="na">CHAR&lt;/span> &lt;span class="na">except&lt;/span> &lt;span class="na">CTLs&lt;/span> &lt;span class="na">or&lt;/span> &lt;span class="err">&amp;#34;;&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">secure-av = &amp;#34;Secure&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">httponly-av = &amp;#34;HttpOnly&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">extension-av = &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">any&lt;/span> &lt;span class="na">CHAR&lt;/span> &lt;span class="na">except&lt;/span> &lt;span class="na">CTLs&lt;/span> &lt;span class="na">or&lt;/span> &lt;span class="err">&amp;#34;;&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Note that some of the grammatical terms above reference documents
+that use different grammatical notations than this document (which
+uses ABNF from [RFC5234]).&lt;/p>
+&lt;p>The semantics of the cookie-value are not defined by this document.&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">To maximize compatibility with user agents, servers that wish to
+store arbitrary data in a cookie-value SHOULD encode that data, for
+example, using Base64 [RFC4648].&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The portions of the set-cookie-string produced by the cookie-av term
+are known as attributes. To maximize compatibility with user agents,
+servers SHOULD NOT produce two attributes with the same name in the
+same set-cookie-string. (See Section 5.3 for how user agents handle
+this case.)&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">Servers SHOULD NOT include more than one Set-Cookie header field in
+the same response with the same cookie-name. (See Section 5.2 for
+how user agents handle this case.)&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">If a server sends multiple responses containing Set-Cookie headers
+concurrently to the user agent (e.g., when communicating with the
+user agent over multiple sockets), these responses create a &amp;quot;race
+condition&amp;quot; that can lead to unpredictable behavior.&lt;/span>&lt;/p>
+&lt;p>NOTE: Some existing user agents differ in their interpretation of
+two-digit years. To avoid compatibility issues, servers SHOULD use
+the rfc1123-date format, which requires a four-digit year.&lt;/p>
+&lt;p>NOTE: Some user agents store and process dates in cookies as 32-bit
+UNIX time_t values. Implementation bugs in the libraries supporting
+time_t processing on some systems might cause such user agents to
+process dates after the year 2038 incorrectly.&lt;/p>
+&lt;p>4.1.2. Semantics (Non-Normative)&lt;/p>
+&lt;p>This section describes simplified semantics of the Set-Cookie header.
+These semantics are detailed enough to be useful for understanding
+the most common uses of cookies by servers. The full semantics are
+described in Section 5.&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">When the user agent receives a Set-Cookie header, the user agent
+stores the cookie together with its attributes. Subsequently, when
+the user agent makes an HTTP request, the user agent includes the
+applicable, non-expired cookies in the Cookie header.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">If the user agent receives a new cookie with the same cookie-name,
+domain-value, and path-value as a cookie that it has already stored,
+the existing cookie is evicted and replaced with the new cookie.
+Notice that servers can delete cookies by sending the user agent a
+new cookie with an Expires attribute with a value in the past.&lt;/span>&lt;/p>
+&lt;p>Unless the cookie's attributes indicate otherwise, the cookie is
+returned only to the origin server (and not, for example, to any
+subdomains), and it expires at the end of the current session (as
+defined by the user agent). User agents ignore unrecognized cookie
+attributes (but not the entire cookie).&lt;/p>
+&lt;p>4.1.2.1. The Expires Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The Expires attribute indicates the maximum lifetime of the cookie,
+represented as the date and time at which the cookie expires. The
+user agent is not required to retain the cookie until the specified
+date has passed. In fact, user agents often evict cookies due to
+memory pressure or privacy concerns.&lt;/span>&lt;/p>
+&lt;p>4.1.2.2. The Max-Age Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red"> The Max-Age attribute indicates the maximum lifetime of the cookie,
+represented as the number of seconds until the cookie expires. The
+user agent is not required to retain the cookie for the specified
+duration. In fact, user agents often evict cookies due to memory
+pressure or privacy concerns.&lt;/span>&lt;/p>
+&lt;pre>&lt;code> NOTE: Some existing user agents do not support the Max-Age
+attribute. User agents that do not support the Max-Age attribute
+ignore the attribute.
+&lt;/code>&lt;/pre>
+&lt;p>If a cookie has both the Max-Age and the Expires attribute, the Max-
+Age attribute has precedence and controls the expiration date of the
+cookie. If a cookie has neither the Max-Age nor the Expires
+attribute, the user agent will retain the cookie until &amp;quot;the current
+session is over&amp;quot; (as defined by the user agent).&lt;/p>
+&lt;p>4.1.2.3. The Domain Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The Domain attribute specifies those hosts to which the cookie will
+be sent. For example, if the value of the Domain attribute is
+&amp;quot;example.com&amp;quot;, the user agent will include the cookie in the Cookie
+header when making HTTP requests to example.com, &lt;a href="https://www.example.com">www.example.com&lt;/a>, and
+&lt;a href="https://www.corp.example.com">www.corp.example.com&lt;/a>.&lt;/span> (Note that a leading %x2E (&amp;quot;.&amp;quot;), if present,
+is ignored even though that character is not permitted, but a
+trailing %x2E (&amp;quot;.&amp;quot;), if present, will cause the user agent to ignore
+the attribute.) If the server omits the Domain attribute, the user
+agent will return the cookie only to the origin server.&lt;/p>
+&lt;pre>&lt;code> WARNING: Some existing user agents treat an absent Domain
+attribute as if the Domain attribute were present and contained
+the current host name. For example, if example.com returns a Set-
+Cookie header without a Domain attribute, these user agents will
+erroneously send the cookie to www.example.com as well.
+&lt;/code>&lt;/pre>
+&lt;p>The user agent will reject cookies unless the Domain attribute
+specifies a scope for the cookie that would include the origin
+server. For example, the user agent will accept a cookie with a
+Domain attribute of &amp;quot;example.com&amp;quot; or of &amp;quot;foo.example.com&amp;quot; from
+foo.example.com, but the user agent will not accept a cookie with a
+Domain attribute of &amp;quot;bar.example.com&amp;quot; or of &amp;quot;baz.foo.example.com&amp;quot;.&lt;/p>
+&lt;p>NOTE: For security reasons, many user agents are configured to reject
+Domain attributes that correspond to &amp;quot;public suffixes&amp;quot;. For example,
+some user agents will reject Domain attributes of &amp;quot;com&amp;quot; or &amp;quot;co.uk&amp;quot;.
+(See Section 5.3 for more information.)&lt;/p>
+&lt;p>4.1.2.4. The Path Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The scope of each cookie is limited to a set of paths, controlled by
+the Path attribute. If the server omits the Path attribute, the user
+agent will use the &amp;quot;directory&amp;quot; of the request-uri's path component as
+the default value. (See Section 5.1.4 for more details.)&lt;/span>&lt;/p>
+&lt;p>The user agent will include the cookie in an HTTP request only if the
+path portion of the request-uri matches (or is a subdirectory of) the
+cookie's Path attribute, where the %x2F (&amp;quot;/&amp;quot;) character is
+interpreted as a directory separator.&lt;/p>
+&lt;p>Although seemingly useful for isolating cookies between different
+paths within a given host, the Path attribute cannot be relied upon
+for security (see Section 8).&lt;/p>
+&lt;p>4.1.2.5. The Secure Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The Secure attribute limits the scope of the cookie to &amp;quot;secure&amp;quot;
+channels (where &amp;quot;secure&amp;quot; is defined by the user agent). When a
+cookie has the Secure attribute, the user agent will include the
+cookie in an HTTP request only if the request is transmitted over a
+secure channel (typically HTTP over Transport Layer Security (TLS)
+[RFC2818]).&lt;/span>&lt;/p>
+&lt;p>Although seemingly useful for protecting cookies from active network
+attackers, the Secure attribute protects only the cookie's
+confidentiality. An active network attacker can overwrite Secure
+cookies from an insecure channel, disrupting their integrity (see
+Section 8.6 for more details).&lt;/p>
+&lt;p>4.1.2.6. The HttpOnly Attribute&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">The HttpOnly attribute limits the scope of the cookie to HTTP
+requests. In particular, the attribute instructs the user agent to
+omit the cookie when providing access to cookies via &amp;quot;non-HTTP&amp;quot; APIs
+(such as a web browser API that exposes cookies to scripts).&lt;/span>&lt;/p>
+&lt;p>Note that the HttpOnly attribute is independent of the Secure
+attribute: a cookie can have both the HttpOnly and the Secure
+attribute.&lt;/p>
+&lt;p>4.2. Cookie&lt;/p>
+&lt;p>4.2.1. Syntax&lt;/p>
+&lt;p>The user agent sends stored cookies to the origin server in the
+Cookie header. If the server conforms to the requirements in
+Section 4.1 (and the user agent conforms to the requirements in
+Section 5), the user agent will send a Cookie header that conforms to
+the following grammar:&lt;/p>
+&lt;p>cookie-header = &amp;quot;Cookie:&amp;quot; OWS cookie-string OWS
+cookie-string = cookie-pair *( &amp;quot;;&amp;quot; SP cookie-pair )&lt;/p>
+&lt;p>4.2.2. Semantics&lt;/p>
+&lt;p>Each cookie-pair represents a cookie stored by the user agent. The
+cookie-pair contains the cookie-name and cookie-value the user agent
+received in the Set-Cookie header.&lt;/p>
+&lt;p>Notice that the cookie attributes are not returned. In particular,
+the server cannot determine from the Cookie header alone when a
+cookie will expire, for which hosts the cookie is valid, for which
+paths the cookie is valid, or whether the cookie was set with the
+Secure or HttpOnly attributes.&lt;/p>
+&lt;p>The semantics of individual cookies in the Cookie header are not
+defined by this document. Servers are expected to imbue these
+cookies with application-specific semantics.&lt;/p>
+&lt;p>Although cookies are serialized linearly in the Cookie header,
+servers SHOULD NOT rely upon the serialization order. In particular,
+if the Cookie header contains two cookies with the same name (e.g.,
+that were set with different Path or Domain attributes), servers
+SHOULD NOT rely upon the order in which these cookies appear in the
+header.&lt;/p></description></item><item><title>rfc6265</title><link>https://chiehting.com/posts/internet-rfc-6265/</link><pubDate>Fri, 16 Feb 2024 11:28:57 +0800</pubDate><guid>https://chiehting.com/posts/internet-rfc-6265/</guid><description>
+&lt;p>文章主要在研究 RFC 6265 - HTTP State Management Mechanism。文章是在定義 HTTP Cookie and Set-Cookie header fields 規範。&lt;/p>
+&lt;h3 id="referances">Referances&lt;/h3>
+&lt;p>&lt;a href="https://www.rfc-editor.org/rfc/rfc6265.txt">RFC 6265&lt;/a>&lt;/p>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>RFC 6265 - HTTP State Management Mechanism 是在定義 HTTP Cookies and Set-Cookie header fields。Cookie 是 Server / Client 資料交互的方法之一，是 developers of cookie-
+generating servers 和 developers of cookie-consuming user agents 需要關心的重要議題。&lt;/p>
+&lt;p>第四章節在說明 Set-Cookie header fields 規範以及重要屬性 ([[internet-rfc-6265-server-requirements]])。&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.rfc-editor.org/info/rfc6265">rfc6265&lt;/a>&lt;/p>
+&lt;h4 id="abstract">Abstract&lt;/h4>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">This document defines the HTTP Cookie and Set-Cookie header fields. These header fields can be used by HTTP servers to store state (called cookies) at HTTP user agents, letting the servers maintain a stateful session over the mostly stateless HTTP protocol.&lt;/span> Although cookies have many historical infelicities that degrade their security and privacy, the Cookie and Set-Cookie header fields are widely used on the Internet. This document obsoletes RFC 2965. [STANDARDS-TRACK]&lt;/p>
+&lt;p>Table of Contents&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">1. Introduction
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">2. Conventions
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> 2.1. Conformance Criteria
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> 2.2. Syntax Notation
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> 2.3. Terminology
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">3. Overview
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 3.1. Examples
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">4. Server Requirements
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> 4.1. Set-Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> 4.1.1. Syntax
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> 4.1.2. Semantics (Non-Normative)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> 4.2. Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> 4.2.1. Syntax
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> 4.2.2. Semantics
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">5. User Agent Requirements
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> 5.1. Subcomponent Algorithms
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> 5.1.1. Dates
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> 5.1.2. Canonicalized Host Names
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> 5.1.3. Domain Matching
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> 5.1.4. Paths and Path-Match
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> 5.2. The Set-Cookie Header
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> 5.2.1. The Expires Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> 5.2.2. The Max-Age Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> 5.2.3. The Domain Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> 5.2.4. The Path Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> 5.2.5. The Secure Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> 5.2.6. The HttpOnly Attribute
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> 5.3. Storage Model
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> 5.4. The Cookie Header
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">6. Implementation Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> 6.1. Limits
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> 6.2. Application Programming Interfaces
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> 6.3. IDNA Dependency and Migration
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">7. Privacy Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> 7.1. Third-Party Cookies
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> 7.2. User Controls
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> 7.3. Expiration Dates
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl">8. Security Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl"> 8.1. Overview
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl"> 8.2. Ambient Authority
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl"> 8.3. Clear Text
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl"> 8.4. Session Identifiers
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl"> 8.5. Weak Confidentiality
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl"> 8.6. Weak Integrity
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl"> 8.7. Reliance on DNS
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl">9. IANA Considerations
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl"> 9.1. Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">48&lt;/span>&lt;span class="cl"> 9.2. Set-Cookie
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">49&lt;/span>&lt;span class="cl"> 9.3. Cookie2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">50&lt;/span>&lt;span class="cl"> 9.4. Set-Cookie2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">51&lt;/span>&lt;span class="cl">10. References
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">52&lt;/span>&lt;span class="cl"> 10.1. Normative References
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">53&lt;/span>&lt;span class="cl"> 10.2. Informative References
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">54&lt;/span>&lt;span class="cl">Appendix A. Acknowledgements
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="introduction">Introduction&lt;/h4>
+&lt;p>This document defines the HTTP Cookie and Set-Cookie header fields.
+&lt;span style="background-color: #ffffcc; color: red">Using the Set-Cookie header field, an HTTP server can pass name/value
+pairs and associated metadata (called cookies) to a user agent. When
+the user agent makes subsequent requests to the server, the user
+agent uses the metadata and other information to determine whether to
+return the name/value pairs in the Cookie header.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">Although simple on their surface, cookies have a number of
+complexities. For example, the server indicates a scope for each
+cookie when sending it to the user agent. The scope indicates the
+maximum amount of time in which the user agent should return the
+cookie, the servers to which the user agent should return the cookie,
+and the URI schemes for which the cookie is applicable.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">For historical reasons, cookies contain a number of security and
+privacy infelicities. For example, a server can indicate that a
+given cookie is intended for &amp;quot;secure&amp;quot; connections, but the Secure
+attribute does not provide integrity in the presence of an active
+network attacker. Similarly, cookies for a given host are shared
+across all the ports on that host, even though the usual &amp;quot;same-origin
+policy&amp;quot; used by web browsers isolates content retrieved via different
+ports.&lt;/span>&lt;/p>
+&lt;p>&lt;span style="background-color: #ffffcc; color: red">There are two audiences for this specification: developers of cookie-
+generating servers and developers of cookie-consuming user agents.&lt;/span>&lt;/p>
+&lt;p>To maximize interoperability with user agents, servers SHOULD limit
+themselves to the well-behaved profile defined in Section 4 when
+generating cookies.&lt;/p>
+&lt;p>User agents MUST implement the more liberal processing rules defined
+in Section 5, in order to maximize interoperability with existing
+servers that do not conform to the well-behaved profile defined in
+Section 4.&lt;/p>
+&lt;p>This document specifies the syntax and semantics of these headers as
+they are actually used on the Internet. In particular, this document
+does not create new syntax or semantics beyond those in use today.
+The recommendations for cookie generation provided in Section 4
+represent a preferred subset of current server behavior, and even the
+more liberal cookie processing algorithm provided in Section 5 does
+not recommend all of the syntactic and semantic variations in use
+today. Where some existing software differs from the recommended
+protocol in significant ways, the document contains a note explaining
+the difference.&lt;/p></description></item><item><title>什麼是 QUIC</title><link>https://chiehting.com/posts/quick-udp-internet-connections/</link><pubDate>Wed, 21 Jul 2021 13:55:00 +0800</pubDate><guid>https://chiehting.com/posts/quick-udp-internet-connections/</guid><description>
+&lt;p>QUIC(Quick UDP Internet Connections) 為 OSI model 中 &amp;quot;傳輸層&amp;quot; 和 &amp;quot;應用層&amp;quot; 之間的一個新的協議層. 是基於 UDP 之上的, 但它在傳輸層和應用層之間引入了自己的協議層, 用於處理連接、可靠性、流控制和安全性等問題. 所以 QUIC 不好用 OSI model 去區分, 而是稱為 &amp;quot;安全的通用傳輸協議(secure general-purpose transport protocol)&amp;quot;.&lt;/p>
+&lt;p>HTTP/3 是個新的 HTTP 版本，使用 QUIC 作為傳輸協議，與 HTTP/1.1、HTTP/2.0 使用的 TCP/IP 不同。相較於 TCP/IP 協議；QUIC 提高了網路效能。&lt;/p>
+&lt;p>HTTP 是網際網路上重要的網路協議之一，至今已經發行了多個版本。在 &lt;a href="http://www.http2demo.io/">demo&lt;/a> 中可以看到 HTTP/1.1 與 HTTP/2.0 的差異。&lt;/p>
+&lt;ul>
+&lt;li>HTTP/1.0&lt;/li>
+&lt;li>HTTP/1.1&lt;/li>
+&lt;li>HTTP/2.0&lt;/li>
+&lt;/ul>
+&lt;p>HTTP（Hypertext Transfer Protocol）協議是 application-level protocol (OSI model: layer 7)，在 RFC 2616 中描述 HTTP 傳輸層預設是使用 TCP/IP 作為連線，原因是因為要基於可靠的傳輸方式，但不排除 HTTP 也可以使用在其他協議上，前提是需要可靠的傳輸。&lt;/p>
+&lt;blockquote>
+&lt;p>HTTP communication usually takes place over TCP/IP connections. The
+default port is TCP 80 [19], but other ports can be used. This does
+not preclude HTTP from being implemented on top of any other protocol
+on the Internet, or on other networks. HTTP only presumes a reliable
+transport; any protocol that provides such guarantees can be used;
+the mapping of the HTTP/1.1 request and response structures onto the
+transport data units of the protocol in question is outside the scope
+of this specification.&lt;/p>
+&lt;/blockquote>
+&lt;p>HTTP/1.1 是使用多個 TCP 連接，一個連接的問題不會影響其他連接。&lt;/p>
+&lt;p>而 HTTP/2.0 也是基於 TCP/IP 協議之上，在單個 TCP 連接上實現了多個請求的並行傳輸（多路復用），也就是多個 stream 在同一個 TCP 上做封包的傳送，但基於 TCP/IP 的關鍵機制 Retransmission Timer（重傳計時器），只要某個 tcp package 遺失就會觸發重傳封包進而造成隊頭阻塞（head of line blocking），在未收到該 ack 之前，所有 stream 都須等待。&lt;/p>
+&lt;p>而在極端的網路環境之下，HTTP/2.0 可能比 HTTP/1.1 之效率來得差。&lt;/p>
+&lt;h3 id="quic">QUIC&lt;/h3>
+&lt;p>&lt;a href="https://www.chromium.org/quic/">QUIC, a multiplexed transport over UDP&lt;/a> 是由 Google 所提出的設計，後來演變為一個 IETF 標準化的協議（RFC 9000）。而這協議是在端點間建立數個 Multiplexing 的 UDP 連線。&lt;/p>
+&lt;blockquote>
+&lt;p>QUIC is a new multiplexed transport built on top of UDP. HTTP/3 is designed to take advantage of QUIC's features, including lack of Head-Of-Line blocking between streams.&lt;/p>
+&lt;/blockquote>
+&lt;p>而 QUIC 的優點：&lt;/p>
+&lt;ul>
+&lt;li>使用 UDP 連線，所以減少了三次握手的效能消耗&lt;/li>
+&lt;li>封包遺失只會影響到對應的 stream，&lt;/li>
+&lt;li>實現了 TCP 的可靠性，使用 Packet Number 來代替 TCP 的 sequence number&lt;/li>
+&lt;li>實現了 HTTP/2.0 的多路復用（multiplexed），但相較於 HTTP/2.0 協議 QUIC 每個 stream 間沒有依賴關係，也就是說大幅減少隊頭阻塞(lack of Head-Of-Line)&lt;/li>
+&lt;li>實現了 TLS 的安全性&lt;/li>
+&lt;/ul>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://javascript.plainenglish.io/what-is-http-3-and-why-does-it-matter-cb7d7b4b600f">What is http/3&lt;/a>&lt;/li>
+&lt;li>&lt;a href="http://xiaorui.cc/archives/6117">技术分享之http2和quic的那些事儿&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://medium.com/@the.real.yushuf/benchmarking-quic-1fd043e944c7">benchmarking quic&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://datatracker.ietf.org/doc/html/rfc2616">Hypertext Transfer Protocol&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.chromium.org/quic">QUIC&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://datatracker.ietf.org/doc/html/rfc9000">IETF rfc9000&lt;/a>&lt;/li>
+&lt;/ul></description></item></channel></rss>

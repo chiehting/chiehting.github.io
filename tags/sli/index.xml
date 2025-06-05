@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>sli on Chiehting</title><link>https://chiehting.com/tags/sli/</link><description>Recent content in sli on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 13 Jul 2023 15:45:24 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/sli/index.xml" rel="self" type="application/rss+xml"/><item><title>Service Level Indicator</title><link>https://chiehting.com/posts/service-level-indicator/</link><pubDate>Thu, 13 Jul 2023 15:45:24 +0800</pubDate><guid>https://chiehting.com/posts/service-level-indicator/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 什麼是 SLI?&lt;/p>
+&lt;p>Answer :: SLI 為 SLO 的指標數據, SLI 為 IT 團隊跟系統間的狀態確認. 但與以往的監控不同, SLO 的目標是以用戶體驗為導向. SLI 在擷取的過程中, 要保持單純與精確, 可以參考文章的 SLI 分類.&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://www.datadoghq.com/blog/establishing-service-level-objectives/#getting-from-slis-to-slos">SLOs 101: How to establish and define service level objectives&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Service Level Indicator (服務水平指標) 是根據 SLO 目標所衡量的指標, 通常是&lt;strong>可量化的數值&lt;/strong>, 文章中建議將指標做主要的分類 (e.g., response/request, storage, data pipeline).&lt;/p>
+&lt;pre>&lt;code>e.g., HTTP 狀態碼為 200 的回應次數, 佔總回應次數的比率
+&lt;/code>&lt;/pre>
+&lt;p>每個指標不要過於複雜, 盡量保持簡單且要是有關用戶的體驗. 例如一個購物車系統結帳, 當購物車系統的 CPU 過高、MEM 過高, 但不直接影響用戶體驗, 就不是個好的 SLI 指標; 例如加入購物車 API 等待時間, 直接影響用戶的體驗, 就是個需關注的 SLI 指標. 這段注意是在講如何提取好的 SLI 指標, 不是說不要監控 CPU、MEM 等數據. 個人認為監控目標被分成兩種, 一種是系統狀態; 一種是用戶體驗.&lt;/p>
+&lt;p>通常一個系統可能由多個組件來組成, 文中建議從最接近用戶的組件中提取數據. 指標要貼近用戶體驗且獨立分開, 單位例如以: cluster, host or component, ext.&lt;/p>
+&lt;p>延伸閱讀, &lt;a href="https://www.coursera.org/lecture/site-reliability-engineering-slos/the-sli-menu-CST0V">The SLI menu&lt;/a>, 可參考影片中對 SLI 的指標分類：&lt;/p>
+&lt;ol>
+&lt;li>請求/回應（Request/Response）
+&lt;ul>
+&lt;li>可用性指標（Availability）&lt;/li>
+&lt;li>回應時間指標（Latency）&lt;/li>
+&lt;li>回應品質指標（Quality）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>數據處理（Data Processing）
+&lt;ul>
+&lt;li>覆蓋率指標（Coverage）&lt;/li>
+&lt;li>正確性指標（Correctness）&lt;/li>
+&lt;li>新鮮度指標（Freshness）&lt;/li>
+&lt;li>吞吐量指標（Throughput）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>資料存儲（Storage）
+&lt;ul>
+&lt;li>持久性指標（Durability）&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.datadoghq.com/blog/establishing-service-level-objectives/#getting-from-slis-to-slos">Getting from SLIs to SLOs&lt;/a>&lt;/p>
+&lt;h4 id="getting-form-slis-to-slos">Getting form SLIs to SLOs&lt;/h4>
+&lt;p>Now that we’ve defined some key concepts related to SLOs, it’s time to begin thinking about how to craft them. &lt;strong>&lt;span style="background-color: #ffffcc; color: red">Developing a good understanding of how your users experience your product—and which user journeys are most critical—is the first and most important step in creating useful SLOs.&lt;/span>&lt;/strong> Here are a few questions you should consider:&lt;/p>
+&lt;ul>
+&lt;li>How are your users interacting with your application?&lt;/li>
+&lt;li>What is their journey through the application?&lt;/li>
+&lt;li>Which parts of your infrastructure do these journeys interact with?&lt;/li>
+&lt;li>What are they expecting from your systems and what are they hoping to accomplish?&lt;/li>
+&lt;/ul>
+&lt;h4 id="picking-good-slis">Picking good SLIs&lt;/h4>
+&lt;p>&lt;strong>As your infrastructure grows in complexity, it becomes more cumbersome to set external SLOs for every single database, message queue, and load balancer. Instead, &lt;span style="background-color: #ffffcc; color: red">we recommend organizing your system components into a few main categories (e.g., response/request, storage, data pipeline), and specifying SLIs within each of these categories.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>As you start selecting SLIs, &lt;span style="background-color: #ffffcc; color: red">a short but important saying to keep in mind is: “All SLIs are metrics, but not all metrics make good SLIs.” This means that while you might be tracking hundreds or even thousands of metrics, you should focus on the indicators that matter most: the ones that best capture your users’ experience.&lt;/span>&lt;/strong>&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Service type&lt;/th>
+&lt;th>SLI type&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;strong>Response/Request&lt;/strong>&lt;/td>
+&lt;td>&lt;strong>Availability:&lt;/strong> Could the server respond to the request successfully? &lt;br>&lt;strong>Latency:&lt;/strong> How long did it take for the server to respond to the request? &lt;br>&lt;strong>Throughput:&lt;/strong> How many requests can be handled?&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>Storage&lt;/strong>&lt;/td>
+&lt;td>&lt;strong>Availability:&lt;/strong> Can the data be accessed on demand? &lt;br>&lt;strong>Latency:&lt;/strong> How long does it take to read and write data? &lt;br>&lt;strong>Durability:&lt;/strong> Is the data still there when it is needed?&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>Pipeline&lt;/strong>&lt;/td>
+&lt;td>&lt;strong>Correctness:&lt;/strong> Was the right data returned? &lt;br>&lt;strong>Freshness:&lt;/strong> How long does it take for new data or processed results to appear?&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;strong>Contrast this with a metric that will almost certainly never make a good SLI: CPU utilization. Even if your servers were experiencing a surge in CPU usage—and your infrastructure teams were getting alerted more often on this high usage—your end users might still be able to seamlessly check out. &lt;span style="background-color: #ffffcc; color: red">The takeaway here is that regardless of how important a metric might be to your internal teams, if its value does not directly affect user satisfaction, then it will not be useful as an SLI.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>&lt;strong>Once you have identified good SLIs, you’ll need to measure them with data from your monitoring system. Again, &lt;span style="background-color: #ffffcc; color: red">we recommend pulling data from the components that are in closest proximity to the user.&lt;/span>&lt;/strong> For instance, you might use a payments API to accept and authorize credit card transactions as part of your checkout service. While numerous other internal components might make up this service (e.g., servers, background job processors), they are typically abstracted away from the user’s view. &lt;span style="background-color: #ffffcc; color: red">Since SLIs serve to quantify your end user experience, it is sufficient to only gather data from the payments endpoint, as it exposes functionalities to the user&lt;/span>.&lt;/p>
+&lt;h4 id="turning-slis-into-slos">Turning SLIs into SLOs&lt;/h4>
+&lt;p>&lt;strong>Finally, you will need to set a target value—or range of values—for an SLI to transform it into an SLO. &lt;span style="background-color: #ffffcc; color: red">You should state what your best- and worst-case standard would be—and over what period of time this condition should remain valid&lt;/span>.&lt;/strong> For example, an SLO tracking request latency might be “The latency of 99 percent of requests to the authentication service will be less than 250 ms over a 30-day period.”&lt;/p>
+&lt;p>As you start to create SLOs, you should keep the following points in mind.&lt;/p>
+&lt;h5 id="be-realistic">Be realistic&lt;/h5>
+&lt;p>&lt;strong>No matter how tempting it might be to set an SLO to 100 percent, it is essentially impossible to achieve in practice.&lt;/strong> Without factoring in an error budget, your development teams might feel overly cautious about experimenting with new features, which will inhibit the growth of your product. &lt;strong>The typical industry standard is to set SLO targets as a number of nines&lt;/strong> (e.g., 99.9 percent is known as “three nines”, 99.95 percent is known as “three and a half nines”).&lt;/p>
+&lt;p>&lt;strong>And as a general rule of thumb, &lt;span style="background-color: #ffffcc; color: red">you should keep your SLOs slightly stricter than what you detail in your SLAs.&lt;/span>&lt;/strong> It’s always better to err on the side of caution to ensure you are meeting your SLAs rather than consistently under-delivering.&lt;/p>
+&lt;h5 id="experiment-away">Experiment away&lt;/h5>
+&lt;p>&lt;strong>There is no hard-and-fast rule for perfecting SLOs. &lt;span style="background-color: #ffffcc; color: red">Each organization’s SLOs will differ depending on the nature of the product, the priorities of the teams that manage them, and the expectations of the end users. Remember that you can always continue to refine your targets until you find the most optimal values.&lt;/span>&lt;/strong> For instance, if your team is consistently beating the targets by a large amount, you might want to tighten those values or capitalize on your unused error budgets by investing more heavily in product development. But if your team is consistently failing to meet its targets, it might be wise to drop them down to more achievable levels or invest more time in stabilizing the product.&lt;/p>
+&lt;h5 id="dont-overcomplicate-it">Don’t overcomplicate it&lt;/h5>
+&lt;p>&lt;strong>Last but not least, &lt;span style="background-color: #ffffcc; color: red">resist the temptation to set too many SLOs or to overcomplicate your SLI aggregations when defining your SLO targets.&lt;/span> Instead of setting an individual SLI for each and every single cluster, host, or component that makes up a critical journey, you should try to aggregate them in a meaningful way as a single SLI. In general, &lt;span style="background-color: #ffffcc; color: red">you should restrict your SLOs and SLIs to only ones that are absolutely critical to your end user experience.&lt;/span> This helps cut through the noise so you can focus on what’s truly important.&lt;/strong>&lt;/p></description></item><item><title>SLA、SLO、SLI的概念</title><link>https://chiehting.com/posts/service-level/</link><pubDate>Wed, 04 Nov 2020 17:22:00 +0800</pubDate><guid>https://chiehting.com/posts/service-level/</guid><description>
+&lt;p>拜讀 Atlassian 的文章, 暸解如何訂定服務的穩定性, 以及如何量化他們. 這邊定義了三件事情 SLA、SLO、SLI, 從對用戶的承諾, 到設定系統目標, 至搜集服務指標, 達到使用戶感受到系統的穩定, 但如果承諾未達成, 系統商也應該付出所承諾之代價.&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli">SLA vs. SLO vs. SLI: What’s the difference?&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>SRE ([[what-is-sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 &lt;em>Atlassian&lt;/em> 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:&lt;/p>
+&lt;ul>
+&lt;li>系統可以使用多久?&lt;/li>
+&lt;li>系統出現故障, 維護團隊多久可以給出回饋?&lt;/li>
+&lt;li>系統對響應速度做什麼樣的承諾?&lt;/li>
+&lt;/ul>
+&lt;p>SLA 是提供商對用戶承諾的協議. 例如承諾系統使用時間、響應時間. 通常會由公司的商務團隊或法務團隊來訂定對客戶的承諾. 如未達到承諾之協議, 則需要承擔後果. 而且非技術團隊所做出的承諾, 容易無法做出衡量. 所以如果是提供免費的服務, 就不太需要訂定承諾.&lt;/p>
+&lt;p>SLO 是系統對 SLA 所承諾之衡量目標的設定. 這邊感覺起來如果 SLA 是對用戶做承諾, SLO 就是將承諾提交給相關的團隊, 來做數據化的監控. 例如: 承諾系統要在 99.95% 的時間可使用, 就要將此承諾交給 IT team 來設定系統運行時間的目標要在 99.95% 內.&lt;/p>
+&lt;p>SLI 是系統對 SLO 所設定衡量目標之衡量指標. 是對 SLO 所衡量之目標所所測量的實際指標. 例如: 設定了 SLO 系統運行時間的目標在 99.95%, 而衡量指標就是這個目標目前實際的值, 可能是 99.9%.&lt;/p>
+&lt;p>延伸閱讀, &lt;a href="https://ikala.cloud/understanding-sli-slo-sla-in-sre/">iKala - 一次搞懂 SLI、SLO、SLA 差異，Google DevOps 理念實踐&lt;/a>&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli">SLA vs. SLO vs. SLI: What’s the difference?&lt;/a>&lt;/p>
+&lt;p>&lt;strong>And in today’s always-on world, people’s expectations—for free and paid services alike—are high. Speed. Uptime. Useful UX. Today’s user base expects everything to meet a high standard.&lt;/strong>&lt;/p>
+&lt;p>Which is why it’s important for companies to understand and maintain SLAs, SLOs, and SLIs—three initialisms that represent the promises we make to our users, the internal objectives that help us keep those promises, and the trackable measurements that tell us how we’re doing.&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">The goal of all three things is to get everybody—vendor and client alike—on the same page about system performance.&lt;/span>&lt;/strong> How often will your systems be available? How quickly will your team respond if the system goes down? What kind of promises are you making about speed and functionality? Users want to know—and so you need SLAs, SLOs, and SLIs.&lt;/p>
+&lt;ul>
+&lt;li>Service Level Agreement (SLA), the agreement you make with your clients or users.&lt;/li>
+&lt;li>Service Level Objective (SLOs), the objectives your team must hit to meet that agreement.&lt;/li>
+&lt;li>Services Level Indicator (SLIs), the real numbers on your performance.&lt;/li>
+&lt;/ul>
+&lt;h4 id="what-is-an-sla">What is an SLA?&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA (service level agreement) is an agreement between provider and client about measurable metrics like uptime, responsiveness, and responsibilities.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>These agreements are typically drawn up by a company’s new business and legal teams and they represent the promises you’re making to customers—and the consequences if you fail to live up to those promises. Typically, consequences include financial penalties, service credits, or license extensions.&lt;/p>
+&lt;h5 id="the-challenge-of-slas">The challenge of SLAs&lt;/h5>
+&lt;p>&lt;a href="https://www.atlassian.com/it-unplugged/best-practices-and-trends/stop-hating-on-slas">SLAs are notoriously difficult to measure, report on, and meet&lt;/a>. These agreements—generally written by people who aren’t in the tech trenches themselves—often make promises that are difficult for teams to measure, don’t always align with current and ever-evolving business priorities, and don’t account for nuance.&lt;/p>
+&lt;h5 id="who-needs-an-sla">Who needs an SLA?&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA is an agreement between a vendor and a paying customer.&lt;/span> Companies providing a service to users for free are unlikely to want or need an SLA for those free users.&lt;/strong>&lt;/p>
+&lt;h4 id="what-is-an-slo">What is an SLO?&lt;/h4>
+&lt;p>An SLO (service level objective) is an agreement within an SLA about a specific metric like uptime or response time. So, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if the SLA is the formal agreement between you and your customer, SLOs are the individual promises you’re making to that customer. SLOs are what set customer expectations and tell IT and DevOps teams &lt;a href="https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives">what goals they need to hit and measure themselves against&lt;/a>.&lt;/span>&lt;/strong>&lt;/p>
+&lt;h5 id="the-challenges-of-slos">The challenges of SLOs&lt;/h5>
+&lt;p>SLOs get less hate than SLAs, but they can create just as many problems if they’re vague, overly complicated, or impossible to measure. The key to SLOs that don’t make your engineers want to tear their hair out is simplicity and clarity. &lt;strong>Only the most important metrics should qualify for SLO status, the objectives should be spelled out in plain language, and, as with SLAs, they should always account for issues such as client-side delays.&lt;/strong>&lt;/p>
+&lt;h5 id="who-needs-slos">Who needs SLOs?&lt;/h5>
+&lt;p>Where SLAs are only relevant in the case of paying customers, SLOs can be useful for both paid and unpaid accounts, as well as internal and external customers. &lt;/p>
+&lt;p>Internal systems, such as CRMs, client data repositories, and intranet, can be just as important as external-facing systems. And having SLOs for those internal systems is an important piece of not only meeting business goals but enabling internal teams to meet their own customer-facing goals.&lt;/p>
+&lt;h4 id="what-is-an-sli">What is an SLI?&lt;/h4>
+&lt;p>An SLI (service level indicator) measures compliance with an SLO (service level objective). So, for example, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if your SLA specifies that your systems will be available 99.95% of the time, your SLO is likely 99.95% uptime and your SLI is the actual measurement of your uptime. Maybe it’s 99.96%. Maybe 99.99%.&lt;/span>&lt;/strong> To stay in compliance with your SLA, the SLI will need to meet or exceed the promises made in that document.&lt;/p>
+&lt;h5 id="the-challenges-of-slis">The challenges of SLIs&lt;/h5>
+&lt;p>As with SLOs, &lt;span style="background-color: #ffffcc; color: red">the challenge of SLIs is keeping them simple, choosing the right metrics to track, and not overcomplicating IT’s job by tracking too many metrics that don’t actually matter to clients.&lt;/span>&lt;/p>
+&lt;h5 id="who-needs-slis">Who needs SLIs?&lt;/h5>
+&lt;p>Any company measuring their performance against SLOs needs SLIs in order to make those measurements. You can’t really have SLOs without SLIs.&lt;/p></description></item></channel></rss>

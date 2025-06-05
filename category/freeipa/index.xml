@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>freeipa on Chiehting</title><link>https://chiehting.com/category/freeipa/</link><description>Recent content in freeipa on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 19 May 2022 15:00:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/freeipa/index.xml" rel="self" type="application/rss+xml"/><item><title>FreeIPA certificate renews problem</title><link>https://chiehting.com/posts/freeipa-cert-renews-problem/</link><pubDate>Thu, 19 May 2022 15:00:00 +0800</pubDate><guid>https://chiehting.com/posts/freeipa-cert-renews-problem/</guid><description>
+&lt;p>近期 FreeIPA SSL 憑證過期了，這邊憑證是自動跟 Let's Encrypt 重新申請，過期了代表出現異常。在這邊紀錄處理過程。&lt;/p>
+&lt;h3 id="憑證過期了想說重新申請">憑證過期了想說重新申請&lt;/h3>
+&lt;p>更新憑證前先把中間憑證裝起來，但在做 &lt;code>ipa-certupdate&lt;/code> 時發生錯誤。
+跟我說 &lt;code>certificate verify failed&lt;/code>，這邊沒有講失敗的原因，我猜測是前端 https 憑證過期了，所以先手動更換 httpd 的憑證。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap script&lt;span class="o">]&lt;/span>&lt;span class="c1"># ipa-certupdate -v&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">・・・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">ipapython.admintool: DEBUG: The ipa-certupdate &lt;span class="nb">command&lt;/span> failed, exception: NetworkError: cannot connect to &lt;span class="s1">&amp;#39;https://ldap.example.com/ipa/json&amp;#39;&lt;/span>: &lt;span class="o">[&lt;/span>SSL: CERTIFICATE_VERIFY_FAILED&lt;span class="o">]&lt;/span> certificate verify failed &lt;span class="o">(&lt;/span>_ssl.c:897&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">ipapython.admintool: ERROR: cannot connect to &lt;span class="s1">&amp;#39;https://ldap.example.com/ipa/json&amp;#39;&lt;/span>: &lt;span class="o">[&lt;/span>SSL: CERTIFICATE_VERIFY_FAILED&lt;span class="o">]&lt;/span> certificate verify failed &lt;span class="o">(&lt;/span>_ssl.c:897&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">ipapython.admintool: ERROR: The ipa-certupdate &lt;span class="nb">command&lt;/span> failed.
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="手動更換-httpd-的憑證">手動更換 httpd 的憑證&lt;/h3>
+&lt;p>先去跟 Let's Encrypt 重新申請憑證（使用 dns 認證方式），然後將憑證換上並重啟。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap script&lt;span class="o">]&lt;/span>&lt;span class="c1"># printf &amp;#34;\n\n&amp;#34;|ipa-server-certinstall -w -d /etc/letsencrypt/live/${IPA_SERVER_HOSTNAME}/privkey.pem /etc/letsencrypt/live/${IPA_SERVER_HOSTNAME}/cert.pem&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Directory Manager password:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">Enter private key unlock password:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">Please restart ipa services after installing certificate &lt;span class="o">(&lt;/span>ipactl restart&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">The ipa-server-certinstall &lt;span class="nb">command&lt;/span> was successful
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap script&lt;span class="o">]&lt;/span>&lt;span class="c1"># restorecon -v /var/lib/ipa/certs/httpd.crt&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap script&lt;span class="o">]&lt;/span>&lt;span class="c1"># ipactl restart&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">ipa: INFO: The ipactl &lt;span class="nb">command&lt;/span> was successful
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap script&lt;span class="o">]&lt;/span>&lt;span class="c1"># ipactl status&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">ipa: INFO: The ipactl &lt;span class="nb">command&lt;/span> was successful
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="錯誤-gost_yescrypt_pwd_storage_scheme_init">錯誤 gost_yescrypt_pwd_storage_scheme_init&lt;/h3>
+&lt;p>Directory Service 啟動失敗&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap:/opt/freeipa/build&lt;span class="o">]&lt;/span>&lt;span class="c1"># docker exec -it ldap.example.com systemctl status dirsrv@HEARTS-TW.service&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">ERR - symload_report_error - Netscape Portable Runtime error-5975: /usr/lib64/dirsrv/plugins/libpwdstorage-plugin.so: undefined symbol: gost_yescrypt_pwd_storage_scheme_init
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># seems like a &amp;#34;fix&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap:/opt/freeipa/build&lt;span class="o">]&lt;/span>&lt;span class="c1"># docker exec -it ldap.example.com dnf downgrade 389-ds-base*&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="錯誤-更新異常">錯誤 更新異常&lt;/h3>
+&lt;p>由於啟動會執行 &lt;code>ipa-server-upgrade&lt;/code> 出錯後，資料就毀損了，所以先停止啟動自動更新。&lt;/p>
+&lt;p>FreeIPA 的 docker image 中，Entrypoint 是設置 &lt;code>/usr/local/sbin/init&lt;/code>。
+將檔案複製出來並將下面改寫，重啟並使用改寫後的 Entrypoint 檔案。&lt;/p>
+&lt;p>移除 exec 中的 &lt;code>$SYSTEMD_OPTS&lt;/code> 參數。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="o">[&lt;/span>root@ldap /&lt;span class="o">]&lt;/span>&lt;span class="c1"># cat /usr/local/sbin/init | grep SYSTEMD_OPTS&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> &lt;span class="nv">SYSTEMD_OPTS&lt;/span>&lt;span class="o">=&lt;/span>--unit&lt;span class="o">=&lt;/span>ipa-server-upgrade.service
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="nb">exec&lt;/span> /usr/sbin/init --show-status&lt;span class="o">=&lt;/span>&lt;span class="nb">false&lt;/span> &lt;span class="nv">$SYSTEMD_OPTS&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="操作時查到的指令確認憑證清單">操作時查到的指令，確認憑證清單&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">getcert list &lt;span class="p">|&lt;/span> egrep &lt;span class="s1">&amp;#39;^Request|status:|subject:&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">certutil -L -d /etc/pki/pki-tomcat/alias
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">certutil -L -d /etc/ipa/nssdb
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Setup FreeIPA client on Ubuntu</title><link>https://chiehting.com/posts/freeipa-ssh-with-ldap/</link><pubDate>Wed, 19 Jan 2022 15:43:00 +0800</pubDate><guid>https://chiehting.com/posts/freeipa-ssh-with-ldap/</guid><description>
+&lt;p>開發者有需求要連線至 server via ssh, 一般情況下需要在 server 中建立帳號並配置金鑰.
+但目前公司的人員管理政策是使用 FreeIPA 做管理, 所以不想要另外在 server 建立帳號, 造成管理複雜.&lt;/p>
+&lt;p>所以這採用的解決方案是使用 freeipa-client 套件, 讓主機跟 FreeIPA 做人員權限認證.&lt;/p>
+&lt;h3 id="install-freeipa-client-package">Install FreeIPA client package&lt;/h3>
+&lt;p>server OS is Ubuntu 20.04.&lt;/p>
+&lt;p>在開始前, 先更新主機套件, 讓軟體升級到最新.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@edge:/root# apt-get update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@edge:/root# apt-get upgrade
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>確認防火牆是否有開通, 規則如下.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">Please make sure the following ports are opened in the firewall settings:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">TCP: 80, 88, 389
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">UDP: 88 (at least one of TCP/UDP ports 88 has to be open)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">Also note that following ports are necessary for ipa-client working
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">properly after enrollment:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">TCP: 464
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">UDP: 464, 123 (if NTP enabled)
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>安裝 &amp;amp; 配置 freeipa-client 套件.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@edge:/root# apt-get install -y freeipa-client
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">root@edge:/root# ipa-client-install --hostname&lt;span class="o">=&lt;/span>&lt;span class="sb">`&lt;/span>hostname -f&lt;span class="sb">`&lt;/span> --mkhomedir --server&lt;span class="o">=&lt;/span>ldap.example.com --domain example.com --realm EXAMPLE.COM
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">WARNING: conflicting time&lt;span class="p">&amp;amp;&lt;/span>date synchronization service &lt;span class="s1">&amp;#39;ntp&amp;#39;&lt;/span> will be disabled
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">in favor of chronyd
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">Autodiscovery of servers &lt;span class="k">for&lt;/span> failover cannot work with this configuration.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">If you proceed with the installation, services will be configured to always access the discovered server &lt;span class="k">for&lt;/span> all operations and will not fail over to other servers in &lt;span class="k">case&lt;/span> of failure.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">Proceed with fixed values and no DNS discovery? &lt;span class="o">[&lt;/span>no&lt;span class="o">]&lt;/span>: yes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">Client hostname: edge.example.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">Realm: EXAMPLE.COM
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">DNS Domain: example.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">IPA Server: ldap.example.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">BaseDN: &lt;span class="nv">dc&lt;/span>&lt;span class="o">=&lt;/span>example,dc&lt;span class="o">=&lt;/span>com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">Continue to configure the system with these values? &lt;span class="o">[&lt;/span>no&lt;span class="o">]&lt;/span>: yes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">Synchronizing &lt;span class="nb">time&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">No SRV records of NTP servers found and no NTP server or pool address was provided.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">Using default chrony configuration.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl">Attempting to sync &lt;span class="nb">time&lt;/span> with chronyc.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl">Time synchronization was successful.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">User authorized to enroll computers: admin
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">Password &lt;span class="k">for&lt;/span> admin@EXAMPLE.COM:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">The ipa-client-install &lt;span class="nb">command&lt;/span> was successful
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="setup-policy">Setup policy&lt;/h3>
+&lt;p>安裝完成後, 登入 FreeIPA website 在 Host 可以看到已經有新增剛剛那台主機.&lt;/p>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2022-01-19-install-freeipa-client-on-ubuntu-1.png" alt="hosts">&lt;/p>
+&lt;p>接著到 Policy 裡面配置 HBAC Rules, 建議 disable allow_all 關閉預設允許全部用戶訪問.
+再來新增一個權限 &lt;code>allow_edge&lt;/code>, 預計讓開發可以進入到邊緣節點.&lt;/p>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2022-01-19-install-freeipa-client-on-ubuntu-2.png" alt="hbac-rules">&lt;/p>
+&lt;p>接著配置 HBAC, &amp;quot;Who&amp;quot; 可以操作哪些 &amp;quot;Accessing&amp;quot; 的 &amp;quot;Service&amp;quot;, 以下圖的範例為：&lt;/p>
+&lt;ol>
+&lt;li>backend group 可以操作 edge.example.com 的 login&lt;/li>
+&lt;li>backend group 可以操作 edge.example.com 的 sshd&lt;/li>
+&lt;li>admins group 可以操作 edge.example.com 的 login&lt;/li>
+&lt;li>admins group 可以操作 edge.example.com 的 sshd&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2022-01-19-install-freeipa-client-on-ubuntu-3.png" alt="policys">&lt;/p>
+&lt;p>完成後可測試 ssh login, 看使否可以登入&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://computingforgeeks.com/how-to-configure-freeipa-client-on-ubuntu-centos/">how to configure freeipa client on ubuntu centos&lt;/a>&lt;/li>
+&lt;/ol></description></item></channel></rss>

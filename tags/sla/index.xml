@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>sla on Chiehting</title><link>https://chiehting.com/tags/sla/</link><description>Recent content in sla on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Mon, 10 Jul 2023 18:02:11 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/sla/index.xml" rel="self" type="application/rss+xml"/><item><title>Service Level Agreement</title><link>https://chiehting.com/posts/service-level-agreement/</link><pubDate>Mon, 10 Jul 2023 18:02:11 +0800</pubDate><guid>https://chiehting.com/posts/service-level-agreement/</guid><description>
+&lt;h3 id="evergreen-note">Evergreen Note&lt;/h3>
+&lt;p>Question :: 為什麼 SLA 這麼重要?&lt;/p>
+&lt;p>Answer :: 身為 SRE, 要確保系統的可靠性, 並且滿足客戶的期待. 所以訂定協議可以增加客戶與
+對服務的信任; 也可以讓 IT 團隊知道系統穩定的目標在哪, 達到客戶與 IT 團隊擁有共識. 並且可以設立 error budget 來應對意外狀況, 讓用戶了解系統碰到異常, 並知道在多少時間內可修復; 讓團隊有排除系統異常的空間, 並了解要在多少時間內修復完畢.&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>
+&lt;h1 id="what-is-an-sla-learn-best-practices-and-how-to-write-onehttpswwwatlassiancomitsmservice-request-managementslas">&lt;a href="https://www.atlassian.com/itsm/service-request-management/slas">What is an SLA? Learn best practices and how to write one&lt;/a>&lt;/h1>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Service level agreement (服務水準協議) 是在訂定服務可以提供的承諾. SLA 的組成會是由 &lt;strong>SLO 與未達成賠償&lt;/strong>, 公式如下:&lt;/p>
+&lt;p>$$ SLA = SLO + written\ and\ signed\ consequences $$&lt;/p>
+&lt;p>作為一個服務提供商, 會讓客戶 (外部客戶或內部客戶) 保持對服務的信任. 而協議可讓客戶跟 IT 團隊知道我們提供的服務水準在哪, 進而達成共識.&lt;/p>
+&lt;p>當然水準也不會亂承諾 100% 的事情, 因爲總是會有例外狀況. 所以會設立 error budget 來應對意外的發生.&lt;/p>
+&lt;p>下面為產業的 SLA 範例:&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://aws.amazon.com/tw/legal/service-level-agreements/">AWS&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://cloud.google.com/terms/sla?hl=zh-tw">GCP&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://azure.microsoft.com/zh-tw/support/legal/sla/">Azure&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.atlassian.com/legal/sla">Atlassian&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h4 id="amazon-api-gateway-service-level-agreement">Amazon API Gateway Service Level Agreement&lt;/h4>
+&lt;p>AWS 將努力使API Gateway 在每個 AWS 區域正常運行時間百分比至少達到 99.95％. 如果不能滿足則給出服務積分,用來計算賠償使用.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Monthly Uptime Percentage&lt;/th>
+&lt;th>Service Credit Percentage&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Less than 99.95% but greater than or equal to 99.0%&lt;/td>
+&lt;td>10%&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Less than 99.0% but greater than or equal to 95.0%&lt;/td>
+&lt;td>25%&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Less than 95.0%&lt;/td>
+&lt;td>100%&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="pchome-24h-購物">PChome 24h 購物&lt;/h4>
+&lt;p>全台灣保證24h到貨,遲到將提供100元現金積點;週末假日照常出貨.&lt;/p>
+&lt;h4 id="sla-裡常用的服務關鍵績效指標">SLA 裡常用的服務關鍵績效指標:&lt;/h4>
+&lt;ol>
+&lt;li>系統可用性(System Availability): 客戶使用系統正常運作率會達到 X% 以上, 一般以月份為基準單位進行度量.&lt;/li>
+&lt;li>系統回復性(System Recovery): 系統中斷時會在 X 小時內回復正常運作, 系統資料會復原到發生中斷前 X 小時內的狀態.&lt;/li>
+&lt;li>系統回應時間(System Response): 系統反應時間不會超過 X 秒.&lt;/li>
+&lt;li>網路服務品質(Quality of Service, QoS): 封包遺失比率(Packet Loss)&amp;lt; X%、封包發送延遲時間(Latency)&amp;lt; X 毫秒(ms)、封包發送延遲時間變異數(Jitter)&amp;lt; X 毫秒(ms)等.&lt;/li>
+&lt;li>問題回應時間(Incident Response): 系統發生問題後於 X 分鐘內回應, 一般會將問題區分為不同優先等級, 並設定不同的回應時間標準.&lt;/li>
+&lt;li>問題解決時間(Incident Resolution): 系統發生問題後於 X 小時內解決, 一般會將問題區分為不同優先等級，並設定不同的解決時間標準.&lt;/li>
+&lt;li>平均故障時間(Mean Time to Failurel, MTTF): 指工作系統直到發生故障失效的平均時間. 這表示此系統僅能失效一次且不可修復, 對於不可修復的系統而言, MTTF 為系統可靠度中極為重要的指標. 例如: 筆電電池平均充電循環次數 100 次後損壞, 則 MTTF 就是 100 次.&lt;/li>
+&lt;li>平均修復時間(Mean Time To Repair, MTTR): 描述系統從故障狀態轉為工作狀態的平均修理時間. MTTR 越短, 表示恢復性越好.&lt;/li>
+&lt;li>平均故障間隔時間(Mean Time Between Failures, MTBF): 指可修復系統兩次故障相鄰之間的平均時間值. MTBF 越長, 系統的可靠性越高, 工作能力越強.&lt;/li>
+&lt;li>客服支援時段: 明確訂定出支援小組可提供服務的方式和時段, 例如: 周一到周五上午 9:00 至下午 18:00.&lt;/li>
+&lt;/ol>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/itsm/service-request-management/slas">SLAs: The what, the why, the how&lt;/a>&lt;/p>
+&lt;h4 id="what-is-a-service-level-agreement-sla">What is a service level agreement (SLA)?&lt;/h4>
+&lt;p>**&lt;span style="background-color: #ffffcc; color: red">As a service provider, a service level agreement is a plain-language agreement between you and your customer (whether internal or external)&lt;/span> that defines the services you will deliver, the responsiveness that can be expected, and how you will measure performance. **&lt;/p>
+&lt;p>SLAs define contractually agreed upon terms for services including things like uptime and support responsiveness. For instance, promising customers 99.9% service uptime or a response from support within 24 hours. In addition to formalizing service expectations, SLAs set forth the terms for redress when requirements are breached.&lt;/p>
+&lt;h4 id="the-importance-of-slas">The importance of SLAs&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">SLAs are a foundational agreement between your IT team and customers that are important in building trust.&lt;/span> They manage customer expectations and allow your team to know which issues you are responsible for resolving.&lt;/strong>&lt;/p>
+&lt;p>With SLAs in place, there is mutual understanding of service expectations. Implementing SLAs can benefit your IT team in numerous ways that include:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Strengthening IT’s relationship with customers&lt;/strong> - SLAs ease the concern over risk, which improves trust between parties. By defining what happens in the event of a breach, they reduce uncertainty. &lt;/li>
+&lt;li>&lt;strong>Formalizing communication&lt;/strong> - Conversations with stakeholders about IT issues can be difficult. Nobody wants to be hearing from a customer ten times a day or,on the other hand, allowing a customer to quietly stew over their unspoken expectations for service performance. An SLA enables stakeholders to have structured conversations based on already agreed-upon terms. &lt;/li>
+&lt;li>&lt;strong>Improving productivity and morale&lt;/strong> - SLAs define the urgency of incoming requests. They focus IT teams on which incoming issues matter the most.&lt;/li>
+&lt;/ul>
+&lt;h4 id="the-difference-between-slas-and-kpis">The difference between SLAs and KPIs&lt;/h4>
+&lt;p>An SLA is an agreement between you and your customer that defines how your relationship will work in the future. Key performance indicators (KPIs) are the metrics chosen to gauge how well a team performed against agreed standards.&lt;/p>
+&lt;p>An IT service desk, for example, typically agrees to provide technical support for a wide variety of services and devices within the business, and offers guarantees around things like uptime, first-call resolution, and time-to-recovery after service outages. KPIs are the specific metrics that are chosen to track whether the IT service desk fulfills these guarantees.&lt;/p>
+&lt;h4 id="the-challenges-of-slas">The challenges of SLAs&lt;/h4>
+&lt;p>This all sounds simple, right? In theory, yes. In practice, though, IT teams often run into one or more major challenges:&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>Tracking SLAs is difficult, and changing them is even harder&lt;/strong>. To see how they’re performing against SLA, many IT managers have to extract a ton of raw data, write custom queries, and build elaborate Excel formulas and reports. Plus, the SLAs often have to be custom or hard-coded into many service desks, meaning it can take days of development effort to change them.&lt;/li>
+&lt;li>&lt;strong>SLAs don’t always align with business priorities&lt;/strong>. SLAs seldom seem to change or evolve at the same pace the business does. In fact, more often than not, they’re inherited. Someone set an SLA a decade ago, and today it’s honored simply because it’s there. &lt;/li>
+&lt;li>&lt;strong>There is little flexibility in reporting&lt;/strong>. Even though there are a ton of unique circumstances influencing SLA attainment (like how long it takes for a customer to reply to you, etc.) most SLA reports don’t easily account for them. You either met your SLA or you didn’t. There’s no way to highlight something in a report that shows why, or helps you continually improve.&lt;/li>
+&lt;/ul>
+&lt;h4 id="how-to-set-slas-and-measure-your-performance">How to set SLAs and measure your performance&lt;/h4>
+&lt;p>Above, we talked about how SLAs can feel a bit arbitrary and like you’re not always measuring things that directly support your company’s bigger business objectives. To make sure you’re measuring the right things, and meeting the expectations that other parts of the business have of you, we recommend revisiting your SLAs regularly. Follow this process:&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Set a baseline.&lt;/span>&lt;/strong> The best place to start is by looking at your current SLAs, and how you’re performing against them. Take an inventory of what you offer, and how it aligns to the business goals of your company and your customers.&lt;/li>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Ask how you’re doing.&lt;/span>&lt;/strong> Talk directly with your customers and solicit constructive feedback. What are you doing well, and what could you do better? Are you offering the right services?&lt;/li>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Build a draft of new SLAs based on the results of the steps above.&lt;/span>&lt;/strong> Get rid of the services you no longer need, and add the ones that will make customers even happier and bring more value to both the business and IT.&lt;/li>
+&lt;li>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Get support from management.&lt;/span>&lt;/strong> To be successful, SLAs need the blessing of your IT leaders, and the leaders of your customer organizations, too. Start by getting your own management to buy in, and then ask them to help you negotiate with your customer’s management team.&lt;/li>
+&lt;/ol>
+&lt;p>If you've followed the above process, your SLAs should be in pretty good shape.&lt;/p></description></item><item><title>SLA、SLO、SLI的概念</title><link>https://chiehting.com/posts/service-level/</link><pubDate>Wed, 04 Nov 2020 17:22:00 +0800</pubDate><guid>https://chiehting.com/posts/service-level/</guid><description>
+&lt;p>拜讀 Atlassian 的文章, 暸解如何訂定服務的穩定性, 以及如何量化他們. 這邊定義了三件事情 SLA、SLO、SLI, 從對用戶的承諾, 到設定系統目標, 至搜集服務指標, 達到使用戶感受到系統的穩定, 但如果承諾未達成, 系統商也應該付出所承諾之代價.&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli">SLA vs. SLO vs. SLI: What’s the difference?&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>SRE ([[what-is-sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 &lt;em>Atlassian&lt;/em> 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:&lt;/p>
+&lt;ul>
+&lt;li>系統可以使用多久?&lt;/li>
+&lt;li>系統出現故障, 維護團隊多久可以給出回饋?&lt;/li>
+&lt;li>系統對響應速度做什麼樣的承諾?&lt;/li>
+&lt;/ul>
+&lt;p>SLA 是提供商對用戶承諾的協議. 例如承諾系統使用時間、響應時間. 通常會由公司的商務團隊或法務團隊來訂定對客戶的承諾. 如未達到承諾之協議, 則需要承擔後果. 而且非技術團隊所做出的承諾, 容易無法做出衡量. 所以如果是提供免費的服務, 就不太需要訂定承諾.&lt;/p>
+&lt;p>SLO 是系統對 SLA 所承諾之衡量目標的設定. 這邊感覺起來如果 SLA 是對用戶做承諾, SLO 就是將承諾提交給相關的團隊, 來做數據化的監控. 例如: 承諾系統要在 99.95% 的時間可使用, 就要將此承諾交給 IT team 來設定系統運行時間的目標要在 99.95% 內.&lt;/p>
+&lt;p>SLI 是系統對 SLO 所設定衡量目標之衡量指標. 是對 SLO 所衡量之目標所所測量的實際指標. 例如: 設定了 SLO 系統運行時間的目標在 99.95%, 而衡量指標就是這個目標目前實際的值, 可能是 99.9%.&lt;/p>
+&lt;p>延伸閱讀, &lt;a href="https://ikala.cloud/understanding-sli-slo-sla-in-sre/">iKala - 一次搞懂 SLI、SLO、SLA 差異，Google DevOps 理念實踐&lt;/a>&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli">SLA vs. SLO vs. SLI: What’s the difference?&lt;/a>&lt;/p>
+&lt;p>&lt;strong>And in today’s always-on world, people’s expectations—for free and paid services alike—are high. Speed. Uptime. Useful UX. Today’s user base expects everything to meet a high standard.&lt;/strong>&lt;/p>
+&lt;p>Which is why it’s important for companies to understand and maintain SLAs, SLOs, and SLIs—three initialisms that represent the promises we make to our users, the internal objectives that help us keep those promises, and the trackable measurements that tell us how we’re doing.&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">The goal of all three things is to get everybody—vendor and client alike—on the same page about system performance.&lt;/span>&lt;/strong> How often will your systems be available? How quickly will your team respond if the system goes down? What kind of promises are you making about speed and functionality? Users want to know—and so you need SLAs, SLOs, and SLIs.&lt;/p>
+&lt;ul>
+&lt;li>Service Level Agreement (SLA), the agreement you make with your clients or users.&lt;/li>
+&lt;li>Service Level Objective (SLOs), the objectives your team must hit to meet that agreement.&lt;/li>
+&lt;li>Services Level Indicator (SLIs), the real numbers on your performance.&lt;/li>
+&lt;/ul>
+&lt;h4 id="what-is-an-sla">What is an SLA?&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA (service level agreement) is an agreement between provider and client about measurable metrics like uptime, responsiveness, and responsibilities.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>These agreements are typically drawn up by a company’s new business and legal teams and they represent the promises you’re making to customers—and the consequences if you fail to live up to those promises. Typically, consequences include financial penalties, service credits, or license extensions.&lt;/p>
+&lt;h5 id="the-challenge-of-slas">The challenge of SLAs&lt;/h5>
+&lt;p>&lt;a href="https://www.atlassian.com/it-unplugged/best-practices-and-trends/stop-hating-on-slas">SLAs are notoriously difficult to measure, report on, and meet&lt;/a>. These agreements—generally written by people who aren’t in the tech trenches themselves—often make promises that are difficult for teams to measure, don’t always align with current and ever-evolving business priorities, and don’t account for nuance.&lt;/p>
+&lt;h5 id="who-needs-an-sla">Who needs an SLA?&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA is an agreement between a vendor and a paying customer.&lt;/span> Companies providing a service to users for free are unlikely to want or need an SLA for those free users.&lt;/strong>&lt;/p>
+&lt;h4 id="what-is-an-slo">What is an SLO?&lt;/h4>
+&lt;p>An SLO (service level objective) is an agreement within an SLA about a specific metric like uptime or response time. So, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if the SLA is the formal agreement between you and your customer, SLOs are the individual promises you’re making to that customer. SLOs are what set customer expectations and tell IT and DevOps teams &lt;a href="https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives">what goals they need to hit and measure themselves against&lt;/a>.&lt;/span>&lt;/strong>&lt;/p>
+&lt;h5 id="the-challenges-of-slos">The challenges of SLOs&lt;/h5>
+&lt;p>SLOs get less hate than SLAs, but they can create just as many problems if they’re vague, overly complicated, or impossible to measure. The key to SLOs that don’t make your engineers want to tear their hair out is simplicity and clarity. &lt;strong>Only the most important metrics should qualify for SLO status, the objectives should be spelled out in plain language, and, as with SLAs, they should always account for issues such as client-side delays.&lt;/strong>&lt;/p>
+&lt;h5 id="who-needs-slos">Who needs SLOs?&lt;/h5>
+&lt;p>Where SLAs are only relevant in the case of paying customers, SLOs can be useful for both paid and unpaid accounts, as well as internal and external customers. &lt;/p>
+&lt;p>Internal systems, such as CRMs, client data repositories, and intranet, can be just as important as external-facing systems. And having SLOs for those internal systems is an important piece of not only meeting business goals but enabling internal teams to meet their own customer-facing goals.&lt;/p>
+&lt;h4 id="what-is-an-sli">What is an SLI?&lt;/h4>
+&lt;p>An SLI (service level indicator) measures compliance with an SLO (service level objective). So, for example, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if your SLA specifies that your systems will be available 99.95% of the time, your SLO is likely 99.95% uptime and your SLI is the actual measurement of your uptime. Maybe it’s 99.96%. Maybe 99.99%.&lt;/span>&lt;/strong> To stay in compliance with your SLA, the SLI will need to meet or exceed the promises made in that document.&lt;/p>
+&lt;h5 id="the-challenges-of-slis">The challenges of SLIs&lt;/h5>
+&lt;p>As with SLOs, &lt;span style="background-color: #ffffcc; color: red">the challenge of SLIs is keeping them simple, choosing the right metrics to track, and not overcomplicating IT’s job by tracking too many metrics that don’t actually matter to clients.&lt;/span>&lt;/p>
+&lt;h5 id="who-needs-slis">Who needs SLIs?&lt;/h5>
+&lt;p>Any company measuring their performance against SLOs needs SLIs in order to make those measurements. You can’t really have SLOs without SLIs.&lt;/p></description></item></channel></rss>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>openvpn on Chiehting</title><link>https://chiehting.com/tags/openvpn/</link><description>Recent content in openvpn on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 11 Jan 2022 10:13:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/openvpn/index.xml" rel="self" type="application/rss+xml"/><item><title>Authenticate OpenVPN using LDAP</title><link>https://chiehting.com/posts/openvpn-authenticate-with-ldap/</link><pubDate>Tue, 11 Jan 2022 10:13:00 +0800</pubDate><guid>https://chiehting.com/posts/openvpn-authenticate-with-ldap/</guid><description>
+&lt;p>要解決 OpenVPN 的憑證過多不好管理的問題。由於公司人數增加, 要使用 &lt;em>VPN&lt;/em> 的人變多, 若每個人的 .open 檔案都手動生成的話, 在管理上會有點麻煩. 所以這邊讓 &lt;em>OpenVPN&lt;/em> 透過 &lt;em>LDAP&lt;/em> 去認證用戶是否可以使用 &lt;em>VPN&lt;/em>.&lt;/p>
+&lt;p>建立完 &lt;em>OpenVPN([[openvpn-install]])&lt;/em> 後, 安裝 LDAP 套件跟配置設定, 使 &lt;em>OpenVPN&lt;/em> 登入時可以使用 &lt;em>LDAP&lt;/em> 做認證.&lt;/p>
+&lt;h3 id="configure-openvpn-for-ldap-authentication">Configure OpenVPN for LDAP authentication&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="c1"># 需要安裝 openvpn-auth-ldap library&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# apt-get install -y openvpn-auth-ldap
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1"># 查看 .so 檔案是否存在&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# ls /usr/lib/openvpn/openvpn-auth-ldap.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">/usr/lib/openvpn/openvpn-auth-ldap.so
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# mkdir /etc/openvpn/auth
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# cp /usr/share/doc/openvpn-auth-ldap/examples/auth-ldap.conf /etc/openvpn/auth/auth-ldap.conf
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="c1"># 將設定配置到 OpenVPN server configuration file&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# &lt;span class="nb">echo&lt;/span> &lt;span class="s2">&amp;#34;plugin /usr/lib/openvpn/openvpn-auth-ldap.so /etc/openvpn/auth/auth-ldap.conf&amp;#34;&lt;/span> &amp;gt;&amp;gt; /etc/openvpn/server.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>配置 /etc/openvpn/auth/auth-ldap.conf 檔案&lt;/strong>。這邊要自行創建 /usr/local/etc/ssl 內的憑證, 可以參考 references。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-xml" data-lang="xml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;LDAP&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> # LDAP server URL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> URL ldap://ldap.example.com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> # Bind DN (If your LDAP server doesn&amp;#39;t support anonymous binds)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> BindDN uid=admin, cn=users, cn=accounts, dc=example, dc=com
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> # Bind Password
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> Password password
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> # Necomork timeout (in seconds)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> Timeout 15
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> # Enable Start TLS
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> TLSEnable yes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> # Follow LDAP Referrals (anonymously)
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> FollowReferrals yes
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> # TLS CA Certificate File
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> TLSCACertFile /usr/local/etc/ssl/ca-certificates.crt
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> # TLS CA Certificate Directory
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> TLSCACertDir /etc/ssl/certs
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> # Client Certificate and key
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> # If TLS client authentication is required
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> TLSCertFile /usr/local/etc/ssl/ca.cert.pem
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> TLSKeyFile /usr/local/etc/ssl/ca.key
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;/LDAP&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;Authorization&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> # Base DN
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl"> BaseDN &amp;#34;cn=users, cn=accounts, dc=example, dc=com&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> # User Search Filter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> SearchFilter &amp;#34;(uid=%u)&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl"> # Require Group Membership
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl"> RequireGroup true
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;Group&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl"> BaseDN &amp;#34;cn=groups, cn=accounts, dc=example, dc=com&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl"> SearchFilter &amp;#34;(|(cn=admin)(cn=vpn)(cn=ipausers))&amp;#34;
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl"> MemberAttribute member
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;lt;/Group&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl">&lt;span class="nt">&amp;lt;/Authorization&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>配置完成後, 重新啟動 &lt;em>OpenVPN&lt;/em> 服務。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# systemctl restart openvpn
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="編輯組態檔案">編輯組態檔案&lt;/h4>
+&lt;p>編輯一下之前透過腳本 ./openvpn-install.sh 建立的 .open file.
+&lt;strong>加入 auth-user-pass 參數, 讓使用者在登入的時候使用 LDAP 的帳密.&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">client
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">proto udp
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">・・・
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">remote vpn.example.com 1194
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">auth-user-pass
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">・・・
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://kifarunix.com/configure-openvpn-ldap-based-authentication/">configure-openvpn-ldap-based-authentication&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://computingforgeeks.com/secure-ldap-server-with-ssl-tls-on-ubuntu/">secure-ldap-server-with-ssl-tls-on-ubuntu&lt;/a>&lt;/li>
+&lt;/ol></description></item><item><title>Create an OpenVPN service</title><link>https://chiehting.com/posts/openvpn-install/</link><pubDate>Tue, 11 Jan 2022 10:00:00 +0800</pubDate><guid>https://chiehting.com/posts/openvpn-install/</guid><description>
+&lt;p>原本使用 &lt;em>Wireless Access Points&lt;/em>（ASUS 路由器）內建的 VPN 連到內部服務， 但隨著公司人數增加 AP 負載量過大， 導致硬體無法負荷和效率變差， 所以這邊改使用 &lt;em>OpenVPN&lt;/em> 做替換。&lt;/p>
+&lt;h3 id="install-openvpn-to-ubuntu-2004">Install OpenVPN to Ubuntu 20.04&lt;/h3>
+&lt;p>GitHub 上有個很好用的腳本 &lt;a href="https://github.com/angristan/openvpn-install">angristan/openvpn-install&lt;/a>，支持的 &lt;a href="https://github.com/angristan/openvpn-install#compatibility">compatibility OS&lt;/a> 也包括我們要使用的 Ubuntu 20.04，所以這邊直接使用該腳本做安裝.&lt;/p>
+&lt;p>完成後會在家目錄產生一個 .open 的檔案，用戶端即可以匯入 .open 檔案來連線 VPN.
+這邊要注意，如果是放在 Cloud 上的話，要記得配置 Security Groups 設定開啟 OpenVPN 的 port 號.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@vpn:/root# apt-get update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@vpn:/root# apt-get -y upgrade
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">root@vpn:/root# mkdir /opt/vpn &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> &lt;span class="nb">cd&lt;/span> /opt/vpn
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# curl -O https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# chmod +x openvpn-install.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# ./openvpn-install.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>再執行一次腳本，可以執行其他公能.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">root@vpn:/opt/vpn# ./openvpn-install.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Welcome to OpenVPN-install!
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">The git repository is available at: https://github.com/angristan/openvpn-install
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">It looks like OpenVPN is already installed.
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">What &lt;span class="k">do&lt;/span> you want to &lt;span class="k">do&lt;/span>?
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 1&lt;span class="o">)&lt;/span> Add a new user
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> 2&lt;span class="o">)&lt;/span> Revoke existing user
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> 3&lt;span class="o">)&lt;/span> Remove OpenVPN
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> 4&lt;span class="o">)&lt;/span> Exit
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">Select an option &lt;span class="o">[&lt;/span>1-4&lt;span class="o">]&lt;/span>:
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
