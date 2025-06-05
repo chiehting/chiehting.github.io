@@ -1,15 +1,12 @@
 ---
 date: 2023-07-10T18:02:11+08:00
-updated: 2024-02-27T17:27:03+08:00
+updated: 2025-06-05T22:18:24+08:00
 title: Service Level Agreement
 category: sre
 tags:
   - sre
+  - sla
 type: note
-author: Atlassian
-status: 發芽期
-sourceType: 📰️
-sourceURL: https://www.atlassian.com/itsm/service-request-management/slas
 post: true
 ---
 
@@ -21,6 +18,10 @@ Answer :: 身為 SRE, 要確保系統的可靠性, 並且滿足客戶的期待. 
 對服務的信任; 也可以讓 IT 團隊知道系統穩定的目標在哪, 達到客戶與 IT 團隊擁有共識. 並且可以設立 error budget 來應對意外狀況, 讓用戶了解系統碰到異常, 並知道在多少時間內可修復; 讓團隊有排除系統異常的空間, 並了解要在多少時間內修復完畢.
 
 <!--more-->
+
+### References
+
+1. # [What is an SLA? Learn best practices and how to write one](https://www.atlassian.com/itsm/service-request-management/slas)
 
 ### Summary
 

@@ -1,29 +1,28 @@
 ---
 date: 2020-11-04T17:22:00+08:00
-updated: 2023-08-17T14:50:44+08:00
+updated: 2025-06-05T22:19:01+08:00
 title: SLA、SLO、SLI的概念
 category: sre
 tags:
   - sre
+  - sla
+  - slo
+  - sli
 type: note
-author: Atlassian
-status: 發芽期
-sourceType: 📰️
-sourceURL: https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 拜讀 Atlassian 的文章, 暸解如何訂定服務的穩定性, 以及如何量化他們. 這邊定義了三件事情 SLA、SLO、SLI, 從對用戶的承諾, 到設定系統目標, 至搜集服務指標, 達到使用戶感受到系統的穩定, 但如果承諾未達成, 系統商也應該付出所承諾之代價.
+拜讀 Atlassian 的文章, 暸解如何訂定服務的穩定性, 以及如何量化他們. 這邊定義了三件事情 SLA、SLO、SLI, 從對用戶的承諾, 到設定系統目標, 至搜集服務指標, 達到使用戶感受到系統的穩定, 但如果承諾未達成, 系統商也應該付出所承諾之代價.
 
 <!--more-->
 
+### References
+
+1. [SLA vs. SLO vs. SLI: What’s the difference?](https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli)
+
 ### Summary
 
-SRE ([[moc-sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 *Atlassian* 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:
+SRE ([[what-is-sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 *Atlassian* 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:
 
 - 系統可以使用多久?
 - 系統出現故障, 維護團隊多久可以給出回饋?

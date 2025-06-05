@@ -1,25 +1,22 @@
 ---
 date: 2021-07-16T10:00:00+0800
-updated: 2023-07-24T17:35:36+08:00
+updated: 2025-05-12T12:04:46+08:00
 title: Supply chain Levels for Software Artifacts
 category: security
 tags:
   - security
 type: note
-author: Google
-status: 長青期
-sourceType: 📰️
-sourceURL: https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 講闡述目前供應鏈攻擊的嚴重性, 文中也有指出目前大多 CI 的流程中存在著弱點, 並提出 SLSA 框架來避免被攻擊.
+Google 分析目前供應鏈攻擊的嚴重性, 文中也有指出目前大多 CI 的流程中存在著弱點, 並提出 SLSA 框架來避免被攻擊.
 
 <!--more-->
+
+### References
+
+1. [Introducing SLSA, an End-to-End Framework for Supply Chain Integrity](https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html "Introducing SLSA, an End-to-End Framework for Supply Chain Integrity")
+2. [供應鏈攻擊鎖定GitHub開源軟體專案](https://www.ithome.com.tw/news/137953)
 
 ### Summary
 
@@ -42,8 +39,6 @@ SLSA 的框架是由 4 個階段所組成。
 * SLSA 4 是目前最高級別, 需要兩個人審查所有更改和密封、可重複的構建過程.
 
 ### Note
-
-原文 :: [Introducing SLSA, an End-to-End Framework for Supply Chain Integrity](https://security.googleblog.com/2021/06/introducing-slsa-end-to-end-framework.html)
 
 Supply chain integrity attacks—unauthorized modifications to software packages—have been [on the rise](https://www.sonatype.com/hubfs/Corporate/Software%20Supply%20Chain/2020/SON_SSSC-Report-2020_final_aug11.pdf#page=7) in the past two years, and are proving to be common and reliable attack vectors that affect all consumers of software. **<span style="background-color: #ffffcc; color: red">The software development and deployment supply chain is quite complicated, with numerous threats along the source ➞ build ➞ publish workflow.</span> While point solutions do exist for some specific vulnerabilities, there is no comprehensive end-to-end framework that both defines how to mitigate threats across the software supply chain, and provides reasonable security guarantees.**
 
@@ -75,7 +70,3 @@ SLSA helps to protect against common supply chain attacks. The following image i
 **SLSA 3** **<span style="background-color: #ffffcc; color: red">further requires that the source and build platforms meet specific standards to guarantee the auditability of the source and the integrity of the provenance, respectively.</span> We envision an accreditation process whereby auditors certify that platforms meet the requirements, which consumers can then rely on.** SLSA 3 provides much stronger protections against tampering than earlier levels by preventing specific classes of threats, such as cross-build contamination.  
   
 **SLSA 4** **<span style="background-color: #ffffcc; color: red">is currently the highest level, requiring two-person review of all changes and a hermetic, reproducible build process. Two-person review is an industry best practice for catching mistakes and deterring bad behavior.</span> Hermetic builds guarantee that the provenance’s list of dependencies is complete. Reproducible builds, though not strictly required, provide many auditability and reliability benefits.** Overall, SLSA 4 gives the consumer a high degree of confidence that the software has not been tampered with.
-
-### References
-
-1. [供應鏈攻擊鎖定GitHub開源軟體專案](https://www.ithome.com.tw/news/137953)

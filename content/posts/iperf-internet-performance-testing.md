@@ -1,7 +1,7 @@
 ---
 date: 2024-05-09T18:22:16+08:00
-updated: 2025-02-27T14:53:29+08:00
-title: iPerf
+updated: 2025-05-12T12:02:31+08:00
+title: 使用 iPerf 測試網路頻寬
 category: testing
 tags:
   - iperf

@@ -1,15 +1,13 @@
 ---
 date: 2021-07-21T13:55:00+0800
-updated: 2023-07-30T24:18:07+08:00
+updated: 2025-05-12T00:01:13+08:00
 title: 什麼是 QUIC
 category: internet
 tags:
-   - internet
+  - internet
+  - quic
+  - protocol
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: https://datatracker.ietf.org/doc/html/rfc9000
 post: true
 ---
 
@@ -19,7 +17,7 @@ QUIC(Quick UDP Internet Connections) 為 OSI model 中 "傳輸層" 和 "應用�
 
 HTTP/3 是個新的 HTTP 版本，使用 QUIC 作為傳輸協議，與 HTTP/1.1、HTTP/2.0 使用的 TCP/IP 不同。相較於 TCP/IP 協議；QUIC 提高了網路效能。
 
-HTTP 是網際網路上重要的網路協議之一，至今已經發行了多個版本。這個 [demo1](https://http2.akamai.com/demo)、[demo2](http://www.http2demo.io/) 可以看到 HTTP/1.1 與 HTTP/2.0 的差異。
+HTTP 是網際網路上重要的網路協議之一，至今已經發行了多個版本。在 [demo](http://www.http2demo.io/) 中可以看到 HTTP/1.1 與 HTTP/2.0 的差異。
 
 * HTTP/1.0
 * HTTP/1.1
@@ -36,7 +34,10 @@ the mapping of the HTTP/1.1 request and response structures onto the
 transport data units of the protocol in question is outside the scope
 of this specification.
 
-然後 HTTP/2.0 是基於 TCP/IP 協議，所以只要某個 tcp package 遺失就會觸發 Retransmission Timer（重傳計時器）重傳封包進而造成隊頭阻塞（head of line blocking），在未收到該 ack 之前，所有 stream 都須等待。
+HTTP/1.1 是使用多個 TCP 連接，一個連接的問題不會影響其他連接。
+
+而 HTTP/2.0 也是基於 TCP/IP 協議之上，在單個 TCP 連接上實現了多個請求的並行傳輸（多路復用），也就是多個 stream 在同一個 TCP 上做封包的傳送，但基於 TCP/IP 的關鍵機制 Retransmission Timer（重傳計時器），只要某個 tcp package 遺失就會觸發重傳封包進而造成隊頭阻塞（head of line blocking），在未收到該 ack 之前，所有 stream 都須等待。
+
 而在極端的網路環境之下，HTTP/2.0 可能比 HTTP/1.1 之效率來得差。
 
 ### QUIC
@@ -60,3 +61,4 @@ of this specification.
 * [benchmarking quic](https://medium.com/@the.real.yushuf/benchmarking-quic-1fd043e944c7)
 * [Hypertext Transfer Protocol](https://datatracker.ietf.org/doc/html/rfc2616)
 * [QUIC](https://www.chromium.org/quic)
+* [IETF rfc9000](https://datatracker.ietf.org/doc/html/rfc9000)

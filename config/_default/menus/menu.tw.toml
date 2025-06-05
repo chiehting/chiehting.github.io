@@ -13,10 +13,10 @@
   name = "連結"
   identifier = "Links"
   weight = -107
-[[main]]
-  parent = "Links"
-  name = "關於我"
-  url = "/about/"
+#[[main]]
+#  parent = "Links"
+#  name = "關於我"
+#  url = "/about/"
 [[main]]
   parent = "Links"
   name = "聯繫我"

@@ -1,16 +1,12 @@
 ---
 date: 2019-10-17T18:05:00+0800
-updated: 2023-07-31T17:00:36+08:00
+updated: 2025-05-12T12:00:09+08:00
 title: Active Directory authentication on centos 7
 category: ssh
 tags:
   - ssh
   - ldap
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: .
 post: true
 ---
 

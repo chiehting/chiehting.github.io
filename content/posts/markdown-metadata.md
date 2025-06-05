@@ -1,6 +1,6 @@
 ---
 date: 2023-07-03T10:25:14+08:00
-updated: 2025-03-10T12:12:07+08:00
+updated: 2025-05-12T22:49:46+08:00
 title: Metadata of the Markdown
 category: markdown
 tags:
@@ -10,7 +10,7 @@ type: note
 post: true
 ---
 
-*[[moc-markdown]]([[moc-markdown]])* 支援 YAML 格式的 metadata, 可以提供進階的描述資料屬性(property).
+*[[markdown]]([[markdown]])* 支援 YAML 格式的 metadata, 可以提供進階的描述資料屬性(property).
 
 <!--more-->
 

@@ -1,15 +1,11 @@
 ---
 date: 2019-04-07T00:49:24T+0800
-updated: 2023-07-25T17:21:28+08:00
+updated: 2025-05-12T00:26:37+08:00
 title: Redis cluster reshard slots
 category: redis
 tags:
   - redis
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 

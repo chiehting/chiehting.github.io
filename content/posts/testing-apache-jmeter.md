@@ -1,6 +1,6 @@
 ---
 date: 2023-11-16T10:30:51+08:00
-updated: 2024-02-26T01:26:58+08:00
+updated: 2025-05-12T17:46:01+08:00
 title: Apache Jmeter
 category: testing
 tags:
@@ -15,11 +15,7 @@ sourceURL: .
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 紀錄 Apache Jmeter 的使用筆記。
+這篇文章主要在紀錄 Apache Jmeter 的使用筆記。
 
 <!--more-->
 
@@ -29,25 +25,28 @@ Answer :: 紀錄 Apache Jmeter 的使用筆記。
 
 ### Note
 
-Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 Java([[moc-java]]) 編譯好的應用程式。
+Apache Jmeter 是 Apache 研發的一個壓測軟體(在講廢話)，是使用 Java([[java-install]]) 編譯好的應用程式。
 
 #### Install
 
-當前版本為 Jmeter 5.6.2 的版本，下面操作皆是以這個版本為基礎。
+當前版本為 Jmeter 5.6.3 的版本，下面操作皆是以這個版本為基礎。
 
 ##### Required
 
-1. 由於是 Java 編譯，所以需要先配置好 Jar([[moc-java#Jar]]) 環境。
+1. 由於是 Java 編譯，所以需要先配置好 Jar([[java-install#Jar]]) 環境。
 
 ##### Download Jmeter
 
 配置好環境後下載即可使用，下面為下載命令。
 
 ```shell
-cd /opt
-curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.2.tgz
-tar zxf apache-jmeter-5.6.2.tgz
+curl -LO https://dlcdn.apache.org/jmeter/binaries/apache-jmeter-5.6.3.tgz
+tar zxf apache-jmeter-5.6.3.tgz
 ```
+
+插件安裝：
+
+- [[jmeter-add-the-mqtt-plugin]]
 
 #### How to use
 
@@ -108,7 +107,6 @@ vm.swappiness=10
 ```shell
 vim /etc/default/grub
 GRUB_CMDLINE_LINUX="transparent_hugepage=never"
-
 ```
 
 ##### 壓力測試
@@ -120,5 +118,8 @@ GRUB_CMDLINE_LINUX="transparent_hugepage=never"
 其中有配置 *JVM_ARGS* 參數，開大 *-Xms*、*-Xmx* 為記憶體可使用量。
 
 ```shell
-JVM_ARGS="-Dnashorn.args=--no-deprecation-warning -Xms15g -Xmx15g" apache-jmeter-5.6.2/bin/jmeter -n -t jmeter.jmx -l jmeter-result.jtl -e -o dashboard
+JVM_ARGS="-Dnashorn.args=--no-deprecation-warning -Xms3g -Xmx3g" apache-jmeter-5.6.3/bin/jmeter -n -t 20250430-v1.jmx -l jmeter-result.jtl -e -o dashboard
 ```
+
+##### 報告
+

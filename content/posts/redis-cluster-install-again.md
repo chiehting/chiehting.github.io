@@ -1,15 +1,11 @@
 ---
 date: 2020-01-14T10:56:00+0800
-updated: 2023-07-25T17:34:36+08:00
+updated: 2025-05-12T00:26:24+08:00
 title: Creating Redis Cluster
 category: redis
 tags:
   - redis
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 

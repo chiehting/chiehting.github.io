@@ -1,6 +1,6 @@
 ---
 date: 2024-10-24T12:25:08+08:00
-updated: 2025-02-27T14:48:48+08:00
+updated: 2025-05-12T13:34:01+08:00
 title: uber/kraken container registry
 category: devops
 tags:
@@ -15,7 +15,9 @@ Kraken 是一個使用 P2P 技術的容器映像檔推拉服務，適合在分�
 
 <!--more-->
 
-[Github](https://github.com/uber/kraken)
+### Refencers
+
+1. [Github](https://github.com/uber/kraken)
 
 > Kraken has been in production at Uber since early 2018. In our busiest cluster, Kraken distributes more than 1 million blobs per day, including 100k 1G+ blobs. At its peak production load, Kraken distributes 20K 100MB-1G blobs in under 30 sec.
 
@@ -63,13 +65,19 @@ Kraken 是一個使用 P2P 技術的容器映像檔推拉服務，適合在分�
 
 ### devcluster
 
-在專案下有提供測試使用的環境 devcluster，可以執行命令 `make devcluster` 運行。
+在專案下有提供測試使用的環境 devcluster，可以執行命令啟動服務。
+
+```bash
+make images # 編譯所有組建映像檔
+make devcluster # 本地運行測試
+```
 
 在容器內 agent 的執行命令
 
 ```bash
 # kraken-agent-one
 /usr/bin/kraken-agent --config=/etc/kraken/config/agent/development.yaml --peer-ip=host.docker.internal --peer-port=16001 --agent-server-port=16002 --agent-registry-port=16000
+
 # kraken-agent-two
 /usr/bin/kraken-agent --config=/etc/kraken/config/agent/development.yaml --peer-ip=host.docker.internal --peer-port=17001 --agent-server-port=17002 --agent-registry-port=17000
 ```
@@ -115,12 +123,12 @@ Kraken 是一個使用 P2P 技術的容器映像檔推拉服務，適合在分�
 
 ### 安裝步驟：
 
-1. testfs
-2. origin
-3. build-index
-4. proxy
-5. tracker
-6. agent
+1. testfs：testfs是Kraken的測試檔案系統組件，主要用於測試環境中模擬儲存層。
+2. origin：origin是Kraken的核心儲存組件，作為整個分發系統的源頭，可以從上游 registry 拉取映像。
+3. build-index：build-index組件負責索引和管理映像與標籤的關係。
+4. proxy：proxy組件是Docker客戶端的接入點。
+5. tracker：tracker是P2P分發網路的協調者。
+6. agent：agent運行在每個需要Docker映像的主機上。
 
 其中 push 需要服務 1、2、3、4
 其中 pull 需要服務 1、2、3、4、5、6

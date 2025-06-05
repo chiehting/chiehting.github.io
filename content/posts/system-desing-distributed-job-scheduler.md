@@ -1,25 +1,21 @@
 ---
 date: 2023-06-27T10:44:44+08:00
-updated: 2023-08-17T14:50:44+08:00
+updated: 2025-06-05T22:19:12+08:00
 title: Design a distributed job scheduler
 category: system-design
 tags:
   - system-design
 type: note
-author: Rakshesh Shah
-status: 長青期
-sourceType: 📰️
-sourceURL: https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 文章主要在做系統設計, 使用排成系統做範例來設計分散式架構服務. 這邊從 *需求->規格分析->系統架構->軟體設計* 的脈絡來做演示.
+文章主要在做系統設計, 使用排成系統做範例來設計分散式架構服務. 這邊從 *需求->規格分析->系統架構->軟體設計* 的脈絡來做演示.
 
 <!--more-->
+
+### References
+
+1. [System Design — Design a distributed job scheduler (KISS Interview series)](https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c)
 
 ### Summary
 
@@ -38,8 +34,6 @@ Answer :: 文章主要在做系統設計, 使用排成系統做範例來設計�
  - 檔案系統採用 S3 做異地儲存.
 
 ### Note
-
-原文 :: [System Design - Design a distributed job scheduler (KISS Interview series)](https://medium.com/@raxshah/system-design-design-a-distributed-job-scheduler-kiss-interview-series-753107c0104c)
 
 #### Introduction
 

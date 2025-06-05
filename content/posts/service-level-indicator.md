@@ -1,15 +1,12 @@
 ---
 date: 2023-07-13T15:45:24+08:00
-updated: 2023-08-17T14:50:45+08:00
+updated: 2025-06-05T22:16:59+08:00
 title: Service Level Indicator
 category: sre
 tags:
   - sre
+  - sli
 type: note
-author: Atlassian
-status: 發芽期
-sourceType: 📰️
-sourceURL: https://www.datadoghq.com/blog/establishing-service-level-objectives/#getting-from-slis-to-slos
 post: true
 ---
 
@@ -20,6 +17,10 @@ Question :: 什麼是 SLI?
 Answer :: SLI 為 SLO 的指標數據, SLI 為 IT 團隊跟系統間的狀態確認. 但與以往的監控不同, SLO 的目標是以用戶體驗為導向. SLI 在擷取的過程中, 要保持單純與精確, 可以參考文章的 SLI 分類.
 
 <!--more-->
+
+### References
+
+1. [SLOs 101: How to establish and define service level objectives](https://www.datadoghq.com/blog/establishing-service-level-objectives/#getting-from-slis-to-slos)
 
 ### Summary
 

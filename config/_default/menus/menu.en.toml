@@ -13,10 +13,10 @@
   name = "Links"
   identifier = "Links"
   weight = -107
-[[main]]
-  parent = "Links"
-  name = "About"
-  url = "/about/"
+#[[main]]
+#  parent = "Links"
+#  name = "About"
+#  url = "/about/"
 [[main]]
   parent = "Links"
   name = "Contact me"

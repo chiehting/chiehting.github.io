@@ -1,6 +1,6 @@
 ---
 date: 2021-04-16T14:48:00+0800
-updated: 2024-07-25T14:48:24+08:00
+updated: 2025-05-12T00:24:46+08:00
 title: rds binlog 留存機制
 category: aws
 tags:
@@ -8,14 +8,10 @@ tags:
   - aws
   - database
 type: note
-author: AWS
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
-AWS RDS 備份 snapshot/day 間隔過長, 研究抓取 RDS binlog 並留存在 EC2 上
+AWS RDS 的 snapshot 備份為一天一次，由於間隔過長, 所以需要抓取 RDS binlog 做差異備份。
 
 <!--more-->
 

@@ -1,34 +1,23 @@
 ---
 date: 2022-01-11T10:13:00+08:00
-updated: 2024-02-27T17:18:31+08:00
+updated: 2025-05-11T23:35:15+08:00
 title: Authenticate OpenVPN using LDAP
 category: openvpn
 tags:
   - vpn
   - openvpn
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: .
 post: true
 ---
 
-### Evergreen Note
 
-Question :: 這篇文章主要在做什麼?
-
-Answer :: 公司人數增加,  要使用 *VPN* 的人變多, 若每個人的 .open 檔案都手動生成的話, 在管理上會有點麻煩. 所以這邊讓 *OpenVPN* 透過 *LDAP* 去認證用戶是否可以使用 *VPN*.
+要解決 OpenVPN 的憑證過多不好管理的問題。由於公司人數增加,  要使用 *VPN* 的人變多, 若每個人的 .open 檔案都手動生成的話, 在管理上會有點麻煩. 所以這邊讓 *OpenVPN* 透過 *LDAP* 去認證用戶是否可以使用 *VPN*.
 
 <!--more-->
 
-### Summary
-
 建立完  *OpenVPN([[openvpn-install]])*  後,  安裝 LDAP 套件跟配置設定, 使 *OpenVPN* 登入時可以使用 *LDAP* 做認證.
 
-### Note
-
-#### Configure OpenVPN for LDAP authentication
+### Configure OpenVPN for LDAP authentication
 
 ```bash
 # 需要安裝 openvpn-auth-ldap library

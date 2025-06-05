@@ -1,25 +1,24 @@
 ---
 date: 2023-07-12T16:14:50+08:00
-updated: 2023-08-17T14:50:45+08:00
+updated: 2025-06-05T22:18:49+08:00
 title: Service Level Ojbective
 category: sre
 tags:
   - sre
+  - slo
 type: note
-author: Atlassian
-status: 發芽期
-sourceType: 📰️
-sourceURL: https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives
 post: true
 ---
 
-### Evergreen Note
+為什麼 SLO 這麼重要?
 
-Question :: 為什麼 SLO 這麼重要?
-
-Answer :: SLO 是為滿足 SLA 的目標設立, 將客戶對系統穩定度的期待轉換成目標. 之所以重要是因為 IT 團隊直接關注客戶所在乎的重點, 讓系統的穩定度保持在可接受的範圍內. 當然服務越可靠; 成本就越高.
+SLO 是為滿足 SLA 的目標設立, 將客戶對系統穩定度的期待轉換成目標. 之所以重要是因為 IT 團隊直接關注客戶所在乎的重點, 讓系統的穩定度保持在可接受的範圍內. 當然服務越可靠; 成本就越高.
 
 <!--more-->
+
+### References
+
+1. [Measuring and evaluating Service Level Objectives (SLOs)](https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives)
 
 ### Summary
 

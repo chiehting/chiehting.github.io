@@ -1,10 +1,11 @@
 ---
 date: 2023-07-27T17:02:44+08:00
-updated: 2025-03-02T19:56:49+08:00
+updated: 2025-05-12T11:30:31+08:00
 title: Laravel 框架產生的 cookie XSRF-TOKEN 需不需要使用 HttpOnly
 category: security
 tags:
   - internet
+  - security
   - php
   - cookie
 type: note

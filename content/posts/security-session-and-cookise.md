@@ -1,30 +1,24 @@
 ---
 date: 2024-02-16T11:28:57+08:00
-updated: 2024-02-26T01:43:29+08:00
+updated: 2025-05-12T11:31:31+08:00
 title: 資安團隊的建議回饋
 category: security
 tags:
   - security
   - internet
 type: note
-author: Chiehting
-status: 長青期
-sourceType: 📰️
-sourceURL: https://www.rfc-editor.org/info/rfc6265
 post: true
 ---
 
-### Evergreen Note
-
-Question :: 這篇文章主要在說什麼?
-
-Answer :: 資安小組回饋了些建議，讓我們可以強化安全線。
+資安小組回饋了些建議，讓我們可以強化安全線。主要回報內容為 Session 跟 Cookie 的配置項。
 
 <!--more-->
 
-### Summary
+### References
 
-專案被回饋資安 issue，資安回饋的建議大致如下：
+1. This document defines the HTTP Cookie and Set-Cookie header fields.[](https://www.rfc-editor.org/info/rfc6265)
+
+###  專案被回饋資安 issue，資安回饋的建議大致如下：
 
 1. 檢視認證 Session 的資料長度，64bit 以上為安全線。  若 Session ID 的長度、複雜度不夠， 可 能被攻擊者猜測 、利用 。
 2. 檢視 Cookie Flag 相關設定 Host Only、Secure、HTTP Only。

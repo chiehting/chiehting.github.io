@@ -1,6 +1,6 @@
 ---
 date: 2023-09-12T10:00:34+08:00
-updated: 2025-02-27T09:17:29+08:00
+updated: 2025-05-12T23:41:19+08:00
 title: 比較專案管理系統
 category: project-management
 tags:
@@ -17,7 +17,7 @@ post: true
 | --------------------- | -------------------- | --------------- |
 | [Redmine]             | [Redmine GitHub]     | 5.0.5/20230305  |
 | [OpenProejct]         | [OpenProject GitHub] | 13.0.1/20230829 |
-| [禪道] [[moc-zentao]] | [禪道 GitHub]        | 18.5/20230715   |
+| [禪道] [[what-is-zentao]] | [禪道 GitHub]        | 18.5/20230715   |
 
 [Redmine]: https://www.redmine.org/
 [Redmine GitHub]: https://github.com/redmine/redmine

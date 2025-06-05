@@ -1,15 +1,11 @@
 ---
 date: 2019-10-01T11:00:00+0800
-updated: 2023-07-25T16:49:44+08:00
+updated: 2025-05-14T00:16:23+08:00
 title: Integrate Redmine with GitLab
 category: redmine
 tags:
   - redmine
 type: note
-author: 
-status: 長青期
-sourceType: 📜️
-sourceURL: .
 post: true
 ---
 
