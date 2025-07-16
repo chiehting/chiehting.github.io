@@ -1,6 +1,6 @@
 ---
 date: 2021-05-04T10:30:00+0800
-updated: 2025-03-02T19:57:54+08:00
+updated: 2025-07-16T14:48:49+08:00
 title: Iptables guide
 category: linux
 tags:
@@ -10,7 +10,7 @@ type: note
 post: true
 ---
 
-iptables 被許多服務廣泛的運用著, 例如 Docker, Kubernetes 都是基於 iptables 來管理網路封包的處理, 所以此篇來研究 iptables 工具, 看看這些服務底層究竟在幹些什麼事.
+iptables 被許多服務廣泛的運用著, 例如 Docker, Kubernetes 都是基於 iptables 來管理網路封包的處理, 所以此篇來研究 iptables 工具, 看看這些服務底層究竟在做些什麼事.
 
 <!--more-->
 

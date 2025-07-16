@@ -1,6 +1,6 @@
 ---
 date: 2020-01-14T17:23:00+0800
-updated: 2025-03-10T11:47:44+08:00
+updated: 2025-07-16T15:07:38+08:00
 title: 了解 linux ulimit
 category: operating-system
 tags:
@@ -10,7 +10,7 @@ type: note
 post: true
 ---
 
-有時候為了榨出主機上的效能,需要去調整linux的配置,ulimit就是其中一項可控配置.
+有時候為了榨出主機上的效能，需要去調整 Linux 的配置，ulimit 就是其中一項可控配置。
 
 <!--more-->
 
@@ -20,12 +20,11 @@ post: true
 
 ### 注意
 
-這邊使用配置/etc/security/limits.conf檔案,透過PAM來加載用戶的資源限制.
-但在Centos 7使用Systemd替代了之前的SysV,所以配置會對Systemd的service不生效.
+這邊使用配置 `/etc/security/limits.conf` 檔案，透過PAM來加載用戶的資源限制。但在 Centos 7 使用 Systemd 替代了之前的 SysV，所以配置會對 Systemd 的 service 不生效.
 
 ### 確認環境
 
-主機資訊.
+查看主機資訊。
 
 ```bash
 [Justin.Lee@dev-db2 ~]$ uname -a
@@ -66,7 +65,7 @@ Mem:           3.7G        274M        3.1G        8.8M        320M        3.2G
 Swap:          2.0G          0B        2.0G
 ```
 
-預設的配置.預設linux系統的檔案描述符是1024,負載變大時有可能會造成錯誤`open too many files`.
+ulimit 預設配置，Linux 系統的檔案描述符預設是 1024，負載變大時有可能會造成錯誤 `open too many files`。
 
 ```bash
 [Justin.Lee@dev-db2 ~]$ ulimit -a
@@ -90,9 +89,9 @@ file locks                      (-x) unlimited
 
 ### 調整配置
 
-* `ulimit`有分軟限制和硬限制.而`noproc`是代表最大程序數; `nofile`是代表最大檔案開啟數.
-* 而ulimit -n的最大值限制是1048576 (2^20).
-* 網路上很多都配置為65535,這邊我還沒搞懂為什麼是這個數字.
+- `ulimit` 有分軟限制和硬限制，而 `noproc` 是代表最大程序數；`nofile`是代表最大檔案開啟數。
+- `ulimit -n` 的最大值限制是 1048576 (2^20)。
+- 網路上很多都配置為 65535，這邊我還沒搞懂為什麼是這個數字。
 
 ```bash
 [Justin.Lee@dev-db2 ~]$ sudo vim /etc/security/limits.conf
@@ -103,7 +102,7 @@ file locks                      (-x) unlimited
 * soft nofile 65535
 ```
 
-上面配置好後,需要確認有引入pam的pam_limits.so模塊,在下面可以發現預設在`/etc/pam.d/system-auth`檔案中有找到被required.
+上面配置好後，需要確認有引入 pam 的 pam_limits.so 模塊，在下面可以發現預設在 `/etc/pam.d/system-auth` 檔案中有找到被 required。
 
 ```bash
 [Justin.Lee@dev-db2 ~]$ cat /etc/pam.d/login
