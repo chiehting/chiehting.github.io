@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>tag on Chiehting</title><link>https://chiehting.com/tags/tag/</link><description>Recent content in tag on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Mon, 12 May 2025 21:35:47 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/tag/index.xml" rel="self" type="application/rss+xml"/><item><title>top 工具</title><link>https://chiehting.com/posts/linux-top/</link><pubDate>Mon, 12 May 2025 21:35:47 +0800</pubDate><guid>https://chiehting.com/posts/linux-top/</guid><description>
+&lt;p>&lt;code>top&lt;/code> 是一個在類 Unix 系統（包括 macOS 和 Linux）中常用的工具，用於即時監控系統的行程（processes）和資源使用情況。&lt;/p>
+&lt;h3 id="processes行程和執行緒總覽">Processes，行程和執行緒總覽&lt;/h3>
+&lt;p>Processes: 491 total, 5 running, 486 sleeping, 3862 threads&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Processes: 491 total&lt;/code>: 系統中總共有 491 個行程。&lt;/li>
+&lt;li>&lt;code>5 running&lt;/code>: 有 5 個行程目前正在執行中。&lt;/li>
+&lt;li>&lt;code>486 sleeping&lt;/code>: 有 486 個行程目前處於睡眠狀態（等待某些事件發生）。&lt;/li>
+&lt;li>&lt;code>3862 threads&lt;/code>: 系統中總共有 3862 個執行緒。執行緒是行程內部的執行單元，一個行程可以有多個執行緒。&lt;/li>
+&lt;/ul>
+&lt;h3 id="load-average-系統負載和-cpu-使用率">Load Average ，系統負載和 CPU 使用率&lt;/h3>
+&lt;p>Load average 值是一個綜合性的指標，受到多種因素的影響。透過分析負載平均值的變化，系統管理員可以更好地了解系統的運行狀態，並及時採取適當的措施以維持穩定的性能。Linux 中的 load average 被描述為三個不同的十進制值。以下面的例子可以看到 &lt;code>load averages: 1.26 1.35 1.36&lt;/code>，由左至右分別為 1 分鐘、5 分鐘、10分鐘的平均負載狀況如下解釋：&lt;/p>
+&lt;ul>
+&lt;li>1 分鐘平均負載： 這表示過去 1 分鐘內正在運行或等待執行的平均進程數。&lt;/li>
+&lt;li>5分鐘平均負載： 這表示過去 5 分鐘內正在運行或等待執行的平均進程數。&lt;/li>
+&lt;li>15 分鐘平均負載： 這表示過去 15 分鐘內正在運行或等待執行的平均進程數。&lt;/li>
+&lt;/ul>
+&lt;p>下面有幾種狀況的解釋：&lt;/p>
+&lt;ul>
+&lt;li>如果平均值為 0.0，表示系統處於空閒狀態&lt;/li>
+&lt;li>如果1min 平均值高於 5min 或 15min 平均值，則負載正在增加&lt;/li>
+&lt;li>如果1min 平均值低於 5min 或 15min 平均值，則負載正在減少&lt;/li>
+&lt;li>如果它們高於系統 CPU 的數量，那麼系統很可能會遇到效能問題（視情況而定）&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">➜ uptime
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> 9:14 up &lt;span class="m">4&lt;/span> days, 14:31, &lt;span class="m">1&lt;/span> user, load averages: 1.26 1.35 1.36
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Load average 的變化受到多種因素的影響，它主要反映了系統的活動水平和性能狀態。以下是一些可能影響負載平均值變化的因素：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>CPU 使用率： 系統中運行的進程需要使用 CPU 資源。如果 CPU 使用率較高，系統的負載平均值可能會增加。這可能是由於執行大量計算密集型任務或多個進程競爭 CPU 資源。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>I/O 操作： 大量的 I/O 操作，例如磁盤讀寫、網絡輸入輸出等，可能導致系統的負載增加。這可能是由於多個進程在等待 I/O 完成，使得系統處於等待狀態。下面有解釋到為什麼 I/O 操作會影響 load avg&lt;/p>
+&lt;blockquote>
+&lt;p>「「平均負載」的目的是從人的角度得出一個與系統繁忙程度有關的數字。TASK_UNINTERRUPTIBLE 意味著進程正在等待諸如磁碟讀取之類的東西，這會增加系統負載。一個嚴重受磁碟限制的系統可能會非常緩慢，但TASK_RUNNING 平均值僅為0.1，這對任何人都沒有幫助。”&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>內存使用： 系統的內存使用情況也會影響 load avg。如果系統中的進程需要大量的內存，可能會導致系統的交換（swap）操作，進而增加 load avg。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>進程數量： 系統中運行的進程數量會影響 load avg。當存在大量的活動進程，無論是運行中還是等待執行，都可能導致 load avg 值升高。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>等待時間： 如果進程需要等待某些資源（例如鎖或同步），這可能導致系統的 load avg。這也包括在多核系統中，某些進程可能需要等待 CPU 核心的可用性。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>系統的整體性能： 硬體性能、網絡帶寬、存儲速度等硬體因素都可能影響系統的整體性能，進而影響 load avg。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>突發性事件： 例如突然的大量流量、系統故障、惡意攻擊等，都可能導致負載平均值的急劇增加。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="cpu-的使用率分佈">CPU 的使用率分佈&lt;/h3>
+&lt;p>CPU usage: 14.20% user, 4.66% sys, 81.13% idle SharedLibs: 448M resident, 109M data, 66M linkedit. MemRegions: 117 total, 3936K resident, 4208K private, 2377M shared.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>CPU usage: 14.20% user, 4.66% sys, 81.13% idle&lt;/code>
+&lt;ul>
+&lt;li>&lt;code>user&lt;/code>: 14.20% 的 CPU 時間花費在執行使用者空間的行程（用戶啟動的應用程式等）。&lt;/li>
+&lt;li>&lt;code>sys&lt;/code>: 4.66% 的 CPU 時間花費在執行核心空間的程式碼（系統呼叫、裝置驅動等）。&lt;/li>
+&lt;li>&lt;code>idle&lt;/code>: 81.13% 的 CPU 時間處於空閒狀態。&lt;/li>
+&lt;li>這表示機器的 CPU 大部分時間是空閒的，系統目前並未因為 CPU 瓶頸而變慢。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;code>SharedLibs: 448M resident, 109M data, 66M linkedit&lt;/code>: 共享函式庫的使用情況。&lt;code>resident&lt;/code> 是實際佔用的記憶體，&lt;code>data&lt;/code> 和 &lt;code>linkedit&lt;/code> 是其中的數據和連結編輯部分。這部分對於一般使用者來說不是最關鍵的指標。&lt;/li>
+&lt;/ul>
+&lt;h3 id="實體記憶體-ram-使用情況">實體記憶體 (RAM) 使用情況&lt;/h3>
+&lt;p>PhysMem: 15G used (3217M wired, 5955M compressor), 138M unused.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>PhysMem: 15G used (3217M wired, 5955M compressor), 138M unused&lt;/code>: 實體記憶體（RAM）的總體使用情況。
+&lt;ul>
+&lt;li>&lt;code>15G used&lt;/code>: 總共使用了 15 GB 的實體記憶體。&lt;/li>
+&lt;li>&lt;code>(3217M wired)&lt;/code>: 其中 3217 MB 是「有線記憶體」(wired memory)，這部分記憶體不能被交換到硬碟上，通常由核心和關鍵系統服務使用。&lt;/li>
+&lt;li>&lt;code>(5955M compressor)&lt;/code>: 其中 5955 MB 是被壓縮的記憶體。macOS 會壓縮不常用的記憶體頁面，而不是直接交換到硬碟，以提高性能。&lt;/li>
+&lt;li>&lt;code>138M unused&lt;/code>: 還有 138 MB 的實體記憶體是完全未使用的。&lt;/li>
+&lt;li>這顯示機器有 16GB 記憶體（15G used + 138M unused ≈ 15.138G）大部分正在被使用，但有相當一部分是被壓縮的。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="虛擬記憶體-vm-使用情況">虛擬記憶體 (VM) 使用情況&lt;/h3>
+&lt;p>VM: 260T vsize, 5684M framework vsize, 22745372(0) swapins, 26777028(0) swapouts.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>VM: 260T vsize, 5684M framework vsize, 22745372(0) swapins, 26777028(0) swapouts&lt;/code>: 虛擬記憶體的使用情況。
+&lt;ul>
+&lt;li>&lt;code>260T vsize&lt;/code>: 總共的虛擬位址空間大小 (Virtual Size)。這是一個非常大的數字，表示系統可以定址的總記憶體範圍，並不代表實際佔用的硬碟空間。&lt;/li>
+&lt;li>&lt;code>5684M framework vsize&lt;/code>: 框架 (Framework) 佔用的虛擬位址空間。&lt;/li>
+&lt;li>&lt;code>22745372(0) swapins&lt;/code>: 從硬碟交換空間讀入記憶體的次數。括號裡的 0 表示最近沒有發生 swapin。&lt;/li>
+&lt;li>&lt;code>26777028(0) swapouts&lt;/code>: 從記憶體寫入硬碟交換空間的次數。括號裡的 0 表示最近沒有發生 swapout。&lt;/li>
+&lt;li>&lt;code>swapins&lt;/code> 和 &lt;code>swapouts&lt;/code> 的次數如果持續增加，表示系統正在頻繁地使用硬碟作為擴充記憶體，這通常會導致系統變慢。輸出顯示最近沒有發生交換活動 (括號裡是 0)，這是一個好現象。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="網路活動">網路活動&lt;/h3>
+&lt;p>Networks: packets: 120201633/129G in, 61599676/35G out.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Networks: packets: 120201633/129G in, 61599676/35G out&lt;/code>: 網路流量統計，是系統啟動以來的累計數據。
+&lt;ul>
+&lt;li>&lt;code>120201633/129G in&lt;/code>: 總共接收了 120,201,633 個封包，總數據量為 129 GB。&lt;/li>
+&lt;li>&lt;code>61599676/35G out&lt;/code>: 總共發送了 61,599,676 個封包，總數據量為 35 GB。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="硬碟活動">硬碟活動&lt;/h3>
+&lt;p>Disks: 1351063132/22T read, 56259681/1931G written.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Disks: 1351063132/22T read, 56259681/1931G written&lt;/code>: 磁碟讀寫統計，是系統啟動以來的累計數據。
+&lt;ul>
+&lt;li>&lt;code>1351063132/22T read&lt;/code>: 總共讀取了 1,351,063,132 次操作，總數據量為 22 TB。&lt;/li>
+&lt;li>&lt;code>56259681/1931G written&lt;/code>: 總共寫入了 56,259,681 次操作，總數據量為 1931 GB (約 1.93 TB)。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul></description></item></channel></rss>

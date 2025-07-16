@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>s3 on Chiehting</title><link>https://chiehting.com/tags/s3/</link><description>Recent content in s3 on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Mon, 11 Sep 2023 16:35:02 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/s3/index.xml" rel="self" type="application/rss+xml"/><item><title>Managing the lifecycle of the objects on AWS S3</title><link>https://chiehting.com/posts/aws-s3-object-lifecycle-on-bucket/</link><pubDate>Mon, 11 Sep 2023 16:35:02 +0800</pubDate><guid>https://chiehting.com/posts/aws-s3-object-lifecycle-on-bucket/</guid><description>
+&lt;p>如何管理 S3 上的物件生命週期？&lt;/p>
+&lt;p>在做 S3 物件的管理時，若使用 HTTP request 做操作，會造成成本增加。所以若是物件有&lt;strong>轉換&lt;/strong>或是&lt;strong>過期&lt;/strong>的操作時，就可以考慮使用 S3 生命週期來做管理。&lt;/p>
+&lt;h3 id="managing-your-storage-lifecycle">Managing your storage lifecycle&lt;/h3>
+&lt;p>為管理您的物件，使其整個生命週期以更符合成本效益的方式儲存，請配置 &lt;em>Amazon S3 生命週期&lt;/em>。_S3 生命週期組態_是一組定義 Amazon S3 動作的規則，適用於一組物件。有兩種類型的動作：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>轉換動作&lt;/strong> – 定義物件何時轉換成另一個儲存類別。例如，您可以選擇在建立物件後的 30 天，將物件轉換為 S3 標準 – IA 儲存類別，或者在建立物件一年後，將物件封存到 S3 Glacier Flexible Retrieval 儲存類別。如需詳細資訊，請參閱 &lt;a href="https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/userguide/storage-class-intro.html">使用 Amazon S3 儲存體方案&lt;/a>。&lt;/p>
+&lt;p>這些是與生命週期轉換請求相關聯的成本。如需定價資訊，請參閱 &lt;a href="https://aws.amazon.com/s3/pricing/">Amazon S3 定價&lt;/a>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>過期動作&lt;/strong> – 這些動作會定義物件何時過期。Amazon S3 會為您刪除已過期的物件。&lt;/p>
+&lt;p>生命週期過期成本，取決於您選擇物件的過期時間。如需詳細資訊，請參閱 &lt;a href="https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html">即將到期的物件&lt;/a>。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>為已妥善定義生命週期的物件，定義 S3 生命週期組態規則。例如：&lt;/p>
+&lt;ul>
+&lt;li>如果您將定期日誌上傳到儲存貯體，您的應用程式可能需要使用它們一週或一個月。之後，您可能會想刪除它們。&lt;/li>
+&lt;li>某些文件在一段有限的期間內會經常受到存取。而在該期間之後，存取它們的頻率很低。在某些時候，您可能不需要即時存取它們，但您的組織或法規可能要求您將其封存一段特定時間。之後，您可以刪除它們。&lt;/li>
+&lt;li>您可能會將某些類型的資料上傳到 Amazon S3，主要為目的檔案用。例如，您可以使用它來封存數位媒體、財務及醫療保健記錄、原始基因序列資料、長期資料庫備份，以及為遵守法規而所必須保留的資料。&lt;/li>
+&lt;/ul>
+&lt;p>使用 S3 生命週期組態規則，您可以指示 Amazon S3 將物件轉換為較便宜的儲存體類別、封存或刪除物件。&lt;/p>
+&lt;h3 id="指定篩選條件">指定篩選條件&lt;/h3>
+&lt;p>每個 S3 生命週期規則都包含篩選條件，您可用於找出儲存貯體中將套用 S3 生命週期規則的一組物件。下列 S3 生命週期組態說明如何指定篩選條件的範例。&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在此 S3 生命週期組態規則中，https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/userguide/object-keys.html&lt;/p>
+&lt;ul>
+&lt;li>篩選條件指定了一個金鑰字首 (key prefix) (&lt;code>tax/&lt;/code>)。因此，規則將會套用至其金鑰名稱字首為 &lt;code>tax/&lt;/code> 的物件，例如 &lt;code>tax/doc1.txt&lt;/code> 與 &lt;code>tax/doc2.txt&lt;/code>。&lt;/li>
+&lt;li>若篩選條件指定了一個金鑰字首&lt;code>1d&lt;/code>，&lt;strong>不會&lt;/strong>套用規則至物件 &lt;code>1d-doc1.txt&lt;/code>。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>您可以僅根據標籤來篩選物件。&lt;/p>
+&lt;/li>
+&lt;/ul></description></item></channel></rss>

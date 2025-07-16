@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>aws on Chiehting</title><link>https://chiehting.com/tags/aws/</link><description>Recent content in aws on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Sat, 14 Jun 2025 13:24:19 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/aws/index.xml" rel="self" type="application/rss+xml"/><item><title>建立支持 IPv6 的 權限給 EKS</title><link>https://chiehting.com/posts/aws-eks-vpc-cni-support-ipv6/</link><pubDate>Sat, 14 Jun 2025 13:24:19 +0800</pubDate><guid>https://chiehting.com/posts/aws-eks-vpc-cni-support-ipv6/</guid><description>
+&lt;p>&lt;a href="https://docs.aws.amazon.com/zh_tw/eks/latest/userguide/cni-ipv6.html">了解叢集、Pod 和 服務的 IPv6 地址&lt;/a>&lt;/p>
+&lt;p>EKS 中的配置 Cluster IP address family 選擇 IPv6 時，需要&lt;a href="https://docs.aws.amazon.com/zh_tw/eks/latest/userguide/cni-iam-role.html#cni-iam-role-create-ipv6-policy">設定 Amazon VPC CNI 外掛程式以使用 IRSA&lt;/a>。&lt;/p>
+&lt;p>環境定義：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>參數說明&lt;/th>
+&lt;th>參數內容&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>eks cluster 名稱&lt;/td>
+&lt;td>development-souffle&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>policy 名稱&lt;/td>
+&lt;td>development-souffle-VPCCNIIPv6&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>role 名稱&lt;/td>
+&lt;td>development-souffle-VPCCNIIPv6&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h2 id="從-eks-中取得-oidc-url">從 EKS 中取得 OIDC URL&lt;/h2>
+&lt;p>透過 aws cli 命令取得 EKS 中的 OIDC URL。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">aws eks describe-cluster --name development-souffle --query &lt;span class="s2">&amp;#34;cluster.identity.oidc.issuer&amp;#34;&lt;/span> --output text
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>回傳的結果如下。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-txt" data-lang="txt">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">https://oidc.eks.region-code.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="建立-iam-policy-並定義可以使用的權限">建立 IAM policy 並定義可以使用的權限&lt;/h2>
+&lt;p>因為 AWS 維護的 AmazonEKS_CNI_Policy 權限不足沒辦法分配 IPv6 地址，所以需要建立新 policy，下面為配置定義。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Version&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2012-10-17&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Statement&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Effect&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Allow&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Action&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:AssignIpv6Addresses&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:DescribeInstances&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:DescribeTags&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:DescribeNetworkInterfaces&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:DescribeInstanceTypes&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Resource&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;*&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Effect&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Allow&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Action&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:CreateTags&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Resource&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;arn:aws:ec2:*:*:network-interface/*&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="建立-vpc-cni-role-並定義-trust-relationships">建立 VPC CNI role 並定義 trust relationships&lt;/h2>
+&lt;p>要配置 IRSA(IAM role for service account) 讓 pod kube-system:aws-node 可以提權，所以需要定義 trust relationships，下面 json 是 Trusted entities 的定義，其中：&lt;/p>
+&lt;ul>
+&lt;li>Effect 固定 Allow&lt;/li>
+&lt;li>Federated 為 OIDC 的 arn，可以去 IAM &amp;gt; Identity providers 底下找&lt;/li>
+&lt;li>Action 固定 &amp;quot;sts:AssumeRoleWithWebIdentity&amp;quot;&lt;/li>
+&lt;li>StringEquals
+&lt;ol>
+&lt;li>aud (Audience) 為 sts.amazonaws.com 可以使用 Token 授權&lt;/li>
+&lt;li>sub (Subject) 為 system:serviceaccount:kube-system:aws-node 可以提權&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Version&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2012-10-17&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Statement&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Effect&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Allow&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Principal&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Federated&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;arn:aws:iam::111122223333:oidc-provider/oidc.eks.region-code.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="p">},&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Action&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;sts:AssumeRoleWithWebIdentity&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Condition&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;StringEquals&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;oidc.eks.region-code.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE:aud&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;sts.amazonaws.com&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;oidc.eks.region-code.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE:sub&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;system:serviceaccount:kube-system:aws-node&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="將-policy-權限加入到-role-中">將 policy 權限加入到 role 中&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">aws iam attach-role-policy &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span> --policy-arn arn:aws:iam::111122223333:policy/development-souffle-VPCCNIIPv6 &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span> --role-name development-souffle-VPCCNIIPv6
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="加入-ann-到-serviceaccount-aws-node-中使其角色可以提權">加入 ann 到 serviceaccount aws-node 中，使其角色可以提權&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">kubectl get serviceaccount -n kube-system aws-node -o yaml
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">kubectl annotate serviceaccount &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span> -n kube-system aws-node &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span> eks.amazonaws.com/role-arn&lt;span class="o">=&lt;/span>arn:aws:iam::111122223333:role/development-souffle-VPCCNIIPv6
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="重新部署-aws-node-所有-pod-使其可以使用到新的-service-account-權限">重新部署 aws-node 所有 pod 使其可以使用到新的 service account 權限&lt;/h2></description></item><item><title>Managing the lifecycle of the objects on AWS S3</title><link>https://chiehting.com/posts/aws-s3-object-lifecycle-on-bucket/</link><pubDate>Mon, 11 Sep 2023 16:35:02 +0800</pubDate><guid>https://chiehting.com/posts/aws-s3-object-lifecycle-on-bucket/</guid><description>
+&lt;p>如何管理 S3 上的物件生命週期？&lt;/p>
+&lt;p>在做 S3 物件的管理時，若使用 HTTP request 做操作，會造成成本增加。所以若是物件有&lt;strong>轉換&lt;/strong>或是&lt;strong>過期&lt;/strong>的操作時，就可以考慮使用 S3 生命週期來做管理。&lt;/p>
+&lt;h3 id="managing-your-storage-lifecycle">Managing your storage lifecycle&lt;/h3>
+&lt;p>為管理您的物件，使其整個生命週期以更符合成本效益的方式儲存，請配置 &lt;em>Amazon S3 生命週期&lt;/em>。_S3 生命週期組態_是一組定義 Amazon S3 動作的規則，適用於一組物件。有兩種類型的動作：&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>&lt;strong>轉換動作&lt;/strong> – 定義物件何時轉換成另一個儲存類別。例如，您可以選擇在建立物件後的 30 天，將物件轉換為 S3 標準 – IA 儲存類別，或者在建立物件一年後，將物件封存到 S3 Glacier Flexible Retrieval 儲存類別。如需詳細資訊，請參閱 &lt;a href="https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/userguide/storage-class-intro.html">使用 Amazon S3 儲存體方案&lt;/a>。&lt;/p>
+&lt;p>這些是與生命週期轉換請求相關聯的成本。如需定價資訊，請參閱 &lt;a href="https://aws.amazon.com/s3/pricing/">Amazon S3 定價&lt;/a>。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>過期動作&lt;/strong> – 這些動作會定義物件何時過期。Amazon S3 會為您刪除已過期的物件。&lt;/p>
+&lt;p>生命週期過期成本，取決於您選擇物件的過期時間。如需詳細資訊，請參閱 &lt;a href="https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/userguide/lifecycle-expire-general-considerations.html">即將到期的物件&lt;/a>。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>為已妥善定義生命週期的物件，定義 S3 生命週期組態規則。例如：&lt;/p>
+&lt;ul>
+&lt;li>如果您將定期日誌上傳到儲存貯體，您的應用程式可能需要使用它們一週或一個月。之後，您可能會想刪除它們。&lt;/li>
+&lt;li>某些文件在一段有限的期間內會經常受到存取。而在該期間之後，存取它們的頻率很低。在某些時候，您可能不需要即時存取它們，但您的組織或法規可能要求您將其封存一段特定時間。之後，您可以刪除它們。&lt;/li>
+&lt;li>您可能會將某些類型的資料上傳到 Amazon S3，主要為目的檔案用。例如，您可以使用它來封存數位媒體、財務及醫療保健記錄、原始基因序列資料、長期資料庫備份，以及為遵守法規而所必須保留的資料。&lt;/li>
+&lt;/ul>
+&lt;p>使用 S3 生命週期組態規則，您可以指示 Amazon S3 將物件轉換為較便宜的儲存體類別、封存或刪除物件。&lt;/p>
+&lt;h3 id="指定篩選條件">指定篩選條件&lt;/h3>
+&lt;p>每個 S3 生命週期規則都包含篩選條件，您可用於找出儲存貯體中將套用 S3 生命週期規則的一組物件。下列 S3 生命週期組態說明如何指定篩選條件的範例。&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>在此 S3 生命週期組態規則中，https://docs.aws.amazon.com/zh_tw/AmazonS3/latest/userguide/object-keys.html&lt;/p>
+&lt;ul>
+&lt;li>篩選條件指定了一個金鑰字首 (key prefix) (&lt;code>tax/&lt;/code>)。因此，規則將會套用至其金鑰名稱字首為 &lt;code>tax/&lt;/code> 的物件，例如 &lt;code>tax/doc1.txt&lt;/code> 與 &lt;code>tax/doc2.txt&lt;/code>。&lt;/li>
+&lt;li>若篩選條件指定了一個金鑰字首&lt;code>1d&lt;/code>，&lt;strong>不會&lt;/strong>套用規則至物件 &lt;code>1d-doc1.txt&lt;/code>。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>您可以僅根據標籤來篩選物件。&lt;/p>
+&lt;/li>
+&lt;/ul></description></item><item><title>使用 Helm 建立 AWS network load balancer</title><link>https://chiehting.com/posts/kubernetes-install-ingress-nginx/</link><pubDate>Wed, 01 Sep 2021 14:44:00 +0800</pubDate><guid>https://chiehting.com/posts/kubernetes-install-ingress-nginx/</guid><description>
+&lt;p>Kubernetes 揭露服務有多種方式，例如 Ingres、NodePort、LoadBalancer。
+次篇紀錄使用 Helm 來安裝 &lt;a href="https://kubernetes.github.io/ingress-nginx/">ingress-nginx&lt;/a> 與 AWS 的 &lt;a href="https://docs.aws.amazon.com/zh_tw/elasticloadbalancing/latest/network/introduction.html">network load balancer&lt;/a>，將流量通道指定的 Pods 上。&lt;/p>
+&lt;p>Kubernetes &lt;a href="https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/">ingress controllers&lt;/a> 的供應商很多，目前服務使用 Nginx 和 Traefik 來做 ingress controllers。另外 Istio service mesh 也是滿知名的 controllers 之一。&lt;/p>
+&lt;h3 id="add-ingress-nginx-repository">Add ingress-nginx repository&lt;/h3>
+&lt;p>要先加入 ingress-nginx repo 至 Helm 中。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="c1"># show repository list&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">bash$ helm repo list
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">NAME URL
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">ingress-nginx https://kubernetes.github.io/ingress-nginx
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">stable https://charts.helm.sh/stable
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">prometheus-community https://prometheus-community.github.io/helm-charts
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl">jetstack https://charts.jetstack.io
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="install-ingress-nginx">Install ingress-nginx&lt;/h2>
+&lt;p>透過 Helm 安裝 ingress-nginx，其中有一併設定 annotations 跟 config。&lt;/p>
+&lt;p>&lt;a href="https://docs.nginx.com/nginx/deployment-guides/amazon-web-services/ingress-controller-elastic-kubernetes-services/">annotations&lt;/a>：是宣吿在安裝時配置為 AWS network load balancer。&lt;/p>
+&lt;p>&lt;a href="https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/configmap/#worker-processes">config&lt;/a>：是 Nginx config 的相關配置。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">helm install ingress-nginx-nlb ingress-nginx/ingress-nginx -n kube-system &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span>--set controller.service.annotations.&lt;span class="s2">&amp;#34;service\.beta\.kubernetes\.io\/aws-load-balancer-type&amp;#34;&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;nlb&amp;#34;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span>--set controller.config.&lt;span class="s2">&amp;#34;use-proxy-protocol&amp;#34;&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;true&amp;#34;&lt;/span> &lt;span class="se">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="se">&lt;/span>--set controller.config.&lt;span class="s2">&amp;#34;ssl-redirect&amp;#34;&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s2">&amp;#34;false&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>由於 network load balancer 是 OSI Layer 4，所以取 client real IP 會取用到 private IP。可以看到下面的 &lt;code>X-Real-Ip&lt;/code> 欄位。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">bash$ curl https://justin.example.com/server &lt;span class="p">|&lt;/span> jq
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;clientIP&amp;#34;&lt;/span>: &lt;span class="s2">&amp;#34;10.0.75.140&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;header&amp;#34;&lt;/span>: &lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;Accept&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;*/*&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;User-Agent&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;curl/7.64.1&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-For&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;10.0.75.140&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Host&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;justin.example.com&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Port&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;443&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Proto&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;https&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Scheme&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;https&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Real-Ip&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;10.0.75.140&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Request-Id&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;8c4991c13d1497362ddb513e02f3c859&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Scheme&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;https&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> &lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>為了抓取正確的 real IP，需要開啟 network load balancer 的 &lt;a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-target-groups.html#client-ip-preservation">Proxy protocol v2&lt;/a> 功能，等配置生效後即可看到取到 client real IP。可以看到下面的 &lt;code>X-Real-Ip&lt;/code> 欄位。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">bash$ curl https://justin.example.com/server &lt;span class="p">|&lt;/span> jq
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;clientIP&amp;#34;&lt;/span>: &lt;span class="s2">&amp;#34;1.34.113.121&amp;#34;&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;header&amp;#34;&lt;/span>: &lt;span class="o">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;Accept&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;*/*&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;User-Agent&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;curl/7.64.1&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-For&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;1.34.113.121&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Host&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;justin.example.com&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Port&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;443&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Proto&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;https&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Forwarded-Scheme&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;https&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Real-Ip&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;1.34.113.121&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Request-Id&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;f4c4490b0919271b5e9d5d0a5dc37089&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>,
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;X-Scheme&amp;#34;&lt;/span>: &lt;span class="o">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;https&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl"> &lt;span class="o">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> &lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl">&lt;span class="o">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Troubleshoot the eks creating load balancer access denied</title><link>https://chiehting.com/posts/troubleshoot-the-eks-creating-load-balancer-access-denied/</link><pubDate>Wed, 02 Jun 2021 16:12:00 +0800</pubDate><guid>https://chiehting.com/posts/troubleshoot-the-eks-creating-load-balancer-access-denied/</guid><description>
+&lt;p>排除 ingress-nginx 的 &lt;code>Error syncing load balancer: failed to ensure load balancer: error creating load balancer: &amp;quot;AccessDenied:&lt;/code> 異常.&lt;/p>
+&lt;h3 id="issue">Issue&lt;/h3>
+&lt;p>&lt;a href="https://github.com/terraform-aws-modules/terraform-aws-eks/issues/183">https://github.com/terraform-aws-modules/terraform-aws-eks/issues/183&lt;/a>&lt;/p>
+&lt;h3 id="error-message">Error message&lt;/h3>
+&lt;p>helm install ingress-nginx 時發生錯誤, 盤查後發現下面錯誤&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">Warning SyncLoadBalancerFailed 24m (x10 over 69m) service-controller (combined from similar events): Error syncing load balancer: failed to ensure load balancer: error creating load balancer: &amp;#34;AccessDenied:
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">is not authorized to perform: ec2:DescribeAccountAttributes\n\tstatus code: 403
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-text" data-lang="text">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">Warning SyncLoadBalancerFailed 25s service-controller Error syncing load balancer: failed to ensure load balancer: error creating load balancer: &amp;#34;AccessDenied: is not authorized to perform: ec2:D
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">escribeInternetGateways\n\tstatus code: 403, request id: ba2ab5e2-9690-498a-aad3-3e46fb693588&amp;#34;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="solution">Solution&lt;/h3>
+&lt;p>從上面錯誤可以看到缺少 policy, 這邊建立 policy eks-cluster-ingress-loadbalancer-creation 後並配置給我們自建的 AWSEKSClusterRole&lt;/p>
+&lt;p>arn:aws:iam::xxxxxxxxxx:policy/eks-cluster-ingress-loadbalancer-creation&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-json" data-lang="json">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Version&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;2012-10-17&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Statement&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Effect&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;Allow&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Action&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="p">[&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:DescribeAccountAttributes&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="s2">&amp;#34;ec2:DescribeInternetGateways&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="p">],&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="nt">&amp;#34;Resource&amp;#34;&lt;/span>&lt;span class="p">:&lt;/span> &lt;span class="s2">&amp;#34;*&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="p">]&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>rds binlog 留存機制</title><link>https://chiehting.com/posts/rds-binary-logs-backup/</link><pubDate>Fri, 16 Apr 2021 14:48:00 +0800</pubDate><guid>https://chiehting.com/posts/rds-binary-logs-backup/</guid><description>
+&lt;p>AWS RDS 的 snapshot 備份為一天一次，由於間隔過長, 所以需要抓取 RDS binlog 做差異備份。&lt;/p>
+&lt;p>參照這篇範例 &lt;a href="https://aws.amazon.com/cn/premiumsupport/knowledge-center/rds-mysql-schedule-binlog-uploads/">如何計劃 Amazon RDS MySQL 數據庫實例二進制日誌文件向 Amazon S3 的上傳?&lt;/a> 做調整.&lt;/p>
+&lt;h3 id="install-mysql-57">Install mysql 5.7&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">apt update
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">apt-cache policy mysql-server
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">apt install -y mysql-server
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="登入-mysql-延長-rds-binlog-retention-hours-保留時間為-2h">登入 mysql, 延長 rds binlog retention hours, 保留時間為 2h&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">show master status&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">show BINARY LOGS&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">show binlog events&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">call mysql.rds_show_configuration&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">call mysql.rds_set_configuration&lt;span class="o">(&lt;/span>&lt;span class="s1">&amp;#39;binlog retention hours&amp;#39;&lt;/span>, 2&lt;span class="o">)&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="建立-ec2-主機-並作初始化">建立 EC2 主機, 並作初始化&lt;/h3>
+&lt;h4 id="建立資料夾">建立資料夾&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">mkdir -p /opt/mysql-binlog-backup/binlog/
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="建立-shell-secipt-注意編輯參數">建立 shell secipt, 注意編輯參數&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">touch /opt/mysql-binlog-backup/rds-binlog-to-s3.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">chmod +x /opt/mysql-binlog-backup/rds-binlog-to-s3.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">vim /opt/mysql-binlog-backup/rds-binlog-to-s3.sh
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>貼上 rds-binlog-to-s3.sh 內容&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="cp">#!/bin/bash
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="cp">&lt;/span>&lt;span class="c1">#Script to download RDS MySQL binlog files using mysqlbinlog command and the AWS CLI tools to upload them to S3.&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="c1">#Install AWS CLI tools see: &amp;#34;http://docs.aws.amazon.com/cli/latest/userguide/installing.html&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="c1">#Config your AWS config File (aws configure)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="nv">AWS_PATH&lt;/span>&lt;span class="o">=&lt;/span>/opt/aws
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="nv">Binlog_dir&lt;/span>&lt;span class="o">=&lt;/span>/opt/mysql-binlog-backup/binlog
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="nv">Backup_dir&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="nv">$Binlog_dir&lt;/span>/&lt;span class="k">$(&lt;/span>date &lt;span class="s2">&amp;#34;+%Y-%m-%d&amp;#34;&lt;/span>&lt;span class="k">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="nv">Bucket&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;rds-binlogs&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="nv">RDS&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;host.rds.amazonaws.com&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="nv">master&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;admin&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="nb">export&lt;/span> &lt;span class="nv">MYSQL_PWD&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s1">&amp;#39;password&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl">&lt;span class="nv">mysql_binlog_filename&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="k">$(&lt;/span>mysql -u &lt;span class="nv">$master&lt;/span> -h &lt;span class="nv">$RDS&lt;/span> -e &lt;span class="s2">&amp;#34;show master logs&amp;#34;&lt;/span>&lt;span class="p">|&lt;/span>grep &lt;span class="s2">&amp;#34;mysql-bin&amp;#34;&lt;/span>&lt;span class="p">|&lt;/span>awk &lt;span class="s1">&amp;#39;{print $1}&amp;#39;&lt;/span>&lt;span class="k">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl">&lt;span class="k">for&lt;/span> file in &lt;span class="nv">$mysql_binlog_filename&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="k">do&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> ! &lt;span class="nb">test&lt;/span> -d &lt;span class="nv">$Backup_dir&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="k">then&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> mkdir -p &lt;span class="nv">$Backup_dir&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="k">fi&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="c1">#remote read binlog&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="sb">`&lt;/span>mysqlbinlog -u &lt;span class="nv">$master&lt;/span> -h &lt;span class="nv">$RDS&lt;/span> --read-from-remote-server &lt;span class="nv">$file&lt;/span> --result-file&lt;span class="o">=&lt;/span>&lt;span class="nv">$Backup_dir&lt;/span>/ --raw&lt;span class="sb">`&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl">&lt;span class="k">done&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="c1"># Upload to S3 bucket&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl">&lt;span class="c1">#aws s3 sync $Backup_dir s3://$Bucket/binlog&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl">&lt;span class="c1"># Clean binlog on disk 7 day ago&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">&lt;span class="sb">`&lt;/span>find &lt;span class="nv">$Binlog_dir&lt;/span> -mtime +7 -name &lt;span class="s2">&amp;#34;*&amp;#34;&lt;/span> -exec rm -rf &lt;span class="o">{}&lt;/span> &lt;span class="se">\;&lt;/span>&lt;span class="sb">`&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="設立排程-下面為每-15-分鐘執行一次的-cron">設立排程, 下面為每 15 分鐘執行一次的 cron&lt;/h4>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="nb">echo&lt;/span> &lt;span class="s1">&amp;#39;*/15 * * * * root bash /opt/mysql-binlog-backup/rds-binlog-to-s3.sh&amp;#39;&lt;/span> &amp;gt;&amp;gt; /etc/crontab
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>redmine on Chiehting</title><link>https://chiehting.com/category/redmine/</link><description>Recent content in redmine on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 01 Oct 2019 11:00:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/redmine/index.xml" rel="self" type="application/rss+xml"/><item><title>Integrate Redmine with GitLab</title><link>https://chiehting.com/posts/redmine-integrate-with-gitlab/</link><pubDate>Tue, 01 Oct 2019 11:00:00 +0800</pubDate><guid>https://chiehting.com/posts/redmine-integrate-with-gitlab/</guid><description>
+&lt;p>部門選用了 &lt;em>Redmine&lt;/em> 當作我們的專案管理系統.想要規範 &lt;code>git commit&lt;/code> 的訊息,並將這些訊息自動發佈到 GitLab 上, 來節省開發人員的時間.&lt;/p>
+&lt;h3 id="測試環境">測試環境&lt;/h3>
+&lt;h4 id="使用docker建立測試環境">使用docker建立測試環境&lt;/h4>
+&lt;p>先啟動Redmine在啟動Gitlab&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://github.com/chiehting/docker-redmine">Redmine&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://github.com/chiehting/docker-gitlab">Gitlab&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h4 id="網段配置">網段配置&lt;/h4>
+&lt;p>在docker-gitlab/docker-compose.yml中新增下面設定,為了將兩個服務在同一網段下.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-yaml" data-lang="yaml">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="nt">services&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">web&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">image&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="s1">&amp;#39;gitlab/gitlab-ce:12.3.1-ce.0&amp;#39;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="l">...&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">networks&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>- &lt;span class="l">default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nt">networks&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">default&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">external&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nt">name&lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="l">docker-redmine_default&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="本次測試服務ip位置">本次測試服務IP位置&lt;/h5>
+&lt;ul>
+&lt;li>gitlab: 172.30.0.4&lt;/li>
+&lt;li>redmine: 172.30.0.3&lt;/li>
+&lt;/ul>
+&lt;h5 id="設定hosts透過域名互通">設定hosts,透過域名互通&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">sudo &lt;span class="nb">echo&lt;/span> &lt;span class="s1">&amp;#39;172.30.0.4 gitlab.example.com&amp;#39;&lt;/span> &amp;gt;&amp;gt; /etc/hosts
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">sudo &lt;span class="nb">echo&lt;/span> &lt;span class="s1">&amp;#39;172.30.0.3 redmine.example.com&amp;#39;&lt;/span> &amp;gt;&amp;gt; /etc/hosts
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="設定redmine">設定redmine&lt;/h3>
+&lt;h4 id="安裝plugin">安裝plugin&lt;/h4>
+&lt;p>希望 git push 時觸發 Redmine, 所以要加入此 plugin. git clone &lt;a href="https://github.com/phlegx/redmine_gitlab_hook">redmine_gitlba_hook&lt;/a>到 plugins 的資料夾中.
+再來可以在&lt;code>Administration » Plugins » GitLab Authentication&lt;/code>中做設定,目前設定如下.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>參數&lt;/th>
+&lt;th>值&lt;/th>
+&lt;th>說明&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>All branches&lt;/td>
+&lt;td>v&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Prune&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Auto create&lt;/td>
+&lt;td>v&lt;/td>
+&lt;td>自動建立repo&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Local repositories path&lt;/td>
+&lt;td>/usr/src/redmine/repo&lt;/td>
+&lt;td>redmine拉repo的位置,要注意權限,需要redmine可以寫入的權限&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Git command prefix&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Fetch updates from repository&lt;/td>
+&lt;td>v&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="設定api-key">設定API Key&lt;/h4>
+&lt;p>在&lt;code>Administration » Settings » Repositories&lt;/code>中Enable WS for repository management再Generate a key.
+這裡取得了&lt;code>Key:rYtIYdc2zR9ZvZ8M24L8&lt;/code>&lt;/p>
+&lt;h4 id="建立專案">建立專案&lt;/h4>
+&lt;p>建立一個專案叫做DevOps&lt;/p>
+&lt;h4 id="建立議題">建立議題&lt;/h4>
+&lt;p>需要先設定trackers,在建立一筆Issue,建立完成後index應該是#1.&lt;/p>
+&lt;h4 id="設定專案">設定專案&lt;/h4>
+&lt;p>建立一個叫做DevOps的專案,設定專案下的&lt;code>integrations » redmine&lt;/code>.&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>參數&lt;/th>
+&lt;th>值&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>Active&lt;/td>
+&lt;td>V&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Description&lt;/td>
+&lt;td>Redmine issue tracker&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Project url&lt;/td>
+&lt;td>&lt;a href="http://redmine.example.com/projects/devops">http://redmine.example.com/projects/devops&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>Issues url&lt;/td>
+&lt;td>&lt;a href="http://redmine.example.com/issues/:id">http://redmine.example.com/issues/:id&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>New issue url&lt;/td>
+&lt;td>&lt;a href="http://redmine.example.com/projects/devops/issues/new">http://redmine.example.com/projects/devops/issues/new&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>建立一個&lt;code>webhook&lt;/code>來觸發redmine_gitlba_hook,設定專案下的&lt;code>integrations&lt;/code>.&lt;/p>
+&lt;p>URL如下:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>http://redmine.example.com/gitlab_hook?key=rYtIYdc2zR9ZvZ8M24L8&amp;amp;project_id=devops&amp;amp;repository_name=devops&amp;amp;repository_namespace=root&amp;amp;repository_git_url=http://gitlab.example.com/root/devops&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;p>or&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>http://redmine.example.com/gitlab_hook?key=rYtIYdc2zR9ZvZ8M24L8&amp;amp;project_id=devops&amp;amp;repository_name=devops&amp;amp;repository_namespace=root&amp;amp;repository_git_url=git@gitlab.example.com:root/devops.git&lt;/code>&lt;/li>
+&lt;/ul></description></item></channel></rss>

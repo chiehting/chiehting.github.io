@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>registry on Chiehting</title><link>https://chiehting.com/tags/registry/</link><description>Recent content in registry on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 24 Oct 2024 12:25:08 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/registry/index.xml" rel="self" type="application/rss+xml"/><item><title>uber/kraken container registry</title><link>https://chiehting.com/posts/kraken-container-registry/</link><pubDate>Thu, 24 Oct 2024 12:25:08 +0800</pubDate><guid>https://chiehting.com/posts/kraken-container-registry/</guid><description>
+&lt;p>Kraken 是一個使用 P2P 技術的容器映像檔推拉服務，適合在分散式架構下使用。官方測試 Kraken distributes 20K 100MB-1G blobs in under 30 sec。&lt;/p>
+&lt;h3 id="refencers">Refencers&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://github.com/uber/kraken">Github&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;blockquote>
+&lt;p>Kraken has been in production at Uber since early 2018. In our busiest cluster, Kraken distributes more than 1 million blobs per day, including 100k 1G+ blobs. At its peak production load, Kraken distributes 20K 100MB-1G blobs in under 30 sec.&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="使用情境">使用情境&lt;/h3>
+&lt;p>要在跨雲環境中使用Kraken，我們需要考慮幾個關鍵點：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>網絡連接：&lt;/p>
+&lt;ul>
+&lt;li>確保不同雲環境之間有穩定的網絡連接。這可能需要設置VPN或直接連接服務（如AWS Direct Connect或Azure ExpressRoute）。&lt;/li>
+&lt;li>配置防火牆規則，允許Kraken組件之間的通信。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>中央協調：&lt;/p>
+&lt;ul>
+&lt;li>在一個中心位置部署Tracker組件。這可以是任何一個雲環境，或者是一個中立的位置。&lt;/li>
+&lt;li>Tracker需要能夠與所有雲環境中的Agent和Origin通信。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>存儲配置：&lt;/p>
+&lt;ul>
+&lt;li>利用Kraken的可插拔存儲特性。在每個雲環境中配置適當的存儲後端（例如，在AWS中使用S3，在Azure中使用Blob Storage）。&lt;/li>
+&lt;li>確保Origin組件可以訪問這些存儲後端。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>Agent部署：&lt;/p>
+&lt;ul>
+&lt;li>在每個雲環境的所有主機上部署Agent。&lt;/li>
+&lt;li>配置Agent使其能夠與中央Tracker通信。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>跨雲複製：&lt;/p>
+&lt;ul>
+&lt;li>利用Kraken的跨集群複製功能。設置規則，以確保重要的映像在不同的雲環境之間同步。&lt;/li>
+&lt;li>這可以通過Build-Index組件來管理。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>負載均衡：&lt;/p>
+&lt;ul>
+&lt;li>在每個雲環境中部署Proxy組件。&lt;/li>
+&lt;li>使用雲提供商的負載均衡服務來分配對Proxy的請求。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>DNS配置：&lt;/p>
+&lt;ul>
+&lt;li>設置DNS以便各個組件可以相互發現。這可能需要使用跨雲DNS解決方案。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>監控和日誌：&lt;/p>
+&lt;ul>
+&lt;li>實施跨雲監控解決方案，以便您可以監視所有環境中的Kraken性能。&lt;/li>
+&lt;li>集中日誌收集，以便於故障排除。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>安全性：&lt;/p>
+&lt;ul>
+&lt;li>實施端到端加密，特別是對於跨雲通信。&lt;/li>
+&lt;li>使用雲提供商的身份和訪問管理服務來控制對Kraken組件的訪問。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>災難恢復：&lt;/p>
+&lt;ul>
+&lt;li>在不同的雲環境中設置備份和故障轉移機制。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="devcluster">devcluster&lt;/h3>
+&lt;p>在專案下有提供測試使用的環境 devcluster，可以執行命令啟動服務。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">make images &lt;span class="c1"># 編譯所有組建映像檔&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">make devcluster &lt;span class="c1"># 本地運行測試&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在容器內 agent 的執行命令&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># kraken-agent-one&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">/usr/bin/kraken-agent --config&lt;span class="o">=&lt;/span>/etc/kraken/config/agent/development.yaml --peer-ip&lt;span class="o">=&lt;/span>host.docker.internal --peer-port&lt;span class="o">=&lt;/span>&lt;span class="m">16001&lt;/span> --agent-server-port&lt;span class="o">=&lt;/span>&lt;span class="m">16002&lt;/span> --agent-registry-port&lt;span class="o">=&lt;/span>&lt;span class="m">16000&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># kraken-agent-two&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">/usr/bin/kraken-agent --config&lt;span class="o">=&lt;/span>/etc/kraken/config/agent/development.yaml --peer-ip&lt;span class="o">=&lt;/span>host.docker.internal --peer-port&lt;span class="o">=&lt;/span>&lt;span class="m">17001&lt;/span> --agent-server-port&lt;span class="o">=&lt;/span>&lt;span class="m">17002&lt;/span> --agent-registry-port&lt;span class="o">=&lt;/span>&lt;span class="m">17000&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在容器內 testfs 的執行命令&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/usr/bin/kraken-testfs --port&lt;span class="o">=&lt;/span>&lt;span class="m">14000&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在容器內 origin 的執行命令&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/usr/bin/kraken-origin --config&lt;span class="o">=&lt;/span>/etc/kraken/config/origin/development.yaml --blobserver-hostname&lt;span class="o">=&lt;/span>host.docker.internal --blobserver-port&lt;span class="o">=&lt;/span>&lt;span class="m">15002&lt;/span> --peer-ip&lt;span class="o">=&lt;/span>host.docker.internal --peer-port&lt;span class="o">=&lt;/span>&lt;span class="m">15001&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在容器內 tracker 的執行命令&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/usr/bin/kraken-tracker --config&lt;span class="o">=&lt;/span>/etc/kraken/config/tracker/development.yaml --port&lt;span class="o">=&lt;/span>&lt;span class="m">15003&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在容器內 build-index 的執行命令&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/usr/bin/kraken-build-index --config&lt;span class="o">=&lt;/span>/etc/kraken/config/build-index/development.yaml --port&lt;span class="o">=&lt;/span>&lt;span class="m">15004&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>在容器內 proxy 的執行命令&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">/usr/bin/kraken-proxy --config&lt;span class="o">=&lt;/span>/etc/kraken/config/proxy/development.yaml --port&lt;span class="o">=&lt;/span>&lt;span class="m">15000&lt;/span> --server-port&lt;span class="o">=&lt;/span>&lt;span class="m">15005&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="相依性">相依性：&lt;/h3>
+&lt;ul>
+&lt;li>agent: build-index、tracker&lt;/li>
+&lt;li>origin: origin、testfs&lt;/li>
+&lt;li>build-index: origin、build-index、testfs&lt;/li>
+&lt;li>testfs:&lt;/li>
+&lt;li>tracker: origin&lt;/li>
+&lt;li>proxy: origin、build-index&lt;/li>
+&lt;/ul>
+&lt;h3 id="安裝步驟">安裝步驟：&lt;/h3>
+&lt;ol>
+&lt;li>testfs：testfs是Kraken的測試檔案系統組件，主要用於測試環境中模擬儲存層。&lt;/li>
+&lt;li>origin：origin是Kraken的核心儲存組件，作為整個分發系統的源頭，可以從上游 registry 拉取映像。&lt;/li>
+&lt;li>build-index：build-index組件負責索引和管理映像與標籤的關係。&lt;/li>
+&lt;li>proxy：proxy組件是Docker客戶端的接入點。&lt;/li>
+&lt;li>tracker：tracker是P2P分發網路的協調者。&lt;/li>
+&lt;li>agent：agent運行在每個需要Docker映像的主機上。&lt;/li>
+&lt;/ol>
+&lt;p>其中 push 需要服務 1、2、3、4
+其中 pull 需要服務 1、2、3、4、5、6&lt;/p>
+&lt;h3 id="整合結構">整合結構&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>優點：&lt;/p>
+&lt;ol>
+&lt;li>可以從其他 node 上獲取 images，減少 registry 的壓力&lt;/li>
+&lt;li>拉取映像檔案效率較高&lt;/li>
+&lt;li>隱匿映像檔來源&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;li>
+&lt;p>缺點：&lt;/p>
+&lt;ol>
+&lt;li>需要多建立 daemonset 服務，佔用主機資源&lt;/li>
+&lt;/ol>
+&lt;/li>
+&lt;/ul>
+&lt;pre class="mermaid">flowchart TB
+gitlab(GitLab)
+gitlabci(gitlab runner)
+nexus(Nexus)
+harbor(Harbor)
+awsecr(AWS ECR)
+huaweiswr(Huawei SWR)
+start -- git push --> gitlab
+subgraph pn[priate network]
+direction BT
+gitlab --> gitlabci
+gitlabci --> nexus
+nexus -- cache --> gitlabci
+gitlabci -- push artifacts --> harbor
+end
+subgraph aws[AWS]
+harbor -- replications --> awsecr
+awsecr -- pull images --> node1 &amp; node1' &amp; node2 &amp; node2'
+subgraph kubernets cluster
+node1 &lt;-- pull images --> node2
+end
+subgraph kubernets cluster
+node1' &lt;-- pull images --> node2'
+end
+end
+subgraph hc[Huawei Cloud]
+harbor -- replications --> huaweiswr
+huaweiswr -- pull images --> node1'' &amp; node1''' &amp; node2'' &amp; node2'''
+subgraph kubernets cluster
+node1'' &lt;-- pull images --> node2''
+end
+subgraph kubernets cluster
+node1''' &lt;-- pull images --> node2'''
+end
+end&lt;/pre></description></item></channel></rss>

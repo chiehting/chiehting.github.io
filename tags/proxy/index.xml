@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>proxy on Chiehting</title><link>https://chiehting.com/tags/proxy/</link><description>Recent content in proxy on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Mon, 16 Aug 2021 14:55:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/proxy/index.xml" rel="self" type="application/rss+xml"/><item><title>Cloudfloar proxy slow</title><link>https://chiehting.com/posts/cloudflare-proxy-slow-issue/</link><pubDate>Mon, 16 Aug 2021 14:55:00 +0800</pubDate><guid>https://chiehting.com/posts/cloudflare-proxy-slow-issue/</guid><description>
+&lt;p>今天收到反應說服務 API 的反應速度有變慢, 盤查結果發現目前使用的 Cloudflare 中的 proxy 功能造成的, 這邊紀錄盤查過程.&lt;/p>
+&lt;p>從下圖可以看到有多支 API 變慢，這邊先分析變慢的原因。&lt;/p>
+&lt;p>&lt;img src="https://storage.googleapis.com/chiehting.com/blog/2021-08-16-cloudflare-proxy-issu-1.jpg" alt="api request is slow">&lt;/p>
+&lt;h3 id="分析">分析&lt;/h3>
+&lt;ol>
+&lt;li>測試網路節點狀況，看是否有節點異常緩慢&lt;/li>
+&lt;li>測試 API 請求狀況，查看請求是否有緩慢的階段&lt;/li>
+&lt;/ol>
+&lt;h4 id="測試網路節點狀況">測試網路節點狀況&lt;/h4>
+&lt;p>MTR 分析網路節點狀況，可以看到節點的響應速度在 200 ms 內，看起來還在可接受範圍內。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ sudo mtr --tcp --port &lt;span class="m">443&lt;/span> --report --report-cycles &lt;span class="m">5&lt;/span> api.bitwin.ai
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">Start: 2021-08-13T17:28:56+0800
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">HOST: JustinLee Loss% Snt Last Avg Best Wrst StDev
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> 1.&lt;span class="p">|&lt;/span>-- rt-ac68u-2ad0 0.0% &lt;span class="m">5&lt;/span> 2.5 2.4 1.8 3.5 0.7
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> 2.&lt;span class="p">|&lt;/span>-- h254.s98.ts.hinet.net 0.0% &lt;span class="m">5&lt;/span> 11.7 7.9 6.1 11.7 2.3
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> 3.&lt;span class="p">|&lt;/span>-- tpn2-3301.hinet.net 0.0% &lt;span class="m">5&lt;/span> 20.0 11.2 5.8 20.0 6.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> 4.&lt;span class="p">|&lt;/span>-- tpdb-3031.hinet.net 40.0% &lt;span class="m">5&lt;/span> 9.9 9.5 9.1 9.9 0.4
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> 5.&lt;span class="p">|&lt;/span>-- 220-128-8-121.hinet-ip.hi 0.0% &lt;span class="m">5&lt;/span> 8.5 10.7 7.5 18.5 4.5
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> 6.&lt;span class="p">|&lt;/span>-- tyfo-4011.hinet.net 0.0% &lt;span class="m">5&lt;/span> 12.0 9.1 6.8 12.0 2.0
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> 7.&lt;span class="p">|&lt;/span>-- r31-la.us.hinet.net 0.0% &lt;span class="m">5&lt;/span> 142.5 142.9 140.1 148.3 3.2
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> 8.&lt;span class="p">|&lt;/span>-- r32-la.us.hinet.net 0.0% &lt;span class="m">5&lt;/span> 139.9 141.4 139.0 143.1 1.9
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> 9.&lt;span class="p">|&lt;/span>-- 141.101.72.250 0.0% &lt;span class="m">5&lt;/span> 153.2 146.1 139.4 153.3 6.8
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> 10.&lt;span class="p">|&lt;/span>-- 104.21.33.138 0.0% &lt;span class="m">5&lt;/span> 140.3 141.2 139.8 142.6 1.2
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h4 id="測試-api-請求狀況">測試 API 請求狀況&lt;/h4>
+&lt;p>使用 curl 命令對 api/ping 做請求, 這支 API 非常輕量, 但響應時間需要 1144 ms, 有點不合理.&lt;/p>
+&lt;p>由下面資訊可以看到在 time_appconnect 這邊花了比較長的時間, 也就是可能在做 TLS 的時候佔了很長的時間, 而因為有使用 Cloudflare proxy, 所以 client 端在是對 proxy 的機器做 TLS Handshake.&lt;/p>
+&lt;blockquote>
+&lt;p>time_appconnect here is TLS setup. The client is then ready to send it’s HTTP GET request.&lt;/p>
+&lt;/blockquote>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ bash curl_timetrace.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1"># starting_time: Fri Aug 13 17:43:56 CST 2021&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> time_namelookup: 0.002113
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> time_connect: 0.187355
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> time_appconnect: 0.521270
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> time_pretransfer: 0.521435
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">time_starttransfer: 1.144257
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> ---------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> time_total: 1.144484 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="troubleshoot">Troubleshoot&lt;/h3>
+&lt;p>經由上面分析觀察到可能是 TLS 耗時太久. 嘗試移除 Cloudflare proxy 的功能, 讓 Cloudflare 只單純的做 DNS.&lt;/p>
+&lt;p>目前路由狀況如下圖. 由於網站上的 SSL 綁定都是使用 &lt;a href="https://www.cloudflare.com/zh-tw/ssl/">Cloudflare 免費 SSL/TLS&lt;/a>, 這功能必須啟用 proxy. 若要禁用 proxy 的話, 必須將 SSL 憑證在其他地方綁定. 測試時先暫時把 SSL 憑證改綁在 AWS Elastic Load Balancing 上.&lt;/p>
+&lt;pre class="mermaid">flowchart LR
+client --> cloudflare["Cloudflare proxy"]
+cloudflare --> originServer["origin server"]&lt;/pre>
+&lt;h3 id="比較結果">比較結果&lt;/h3>
+&lt;p>可以看到調整過後, 約提升了 60% 的效率. 這邊評估可能是 proxy 的節點較遠, 而 client 需要先經過 proxy 才能到達 origin server, 所以導致變慢.&lt;/p>
+&lt;p>這邊有一個網站 &lt;a href="https://cloudflare-test.judge.sh/">cloudflare-test&lt;/a>，可以測試 proxy 的地理位置，另外 proxy 會隨時間作變動非固定。&lt;/p>
+&lt;p>&lt;strong>Before&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ bash curl_timetrace.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1"># starting_time: Fri Aug 13 17:43:56 CST 2021&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> time_namelookup: 0.002113
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> time_connect: 0.187355
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> time_appconnect: 0.521270
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> time_pretransfer: 0.521435
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl">time_starttransfer: 1.144257
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> ---------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> time_total: 1.144484 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>After&lt;/strong>&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">➜ bash curl_timetrace.sh
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="c1">##### starting_time: Fri Aug 13 20:31:22 CST 2021&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> time_namelookup: 0.002898
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> time_connect: 0.117132
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> time_appconnect: 0.344409
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> time_redirect: 0.000000
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> time_pretransfer: 0.344475
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> time_starttransfer: 0.453052
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> ---------------------
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> time_total: 0.453251 seconds
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
