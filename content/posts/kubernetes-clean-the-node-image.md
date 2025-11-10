@@ -1,6 +1,6 @@
 ---
 date: 2024-05-28T13:01:00+08:00
-updated: 2025-04-01T12:17:22+08:00
+updated: 2025-07-19T22:00:33+08:00
 title: 清理 Kubernetes node 上的映像檔
 category: kubernetes
 tags:
@@ -25,12 +25,13 @@ $ tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
 ###  刪除節點內的 images
 
 ```shell
-$ cat /etc/crictl.yaml
+$ cat > /etc/crictl.yaml <<EOF
 runtime-endpoint: unix:///host/run/containerd/containerd.sock
 image-endpoint: unix:///host/run/containerd/containerd.sock
 timeout: 2
 debug: false
 pull-image-on-create: false
+EOF
 
 $ crictl images
 $ #crictl images|grep application | awk '{print $1":"$2}' |xargs -n 1 crictl rmi
