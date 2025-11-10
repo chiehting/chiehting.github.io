@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>slo on Chiehting</title><link>https://chiehting.com/tags/slo/</link><description>Recent content in slo on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 12 Jul 2023 16:14:50 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/slo/index.xml" rel="self" type="application/rss+xml"/><item><title>Service Level Ojbective</title><link>https://chiehting.com/posts/service-level-objective/</link><pubDate>Wed, 12 Jul 2023 16:14:50 +0800</pubDate><guid>https://chiehting.com/posts/service-level-objective/</guid><description>
+&lt;p>為什麼 SLO 這麼重要?&lt;/p>
+&lt;p>SLO 是為滿足 SLA 的目標設立, 將客戶對系統穩定度的期待轉換成目標. 之所以重要是因為 IT 團隊直接關注客戶所在乎的重點, 讓系統的穩定度保持在可接受的範圍內. 當然服務越可靠; 成本就越高.&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives">Measuring and evaluating Service Level Objectives (SLOs)&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>Service level objective (服務水準目標) 是系統監控的目標, 為了滿足 SLA 所承諾之協議. SLO 的組成是由 &lt;strong>SLI、一段時間區間、目標(通常以百分比呈現)&lt;/strong>, 公式如下:&lt;/p>
+&lt;p>$$ SLO = SLI + period\ of\ time + valid\ conditions $$&lt;/p>
+&lt;p>在建立 SLOs 的時候目標必須是明確且清晰的. 在文中出指出五點來測量與評估 SLOs, 我個人的經驗裡, 在執行上會有些困難點, 在下面一併列出.&lt;/p>
+&lt;ul>
+&lt;li>&lt;strong>設定準確的目標&lt;/strong>: 須將目標收斂. 設定人需明確目標, 不要過於發散, 讓指標精確以利於後許的衡量.&lt;/li>
+&lt;li>&lt;strong>搜集監控數據&lt;/strong>: 數據需要定義清楚且完善, 可視覺化輔助. 工具例如: DataDog, Grafana. 設立人需對目標清楚與系統了解, 使得資訊搜集完全且正確.&lt;/li>
+&lt;li>&lt;strong>對收集的指標發出警報&lt;/strong>: 對於告警要透明且公開很認同, 但大量的警報會讓 IT 團隊感受到變弱. 這邊可以做警報權重的配置, 讓 IT 團隊對於警報事件是要繃緊神經的. 工具例如: Opsgenie&lt;/li>
+&lt;li>&lt;strong>建立警報報告&lt;/strong>: 取得事件的數據報告, 包括每項服務解決和關閉事件的平均時間、服務健康百分比、事件的嚴重性、事件的關聯性等等. 關鍵的數據報告可以讓評估準確.&lt;/li>
+&lt;li>&lt;strong>報告的評估與分享&lt;/strong>: 警報事件要設立負責人, 來對該事件作分析與回饋. 負責人不是單個團隊的職責, 可以是 Dev、Ops、PMs, etc. 依據目標不同, 負責人也會不同. 依據狀況與相關利益者分享報告分析.&lt;/li>
+&lt;/ul>
+&lt;p>上述幾點是循環且持續執行的優化項目, 不會是一次性任務.&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives">Measuring and evaluating Service Level Objectives (SLOs)&lt;/a>&lt;/p>
+&lt;p>In this context, SLAs (Service Level Agreement) are likely familiar. &lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA is a written agreement between the client and the service provider to ensure a healthy level of quality.&lt;/span> If specified conditions aren’t met there are consequences, and they are often financial.&lt;/strong>&lt;/p>
+&lt;p>However, the real world isn’t this simple. Service owners are accountable to serve both outside and inside stakeholders. These stakeholders depend on the services to meet their business objectives. This is especially common in microservices architectures, where one service is dependent on another. &lt;strong>As it doesn’t make sense to have written contracts for everything, &lt;span style="background-color: #ffffcc; color: red">service owners should be held responsible by defining clear objectives.&lt;/span>&lt;/strong> There are no severe penalties if those objectives aren’t met. Yet, this doesn’t mean they are there for nothing. There are some consequences, or rather– corrective actions, needed to improve those services.&lt;/p>
+&lt;p>&lt;em>A simple equation to define SLA and SLO relationship is:&lt;/em>&lt;/p>
+&lt;p>$$ SLA = SLO + written\ and\ signed\ consequences $$&lt;/p>
+&lt;p>Let’s focus on 5 key steps while measuring and evaluating SLOs.&lt;/p>
+&lt;h5 id="set-the-right-objectives">Set the right objectives&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Setting the right objectives is the first important step towards building proper SLOs.&lt;/span>&lt;/strong> There are some important things to consider at this point:&lt;/p>
+&lt;ul>
+&lt;li>Identify key metrics (service level indicators — SLIs) from the end-user viewpoint, such as latency&lt;/li>
+&lt;li>Make it measurable– such as 100 ms. latency&lt;/li>
+&lt;li>Allow some space (error budget) such as 100 ms. 99.9% of the time&lt;/li>
+&lt;li>Be clear on what you promise, for example 99.9% of the time (averaged over 10 minutes), HTTP calls are completed under 100 ms.&lt;/li>
+&lt;li>Consider product and business implications because setting the right objectives for SLOs aren’t purely technical as stated the &lt;a href="https://landing.google.com/sre/book/chapters/service-level-objectives.html">in SRE Book&lt;/a>.&lt;/li>
+&lt;/ul>
+&lt;p>Although these points are important and seem obvious, it is really hard to identify the right metrics. Talk openly with users and be clear on what is promised.&lt;/p>
+&lt;h5 id="collect-monitoring-data">Collect monitoring data&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Once important metrics have been identified, they need to be collected.&lt;/span> This stage depends heavily on SLOs and what the service means to others. Different things may need to be monitored depending on the level of abstraction.&lt;/strong> Often what is needed is a monitoring tool like DataDog to collect and visualize the data. These tools allow for aggregation and alerting when the metric reaches the threshold defined.&lt;/p>
+&lt;h5 id="alert-on-collected-metrics">Alert on collected metrics&lt;/h5>
+&lt;p>&lt;strong>Alerting is a critical and a complex job by itself. Filtering out low priority alerts and letting the team know about these are important for the health of on-call.&lt;/strong> But these are not the only places where an incident management solution such as &lt;em>Opsgenie&lt;/em> helps. A proper incident management tool does “a lot” more than that. It centralizes all alerts from different monitoring tools in one dashboard and allows users to &lt;a href="https://docs.opsgenie.com/docs/filters">categorize important alerts&lt;/a> for later analysis.&lt;/p>
+&lt;h5 id="create-reports-from-alerts">Create reports from alerts&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Once all of the alerts are in one place it’s important to setup alert reporting&lt;/span>, which makes it easy to see important data points in a structured view.&lt;/strong> To report on SLOs, Service and Infrastructure Health Reports are used at Opsgenie which include key indicators that can be used to evaluate metrics and share with customers as a team. Examples of these metrics are mean time to resolve and close incidents per service, Service health percentage (healthy/unhealthy state by outages and disruptions), severity of incidents that arise in a service and the alerts associated with all incidents (so that insight is gained into which monitoring systems reported the incident in which way) and how stakeholders were affected by the service disruptions – whether they were notified in a timely and proper way. The infrastructure health reports provide infrastructure-wide context by allowing stakeholders to see all alerts and incidents across an entire infrastructure in a single view.&lt;/p>
+&lt;h5 id="evaluate-and-share-the-reports">Evaluate and share the reports&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Reports mean nothing if left un-evaluated. As they are the written proof of performance on the service level indicators defined internally, and they help to see if SLOs were met or not.&lt;/span> Evaluation should include every team member and stakeholder. This means transparency is crucial– be open about them and share the results with others.&lt;/strong> To dig a little bit deeper with analytics tools or create more sophisticated reports for stakeholders, export the reports for easy sharing.&lt;/p>
+&lt;h4 id="slos-dont-matter-if-the-cycle-isnt-repeated">SLOs don’t matter if the cycle isn’t repeated&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">Once the cycle is completed– from creating the objectives and finishing with evaluating– the job still isn’t done. It starts all over again. Reevaluate objectives and take corrective actions either by refining the indicators or making services more robust.&lt;/span> Clearly examine error budgets to make sure that overachievement is avoided (yes, that is bad too).&lt;/strong> It is important to design objectives taking into account that tools and services will fail, because they will.&lt;/p></description></item><item><title>SLA、SLO、SLI的概念</title><link>https://chiehting.com/posts/service-level/</link><pubDate>Wed, 04 Nov 2020 17:22:00 +0800</pubDate><guid>https://chiehting.com/posts/service-level/</guid><description>
+&lt;p>拜讀 Atlassian 的文章, 暸解如何訂定服務的穩定性, 以及如何量化他們. 這邊定義了三件事情 SLA、SLO、SLI, 從對用戶的承諾, 到設定系統目標, 至搜集服務指標, 達到使用戶感受到系統的穩定, 但如果承諾未達成, 系統商也應該付出所承諾之代價.&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ol>
+&lt;li>&lt;a href="https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli">SLA vs. SLO vs. SLI: What’s the difference?&lt;/a>&lt;/li>
+&lt;/ol>
+&lt;h3 id="summary">Summary&lt;/h3>
+&lt;p>SRE ([[what-is-sre]]) 的核心價值之一是維持系統的穩定度, 但怎麽樣叫做穩定? 這邊拜讀 &lt;em>Atlassian&lt;/em> 的文章來了解穩定的目標. 這邊定義三件事 SLA ([[service-level-agreement]])、SLO ([[service-level-objective]])、SLI ([[service-level-indicator]]), 使其讓用戶跟服務提供商達成共識, 例如用戶會想知道:&lt;/p>
+&lt;ul>
+&lt;li>系統可以使用多久?&lt;/li>
+&lt;li>系統出現故障, 維護團隊多久可以給出回饋?&lt;/li>
+&lt;li>系統對響應速度做什麼樣的承諾?&lt;/li>
+&lt;/ul>
+&lt;p>SLA 是提供商對用戶承諾的協議. 例如承諾系統使用時間、響應時間. 通常會由公司的商務團隊或法務團隊來訂定對客戶的承諾. 如未達到承諾之協議, 則需要承擔後果. 而且非技術團隊所做出的承諾, 容易無法做出衡量. 所以如果是提供免費的服務, 就不太需要訂定承諾.&lt;/p>
+&lt;p>SLO 是系統對 SLA 所承諾之衡量目標的設定. 這邊感覺起來如果 SLA 是對用戶做承諾, SLO 就是將承諾提交給相關的團隊, 來做數據化的監控. 例如: 承諾系統要在 99.95% 的時間可使用, 就要將此承諾交給 IT team 來設定系統運行時間的目標要在 99.95% 內.&lt;/p>
+&lt;p>SLI 是系統對 SLO 所設定衡量目標之衡量指標. 是對 SLO 所衡量之目標所所測量的實際指標. 例如: 設定了 SLO 系統運行時間的目標在 99.95%, 而衡量指標就是這個目標目前實際的值, 可能是 99.9%.&lt;/p>
+&lt;p>延伸閱讀, &lt;a href="https://ikala.cloud/understanding-sli-slo-sla-in-sre/">iKala - 一次搞懂 SLI、SLO、SLA 差異，Google DevOps 理念實踐&lt;/a>&lt;/p>
+&lt;h3 id="note">Note&lt;/h3>
+&lt;p>原文 :: &lt;a href="https://www.atlassian.com/incident-management/kpis/sla-vs-slo-vs-sli">SLA vs. SLO vs. SLI: What’s the difference?&lt;/a>&lt;/p>
+&lt;p>&lt;strong>And in today’s always-on world, people’s expectations—for free and paid services alike—are high. Speed. Uptime. Useful UX. Today’s user base expects everything to meet a high standard.&lt;/strong>&lt;/p>
+&lt;p>Which is why it’s important for companies to understand and maintain SLAs, SLOs, and SLIs—three initialisms that represent the promises we make to our users, the internal objectives that help us keep those promises, and the trackable measurements that tell us how we’re doing.&lt;/p>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">The goal of all three things is to get everybody—vendor and client alike—on the same page about system performance.&lt;/span>&lt;/strong> How often will your systems be available? How quickly will your team respond if the system goes down? What kind of promises are you making about speed and functionality? Users want to know—and so you need SLAs, SLOs, and SLIs.&lt;/p>
+&lt;ul>
+&lt;li>Service Level Agreement (SLA), the agreement you make with your clients or users.&lt;/li>
+&lt;li>Service Level Objective (SLOs), the objectives your team must hit to meet that agreement.&lt;/li>
+&lt;li>Services Level Indicator (SLIs), the real numbers on your performance.&lt;/li>
+&lt;/ul>
+&lt;h4 id="what-is-an-sla">What is an SLA?&lt;/h4>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA (service level agreement) is an agreement between provider and client about measurable metrics like uptime, responsiveness, and responsibilities.&lt;/span>&lt;/strong>&lt;/p>
+&lt;p>These agreements are typically drawn up by a company’s new business and legal teams and they represent the promises you’re making to customers—and the consequences if you fail to live up to those promises. Typically, consequences include financial penalties, service credits, or license extensions.&lt;/p>
+&lt;h5 id="the-challenge-of-slas">The challenge of SLAs&lt;/h5>
+&lt;p>&lt;a href="https://www.atlassian.com/it-unplugged/best-practices-and-trends/stop-hating-on-slas">SLAs are notoriously difficult to measure, report on, and meet&lt;/a>. These agreements—generally written by people who aren’t in the tech trenches themselves—often make promises that are difficult for teams to measure, don’t always align with current and ever-evolving business priorities, and don’t account for nuance.&lt;/p>
+&lt;h5 id="who-needs-an-sla">Who needs an SLA?&lt;/h5>
+&lt;p>&lt;strong>&lt;span style="background-color: #ffffcc; color: red">An SLA is an agreement between a vendor and a paying customer.&lt;/span> Companies providing a service to users for free are unlikely to want or need an SLA for those free users.&lt;/strong>&lt;/p>
+&lt;h4 id="what-is-an-slo">What is an SLO?&lt;/h4>
+&lt;p>An SLO (service level objective) is an agreement within an SLA about a specific metric like uptime or response time. So, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if the SLA is the formal agreement between you and your customer, SLOs are the individual promises you’re making to that customer. SLOs are what set customer expectations and tell IT and DevOps teams &lt;a href="https://www.atlassian.com/blog/opsgenie/measuring-and-evaluating-service-level-objectives">what goals they need to hit and measure themselves against&lt;/a>.&lt;/span>&lt;/strong>&lt;/p>
+&lt;h5 id="the-challenges-of-slos">The challenges of SLOs&lt;/h5>
+&lt;p>SLOs get less hate than SLAs, but they can create just as many problems if they’re vague, overly complicated, or impossible to measure. The key to SLOs that don’t make your engineers want to tear their hair out is simplicity and clarity. &lt;strong>Only the most important metrics should qualify for SLO status, the objectives should be spelled out in plain language, and, as with SLAs, they should always account for issues such as client-side delays.&lt;/strong>&lt;/p>
+&lt;h5 id="who-needs-slos">Who needs SLOs?&lt;/h5>
+&lt;p>Where SLAs are only relevant in the case of paying customers, SLOs can be useful for both paid and unpaid accounts, as well as internal and external customers. &lt;/p>
+&lt;p>Internal systems, such as CRMs, client data repositories, and intranet, can be just as important as external-facing systems. And having SLOs for those internal systems is an important piece of not only meeting business goals but enabling internal teams to meet their own customer-facing goals.&lt;/p>
+&lt;h4 id="what-is-an-sli">What is an SLI?&lt;/h4>
+&lt;p>An SLI (service level indicator) measures compliance with an SLO (service level objective). So, for example, &lt;strong>&lt;span style="background-color: #ffffcc; color: red">if your SLA specifies that your systems will be available 99.95% of the time, your SLO is likely 99.95% uptime and your SLI is the actual measurement of your uptime. Maybe it’s 99.96%. Maybe 99.99%.&lt;/span>&lt;/strong> To stay in compliance with your SLA, the SLI will need to meet or exceed the promises made in that document.&lt;/p>
+&lt;h5 id="the-challenges-of-slis">The challenges of SLIs&lt;/h5>
+&lt;p>As with SLOs, &lt;span style="background-color: #ffffcc; color: red">the challenge of SLIs is keeping them simple, choosing the right metrics to track, and not overcomplicating IT’s job by tracking too many metrics that don’t actually matter to clients.&lt;/span>&lt;/p>
+&lt;h5 id="who-needs-slis">Who needs SLIs?&lt;/h5>
+&lt;p>Any company measuring their performance against SLOs needs SLIs in order to make those measurements. You can’t really have SLOs without SLIs.&lt;/p></description></item></channel></rss>

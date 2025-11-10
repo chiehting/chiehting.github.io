@@ -1,0 +1,816 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>linux on Chiehting</title><link>https://chiehting.com/category/linux/</link><description>Recent content in linux on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 16 Jul 2025 15:07:51 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>Unix 訊號定義</title><link>https://chiehting.com/posts/unix-signals/</link><pubDate>Wed, 16 Jul 2025 15:07:51 +0800</pubDate><guid>https://chiehting.com/posts/unix-signals/</guid><description>
+&lt;p>在 unix 中的每個信號號都有對應的定義，決定了當進程接收到信號時的行為。下面表格中的 &lt;code>Action&lt;/code> 列條目指定了每個信號的默認處置。&lt;/p>
+&lt;ul>
+&lt;li>Ign：Default action is to ignore the signal.&lt;/li>
+&lt;li>Core：Default action is to terminate the process and dump core (see &lt;a href="https://man7.org/linux/man-pages/man5/core.5.html">core(5)&lt;/a>).&lt;/li>
+&lt;li>Stop：Default action is to stop the process.&lt;/li>
+&lt;li>Cont：Default action is to continue the process if it is currently stopped.&lt;/li>
+&lt;/ul>
+&lt;h3 id="refencers">Refencers&lt;/h3>
+&lt;p>&lt;a href="https://man7.org/linux/man-pages/man7/signal.7.html">https://man7.org/linux/man-pages/man7/signal.7.html&lt;/a>&lt;/p>
+&lt;h3 id="standard-signals">Standard signals&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Signal&lt;/th>
+&lt;th>Standard&lt;/th>
+&lt;th>Action&lt;/th>
+&lt;th>Comment&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>SIGABRT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Abort signal from abort(3)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGALRM&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Timer signal from alarm(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGBUS&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Bus error (bad memory access)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGCHLD&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>Child stopped or terminated&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGCLD&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>A synonym for SIGCHLD&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGCONT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Cont&lt;/td>
+&lt;td>Continue if stopped&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGEMT&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Emulator trap&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGFPE&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Erroneous arithmetic operation&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGHUP&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Hangup detected on controlling terminal&lt;br>or death of controlling process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGILL&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Illegal Instruction&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGINFO&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>A synonym for SIGPWR&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGINT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Interrupt from keyboard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGIO&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>I/O now possible (4.2BSD)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGIOT&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>IOT trap. A synonym for SIGABRT&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGKILL&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Kill signal&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGLOST&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>File lock lost (unused)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPIPE&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Broken pipe: write to pipe with no&lt;br>readers; see pipe(7)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPOLL&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Pollable event (Sys V);&lt;br>synonym for SIGIO&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPROF&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Profiling timer expired&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPWR&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Power failure (System V)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGQUIT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Quit from keyboard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSEGV&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Invalid memory reference&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSTKFLT&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Stack fault on coprocessor (unused)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSTOP&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Stop process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTSTP&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Stop typed at terminal&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSYS&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Bad system call (SVr4);&lt;br>see also seccomp(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTERM&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Termination signal&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTRAP&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Trace/breakpoint trap&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTTIN&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Terminal input for background process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTTOU&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Terminal output for background process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGUNUSED&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Synonymous with SIGSYS&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGURG&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>Urgent condition on socket (4.2BSD)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGUSR1&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>User-defined signal 1&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGUSR2&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>User-defined signal 2&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGVTALRM&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Virtual alarm clock (4.2BSD)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGXCPU&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>CPU time limit exceeded (4.2BSD);&lt;br>see setrlimit(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGXFSZ&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>File size limit exceeded (4.2BSD);&lt;br>see setrlimit(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGWINCH&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>Window resize signal (4.3BSD, Sun)&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table></description></item><item><title>File system of Linux</title><link>https://chiehting.com/posts/file-system/</link><pubDate>Mon, 12 May 2025 22:34:05 +0800</pubDate><guid>https://chiehting.com/posts/file-system/</guid><description>
+&lt;h3 id="file-system-type">File system type&lt;/h3>
+&lt;p>在 Linux 系統中，&lt;code>shm&lt;/code> 和 &lt;code>tmpfs&lt;/code> 是兩種特殊的檔案系統，代表不同的用途：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>shm（共享內存）：&lt;/strong>
+&lt;ul>
+&lt;li>&lt;code>shm&lt;/code> 是共享內存（Shared Memory）的縮寫，它是一種允許不同進程之間共享內存區域的機制。在 Linux 中，&lt;code>/dev/shm&lt;/code> 目錄用於掛載共享內存文件系統。這裡的檔案系統不是真正的硬碟，而是一個存在於記憶體中的虛擬檔案系統，用於進程之間的快速通信。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;strong>tmpfs（臨時文件系統）：&lt;/strong>
+&lt;ul>
+&lt;li>&lt;code>tmpfs&lt;/code> 是一種基於記憶體的臨時文件系統，它允許將一部分系統內存用作檔案系統。它通常被用於存儲臨時文件和資料，而不是實際的硬碟。&lt;code>/tmp&lt;/code> 目錄通常是 &lt;code>tmpfs&lt;/code> 的一個例子，但也可以在其他地方創建 &lt;code>tmpfs&lt;/code> 檔案系統。這個臨時文件系統在系統重新啟動時通常會被清除。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>總之，&lt;code>shm&lt;/code> 是用於實現進程間共享內存的文件系統，而 &lt;code>tmpfs&lt;/code> 是一種臨時文件系統，通常用於存儲臨時文件和資料。&lt;/p>
+&lt;h3 id="file-system-io">File system IO&lt;/h3>
+&lt;p>Filesystem I/O 指的是檔案系統的輸入/輸出操作，包括多個操作，比如文件的打開和關閉、文件的定位、文件的截斷等。要注意觀念，不能過於簡單的使用 &lt;code>write/read&lt;/code> 的值作為 IO 結果。&lt;/p>
+&lt;p>然而，如果問題是特別針對磁碟寫入和讀取，並且你有一個上下文，那麼簡單地使用 &lt;code>write/read&lt;/code> 作為衡量磁碟 I/O 性能的指標是有一定合理性的。這個比值可以給你一個粗略的概念，即磁碟的寫入速度相對於讀取速度的比例。較大的比值可能表示寫入操作的性能相對較差，反之則相對較好。&lt;/p></description></item><item><title>top 工具</title><link>https://chiehting.com/posts/linux-top/</link><pubDate>Mon, 12 May 2025 21:35:47 +0800</pubDate><guid>https://chiehting.com/posts/linux-top/</guid><description>
+&lt;p>&lt;code>top&lt;/code> 是一個在類 Unix 系統（包括 macOS 和 Linux）中常用的工具，用於即時監控系統的行程（processes）和資源使用情況。&lt;/p>
+&lt;h3 id="processes行程和執行緒總覽">Processes，行程和執行緒總覽&lt;/h3>
+&lt;p>Processes: 491 total, 5 running, 486 sleeping, 3862 threads&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Processes: 491 total&lt;/code>: 系統中總共有 491 個行程。&lt;/li>
+&lt;li>&lt;code>5 running&lt;/code>: 有 5 個行程目前正在執行中。&lt;/li>
+&lt;li>&lt;code>486 sleeping&lt;/code>: 有 486 個行程目前處於睡眠狀態（等待某些事件發生）。&lt;/li>
+&lt;li>&lt;code>3862 threads&lt;/code>: 系統中總共有 3862 個執行緒。執行緒是行程內部的執行單元，一個行程可以有多個執行緒。&lt;/li>
+&lt;/ul>
+&lt;h3 id="load-average-系統負載和-cpu-使用率">Load Average ，系統負載和 CPU 使用率&lt;/h3>
+&lt;p>Load average 值是一個綜合性的指標，受到多種因素的影響。透過分析負載平均值的變化，系統管理員可以更好地了解系統的運行狀態，並及時採取適當的措施以維持穩定的性能。Linux 中的 load average 被描述為三個不同的十進制值。以下面的例子可以看到 &lt;code>load averages: 1.26 1.35 1.36&lt;/code>，由左至右分別為 1 分鐘、5 分鐘、10分鐘的平均負載狀況如下解釋：&lt;/p>
+&lt;ul>
+&lt;li>1 分鐘平均負載： 這表示過去 1 分鐘內正在運行或等待執行的平均進程數。&lt;/li>
+&lt;li>5分鐘平均負載： 這表示過去 5 分鐘內正在運行或等待執行的平均進程數。&lt;/li>
+&lt;li>15 分鐘平均負載： 這表示過去 15 分鐘內正在運行或等待執行的平均進程數。&lt;/li>
+&lt;/ul>
+&lt;p>下面有幾種狀況的解釋：&lt;/p>
+&lt;ul>
+&lt;li>如果平均值為 0.0，表示系統處於空閒狀態&lt;/li>
+&lt;li>如果1min 平均值高於 5min 或 15min 平均值，則負載正在增加&lt;/li>
+&lt;li>如果1min 平均值低於 5min 或 15min 平均值，則負載正在減少&lt;/li>
+&lt;li>如果它們高於系統 CPU 的數量，那麼系統很可能會遇到效能問題（視情況而定）&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">➜ uptime
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl"> 9:14 up &lt;span class="m">4&lt;/span> days, 14:31, &lt;span class="m">1&lt;/span> user, load averages: 1.26 1.35 1.36
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Load average 的變化受到多種因素的影響，它主要反映了系統的活動水平和性能狀態。以下是一些可能影響負載平均值變化的因素：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>CPU 使用率： 系統中運行的進程需要使用 CPU 資源。如果 CPU 使用率較高，系統的負載平均值可能會增加。這可能是由於執行大量計算密集型任務或多個進程競爭 CPU 資源。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>I/O 操作： 大量的 I/O 操作，例如磁盤讀寫、網絡輸入輸出等，可能導致系統的負載增加。這可能是由於多個進程在等待 I/O 完成，使得系統處於等待狀態。下面有解釋到為什麼 I/O 操作會影響 load avg&lt;/p>
+&lt;blockquote>
+&lt;p>「「平均負載」的目的是從人的角度得出一個與系統繁忙程度有關的數字。TASK_UNINTERRUPTIBLE 意味著進程正在等待諸如磁碟讀取之類的東西，這會增加系統負載。一個嚴重受磁碟限制的系統可能會非常緩慢，但TASK_RUNNING 平均值僅為0.1，這對任何人都沒有幫助。”&lt;/p>
+&lt;/blockquote>
+&lt;/li>
+&lt;li>
+&lt;p>內存使用： 系統的內存使用情況也會影響 load avg。如果系統中的進程需要大量的內存，可能會導致系統的交換（swap）操作，進而增加 load avg。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>進程數量： 系統中運行的進程數量會影響 load avg。當存在大量的活動進程，無論是運行中還是等待執行，都可能導致 load avg 值升高。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>等待時間： 如果進程需要等待某些資源（例如鎖或同步），這可能導致系統的 load avg。這也包括在多核系統中，某些進程可能需要等待 CPU 核心的可用性。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>系統的整體性能： 硬體性能、網絡帶寬、存儲速度等硬體因素都可能影響系統的整體性能，進而影響 load avg。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>突發性事件： 例如突然的大量流量、系統故障、惡意攻擊等，都可能導致負載平均值的急劇增加。&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;h3 id="cpu-的使用率分佈">CPU 的使用率分佈&lt;/h3>
+&lt;p>CPU usage: 14.20% user, 4.66% sys, 81.13% idle SharedLibs: 448M resident, 109M data, 66M linkedit. MemRegions: 117 total, 3936K resident, 4208K private, 2377M shared.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>CPU usage: 14.20% user, 4.66% sys, 81.13% idle&lt;/code>
+&lt;ul>
+&lt;li>&lt;code>user&lt;/code>: 14.20% 的 CPU 時間花費在執行使用者空間的行程（用戶啟動的應用程式等）。&lt;/li>
+&lt;li>&lt;code>sys&lt;/code>: 4.66% 的 CPU 時間花費在執行核心空間的程式碼（系統呼叫、裝置驅動等）。&lt;/li>
+&lt;li>&lt;code>idle&lt;/code>: 81.13% 的 CPU 時間處於空閒狀態。&lt;/li>
+&lt;li>這表示機器的 CPU 大部分時間是空閒的，系統目前並未因為 CPU 瓶頸而變慢。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>&lt;code>SharedLibs: 448M resident, 109M data, 66M linkedit&lt;/code>: 共享函式庫的使用情況。&lt;code>resident&lt;/code> 是實際佔用的記憶體，&lt;code>data&lt;/code> 和 &lt;code>linkedit&lt;/code> 是其中的數據和連結編輯部分。這部分對於一般使用者來說不是最關鍵的指標。&lt;/li>
+&lt;/ul>
+&lt;h3 id="實體記憶體-ram-使用情況">實體記憶體 (RAM) 使用情況&lt;/h3>
+&lt;p>PhysMem: 15G used (3217M wired, 5955M compressor), 138M unused.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>PhysMem: 15G used (3217M wired, 5955M compressor), 138M unused&lt;/code>: 實體記憶體（RAM）的總體使用情況。
+&lt;ul>
+&lt;li>&lt;code>15G used&lt;/code>: 總共使用了 15 GB 的實體記憶體。&lt;/li>
+&lt;li>&lt;code>(3217M wired)&lt;/code>: 其中 3217 MB 是「有線記憶體」(wired memory)，這部分記憶體不能被交換到硬碟上，通常由核心和關鍵系統服務使用。&lt;/li>
+&lt;li>&lt;code>(5955M compressor)&lt;/code>: 其中 5955 MB 是被壓縮的記憶體。macOS 會壓縮不常用的記憶體頁面，而不是直接交換到硬碟，以提高性能。&lt;/li>
+&lt;li>&lt;code>138M unused&lt;/code>: 還有 138 MB 的實體記憶體是完全未使用的。&lt;/li>
+&lt;li>這顯示機器有 16GB 記憶體（15G used + 138M unused ≈ 15.138G）大部分正在被使用，但有相當一部分是被壓縮的。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="虛擬記憶體-vm-使用情況">虛擬記憶體 (VM) 使用情況&lt;/h3>
+&lt;p>VM: 260T vsize, 5684M framework vsize, 22745372(0) swapins, 26777028(0) swapouts.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>VM: 260T vsize, 5684M framework vsize, 22745372(0) swapins, 26777028(0) swapouts&lt;/code>: 虛擬記憶體的使用情況。
+&lt;ul>
+&lt;li>&lt;code>260T vsize&lt;/code>: 總共的虛擬位址空間大小 (Virtual Size)。這是一個非常大的數字，表示系統可以定址的總記憶體範圍，並不代表實際佔用的硬碟空間。&lt;/li>
+&lt;li>&lt;code>5684M framework vsize&lt;/code>: 框架 (Framework) 佔用的虛擬位址空間。&lt;/li>
+&lt;li>&lt;code>22745372(0) swapins&lt;/code>: 從硬碟交換空間讀入記憶體的次數。括號裡的 0 表示最近沒有發生 swapin。&lt;/li>
+&lt;li>&lt;code>26777028(0) swapouts&lt;/code>: 從記憶體寫入硬碟交換空間的次數。括號裡的 0 表示最近沒有發生 swapout。&lt;/li>
+&lt;li>&lt;code>swapins&lt;/code> 和 &lt;code>swapouts&lt;/code> 的次數如果持續增加，表示系統正在頻繁地使用硬碟作為擴充記憶體，這通常會導致系統變慢。輸出顯示最近沒有發生交換活動 (括號裡是 0)，這是一個好現象。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="網路活動">網路活動&lt;/h3>
+&lt;p>Networks: packets: 120201633/129G in, 61599676/35G out.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Networks: packets: 120201633/129G in, 61599676/35G out&lt;/code>: 網路流量統計，是系統啟動以來的累計數據。
+&lt;ul>
+&lt;li>&lt;code>120201633/129G in&lt;/code>: 總共接收了 120,201,633 個封包，總數據量為 129 GB。&lt;/li>
+&lt;li>&lt;code>61599676/35G out&lt;/code>: 總共發送了 61,599,676 個封包，總數據量為 35 GB。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="硬碟活動">硬碟活動&lt;/h3>
+&lt;p>Disks: 1351063132/22T read, 56259681/1931G written.&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Disks: 1351063132/22T read, 56259681/1931G written&lt;/code>: 磁碟讀寫統計，是系統啟動以來的累計數據。
+&lt;ul>
+&lt;li>&lt;code>1351063132/22T read&lt;/code>: 總共讀取了 1,351,063,132 次操作，總數據量為 22 TB。&lt;/li>
+&lt;li>&lt;code>56259681/1931G written&lt;/code>: 總共寫入了 56,259,681 次操作，總數據量為 1931 GB (約 1.93 TB)。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul></description></item><item><title>Linux</title><link>https://chiehting.com/posts/linux-cpu/</link><pubDate>Mon, 12 May 2025 18:04:29 +0800</pubDate><guid>https://chiehting.com/posts/linux-cpu/</guid><description>
+&lt;p>在 Linux 中，&lt;code>top&lt;/code> 或 &lt;code>vmstat&lt;/code> 等系統性能工具通常會顯示 CPU 使用情況，其中包括了不同的 CPU 狀態。以下是各種 CPU 狀態的意義：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>idle（閒置）：&lt;/strong> 這表示 CPU 完全空閒，沒有在執行任何任務。&lt;/li>
+&lt;li>&lt;strong>iowait（I/O 等待）：&lt;/strong> 表示 CPU 正在等待I/O操作（例如磁盤讀寫）完成。當系統中的I/O操作比較繁忙時，這個值可能會上升。&lt;/li>
+&lt;li>&lt;strong>irq（硬中斷）：&lt;/strong> 這表示 CPU 正在處理硬中斷。硬中斷通常來自硬體設備，例如網卡、鍵盤等。&lt;/li>
+&lt;li>&lt;strong>nice（優先級）：&lt;/strong> 這表示 CPU 正在執行“優先級”比較高的進程，這通常是由使用者明確指定的。&lt;/li>
+&lt;li>&lt;strong>softirq（軟中斷）：&lt;/strong> 類似於硬中斷，但是軟中斷通常是由內核中的軟體事件觸發的，而不是硬體設備觸發的。&lt;/li>
+&lt;li>&lt;strong>steal（虛擬機器搶奪）：&lt;/strong> 在虛擬化環境中，如果主機上的其他虛擬機器需要 CPU 資源，則可能會有 steal 時間，表示虛擬機器正在失去 CPU 資源。&lt;/li>
+&lt;li>&lt;strong>system（系統）：&lt;/strong> 表示 CPU 正在執行內核空間的代碼，例如系統呼叫。&lt;/li>
+&lt;li>&lt;strong>user（使用者）：&lt;/strong> 表示 CPU 正在執行用戶空間的代碼，例如應用程式。&lt;/li>
+&lt;/ol>
+&lt;p>這些狀態是根據 Linux 中的 /proc/stat 文件中的數據生成的，可以使用 &lt;code>cat /proc/stat&lt;/code> 查看實時 CPU 相關信息。&lt;/p></description></item><item><title>TCP of linux</title><link>https://chiehting.com/posts/linux-tcp/</link><pubDate>Mon, 08 Jan 2024 16:59:21 +0800</pubDate><guid>https://chiehting.com/posts/linux-tcp/</guid><description>
+&lt;p>TCP（Transmission Control Protocol）在使用時，與每個 TCP 連接相關的狀態是動態變化的，而這些狀態通常被監控以確保系統的正常運作。以下是一些 TCP 狀態及其相關的描述：&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>ALLOCATED&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>這通常不是一個 TCP 狀態，而是表示資源已被分配（allocate）給一個 TCP 連接，但可能還沒有被使用。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>LISTEN&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>當一個服務器正在等待客戶端連接時，該 TCP 連接處於 &lt;code>LISTEN&lt;/code> 狀態。在這種狀態下，該連接可以接受新的連接請求。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>SYN-SENT&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>客戶端發送一個 SYN（同步）請求，進入 &lt;code>SYN-SENT&lt;/code> 狀態等待伺服器的確認。在這種狀態下，TCP 連接正在初始化。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>SYN-RECEIVED&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>伺服器在接收到客戶端的 SYN 請求後，發送自己的 SYN 和 ACK（確認）請求，進入 &lt;code>SYN-RECEIVED&lt;/code> 狀態。在這種狀態下，TCP 連接正在確認並同時初始化。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>ESTABLISHED&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>一旦三次握手完成，連接進入 &lt;code>ESTABLISHED&lt;/code> 狀態，表示數據可以在雙方之間傳輸。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>FIN-WAIT-1&lt;/code>、&lt;code>FIN-WAIT-2&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>當一方（通常是客戶端或伺服器）決定結束連接，它會進入 &lt;code>FIN-WAIT-1&lt;/code> 狀態，等待對方的確認。在對方發送確認後，它進入 &lt;code>FIN-WAIT-2&lt;/code> 狀態，等待對方的結束請求。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>TIME-WAIT&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>在一方發送結束請求後，進入 &lt;code>TIME-WAIT&lt;/code> 狀態，等待可能在網絡上延遲的最後一個 ACK。這是為了確保已傳送的 ACK 得到正確處理。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>CLOSE-WAIT&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>表示對方已經結束連接，而自己還可以發送數據。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>CLOSING&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>表示雙方都在同時結束連接，但仍然需要進行一些確認。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>LAST-ACK&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>表示自己已經結束連接，並等待對方的確認。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>&lt;code>CLOSED&lt;/code>：&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>表示連接已經完全結束，不再存在。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>這些狀態描述了 TCP 連接的生命週期中的不同階段。關於 TCP 狀態的監控，通常會關注一些與之相關的指標，例如 &lt;code>node_sockstat_TCP_alloc&lt;/code>（如果有的話）以及 &lt;code>netstat&lt;/code> 命令的輸出。這些指標和工具可以提供關於 TCP 連接數量、狀態轉換等信息，進而幫助進行系統監控和調試。&lt;/p></description></item><item><title>Linux kernel 的網路參數 rp_filter</title><link>https://chiehting.com/posts/linux-kernel-rp-filter/</link><pubDate>Thu, 24 Jun 2021 14:39:00 +0800</pubDate><guid>https://chiehting.com/posts/linux-kernel-rp-filter/</guid><description>
+&lt;p>這篇來記錄有關 Linux kernel 的 network 參數。&lt;/p>
+&lt;h3 id="references">References&lt;/h3>
+&lt;p>&lt;a href="https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt">ip-sysctl&lt;/a>&lt;/p>
+&lt;h3 id="rp_filter">rp_filter&lt;/h3>
+&lt;p>為逆向路徑過濾 (Reverse Path Filtering)，其作用為為過濾反向不通的封包，將其丟棄。
+而原理為由 NIC1 (network interface card) 進來的封包，reverse path filtering 模塊會將其封包的源地址（source ip）與目標地址（destination ip）做對調，然後再路由表中查找，如果出去的介面是 NIC1 則通過；反之不是 NIC1 則丟棄該封包。&lt;/p>
+&lt;h4 id="功能概述">功能概述&lt;/h4>
+&lt;p>&lt;code>rp_filter&lt;/code> 的主要作用是檢查接收到的資料包的來源位址是否是通過正確的網路介面到達的。如果資料包的來源位址與路由表中的反向路徑不匹配，&lt;code>rp_filter&lt;/code> 就會丟棄該資料包，從而防止偽造的 IP 資料包進入系統。&lt;/p>
+&lt;h3 id="工作原理">工作原理&lt;/h3>
+&lt;ol>
+&lt;li>當系統接收到一個資料包時，&lt;code>rp_filter&lt;/code> 會檢查該資料包的來源位址。&lt;/li>
+&lt;li>它根據路由表計算，若系統要將一個資料包發送到該來源位址，會使用哪個網路介面。&lt;/li>
+&lt;li>如果接收到的資料包實際上是通過另一個介面到達的，而不是路由表中計算出的介面，&lt;code>rp_filter&lt;/code> 會認為這個資料包是偽造的，並將其丟棄。&lt;/li>
+&lt;/ol>
+&lt;p>可以從 &lt;a href="https://www.kernel.org/doc/Documentation/networking/ip-sysctl.txt">ip-sysctl&lt;/a> 文件中找到參數的用法。其中該參數為整數型，其值包括了 0：不做來源驗證；1：嚴謹認證模式；2：寬鬆認證模式。&lt;/p>
+&lt;pre>&lt;code>rp_filter - INTEGER
+0 - No source validation.
+1 - Strict mode as defined in RFC3704 Strict Reverse Path
+Each incoming packet is tested against the FIB and if the interface
+is not the best reverse path the packet check will fail.
+By default failed packets are discarded.
+2 - Loose mode as defined in RFC3704 Loose Reverse Path
+Each incoming packet's source address is also tested against the FIB
+and if the source address is not reachable via any interface
+the packet check will fail.
+Current recommended practice in RFC3704 is to enable strict mode
+to prevent IP spoofing from DDos attacks. If using asymmetric routing
+or other complicated routing, then loose mode is recommended.
+The max value from conf/{all,interface}/rp_filter is used
+when doing source validation on the {interface}.
+Default value is 0. Note that some distributions enable it
+in startup scripts.
+&lt;/code>&lt;/pre>
+&lt;h4 id="source-code">Source code&lt;/h4>
+&lt;p>可以上網找到原始碼 &lt;a href="https://elixir.bootlin.com/linux/latest/source/net/ipv4/fib_frontend.c#L419">fib_frontend.c&lt;/a>，這邊來看一下實作方法。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="cm">/* Ignore rp_filter for packets protected by IPsec. */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl">&lt;span class="kt">int&lt;/span> &lt;span class="nf">fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 是否啟用反向封包過濾功能，這邊注意如果封包受 IPSec 保護則忽略反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">r&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">secpath_exists&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="mi">0&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">IN_DEV_RPFILTER&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">r&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">fib_num_tclassid_users&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_TX_REDIRECTS&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 本地源的封包不執行反向封包過濾功能 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">ok&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* with custom local routes in place, checking local addresses
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl">&lt;span class="cm"> * only will be too optimistic, with custom rules, checking
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl">&lt;span class="cm"> * local addresses only can be too strict, e.g. due to vrf
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ipv4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fib_has_custom_local_routes&lt;/span> &lt;span class="o">||&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fib4_has_custom_rules&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">full_check&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">inet_lookup_ifaddr_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">&lt;span class="nl">ok&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl">&lt;span class="nl">full_check&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">r&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">itag&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-c" data-lang="c">&lt;span class="line">&lt;span class="ln"> 1&lt;/span>&lt;span class="cl">&lt;span class="k">static&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="nf">__fib_validate_source&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">struct&lt;/span> &lt;span class="n">sk_buff&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">__be32&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 2&lt;/span>&lt;span class="cl"> &lt;span class="n">u8&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kt">int&lt;/span> &lt;span class="n">oif&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">net_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 3&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">rpf&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="k">struct&lt;/span> &lt;span class="n">in_device&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">u32&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 4&lt;/span>&lt;span class="cl">&lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 5&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">net&lt;/span> &lt;span class="o">*&lt;/span>&lt;span class="n">net&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_net&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 6&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flow_keys&lt;/span> &lt;span class="n">flkeys&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 7&lt;/span>&lt;span class="cl"> &lt;span class="kt">int&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">no_addr&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 8&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">fib_result&lt;/span> &lt;span class="n">res&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln"> 9&lt;/span>&lt;span class="cl"> &lt;span class="k">struct&lt;/span> &lt;span class="n">flowi4&lt;/span> &lt;span class="n">fl4&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">10&lt;/span>&lt;span class="cl"> &lt;span class="kt">bool&lt;/span> &lt;span class="n">dev_match&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">11&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">12&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">13&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">l3mdev_master_ifindex_rcu&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">14&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">15&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_iif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">oif&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="o">:&lt;/span> &lt;span class="n">LOOPBACK_IFINDEX&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">16&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* 可以看到這邊做反轉了 */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">17&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">daddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">src&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">18&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">saddr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dst&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">19&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tos&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">tos&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">20&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_scope&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">RT_SCOPE_UNIVERSE&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">21&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_tun_key&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">tun_id&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">22&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_flags&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">23&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_uid&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">sock_net_uid&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">24&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_multipath_hash&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">25&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">26&lt;/span>&lt;span class="cl"> &lt;span class="n">no_addr&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">idev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifa_list&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="nb">NULL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">27&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">28&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_mark&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">IN_DEV_SRC_VMARK&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">?&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="nl">mark&lt;/span> &lt;span class="p">:&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">29&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">fib4_rules_early_flow_dissect&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">skb&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">flkeys&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">30&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_proto&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">31&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_sport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">32&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fl4_dport&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">33&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">34&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">35&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">36&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">37&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">38&lt;/span>&lt;span class="cl"> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">!=&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="o">!&lt;/span>&lt;span class="n">IN_DEV_ACCEPT_LOCAL&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">idev&lt;/span>&lt;span class="p">)))&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">39&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_inval&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">40&lt;/span>&lt;span class="cl"> &lt;span class="n">fib_combine_itag&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">itag&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">41&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">42&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">fib_info_nh_uses_dev&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">fi&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">43&lt;/span>&lt;span class="cl"> &lt;span class="cm">/* This is not common, loopback packets retain skb_dst so normally they
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">44&lt;/span>&lt;span class="cl">&lt;span class="cm"> * would not even hit this slow path.
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">45&lt;/span>&lt;span class="cl">&lt;span class="cm"> */&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">46&lt;/span>&lt;span class="cl"> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev_match&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_LOCAL&lt;/span> &lt;span class="o">&amp;amp;&amp;amp;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">47&lt;/span>&lt;span class="cl"> &lt;span class="n">dev&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">net&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">loopback_dev&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">48&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">dev_match&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">49&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">50&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">51&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">52&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">no_addr&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">53&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">last_resort&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">54&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">1&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">55&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">56&lt;/span>&lt;span class="cl"> &lt;span class="n">fl4&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">flowi4_oif&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">dev&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">ifindex&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">57&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">58&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">59&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">fib_lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">net&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">fl4&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="o">&amp;amp;&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="n">FIB_LOOKUP_IGNORE_LINKSTATE&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">60&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="n">type&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="n">RTN_UNICAST&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">61&lt;/span>&lt;span class="cl"> &lt;span class="n">ret&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="n">FIB_RES_NHC&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">res&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="o">-&amp;gt;&lt;/span>&lt;span class="n">nhc_scope&lt;/span> &lt;span class="o">&amp;gt;=&lt;/span> &lt;span class="n">RT_SCOPE_HOST&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">62&lt;/span>&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">63&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="n">ret&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">64&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">65&lt;/span>&lt;span class="cl">&lt;span class="nl">last_resort&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">66&lt;/span>&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="n">rpf&lt;/span>&lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">67&lt;/span>&lt;span class="cl"> &lt;span class="k">goto&lt;/span> &lt;span class="n">e_rpf&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">68&lt;/span>&lt;span class="cl"> &lt;span class="o">*&lt;/span>&lt;span class="n">itag&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">69&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="mi">0&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">70&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">71&lt;/span>&lt;span class="cl">&lt;span class="nl">e_inval&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">72&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EINVAL&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">73&lt;/span>&lt;span class="cl">&lt;span class="nl">e_rpf&lt;/span>&lt;span class="p">:&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">74&lt;/span>&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="o">-&lt;/span>&lt;span class="n">EXDEV&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">75&lt;/span>&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>參數：&lt;/p>
+&lt;ul>
+&lt;li>struct sk_buff - socket buffer&lt;/li>
+&lt;li>__be32 src - source&lt;/li>
+&lt;li>__be32 dst - destination&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/netdevice.h#L1853">struct net_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>&lt;a href="https://elixir.bootlin.com/linux/latest/source/include/linux/inetdevice.h#L25">struct in_device&lt;/a> - 網路結構體&lt;/li>
+&lt;li>saddr - start address&lt;/li>
+&lt;li>daddr - destination address&lt;/li>
+&lt;/ul>
+&lt;p>科普：&lt;/p>
+&lt;ul>
+&lt;li>__bet32 - le 與 be 分別表示 little endian 和 big endian&lt;/li>
+&lt;li>u8、u32 - 表示無符號 char 字符類型&lt;/li>
+&lt;/ul>
+&lt;h4 id="作用">作用&lt;/h4>
+&lt;p>當前RFC3704文檔建議使用嚴謹認證模式。如果網路是非對稱網路或複雜的網路 rp_filter 建議配置為 2，做寬鬆認證。
+而 rp_filter 配置作用通常為下列：&lt;/p>
+&lt;ol>
+&lt;li>減少 DDoS 攻擊，注意是減少不是防止&lt;/li>
+&lt;li>防止 IP Spoofing&lt;/li>
+&lt;/ol>
+&lt;h3 id="問題">問題&lt;/h3>
+&lt;h4 id="當系統只有一個網路介面時是否需要開啟-rp_filter-取決於具體的需求和安全性考量">當系統只有一個網路介面時，是否需要開啟 &lt;code>rp_filter&lt;/code> 取決於具體的需求和安全性考量。&lt;/h4>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>只有一個網路介面，且無特殊路由需求&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>如果系統只有一個網路介面，且路由配置相對簡單（例如，所有流量都通過該介面進出），那麼來源 IP 位址欺騙的風險較低。&lt;/li>
+&lt;li>在這種情況下，開啟 &lt;code>rp_filter&lt;/code> 的作用有限，因為所有資料包都只能通過這唯一的網路介面進出。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>只有一個網路介面，但存在潛在的安全威脅&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>即使系統只有一個網路介面，攻擊者仍可能試圖通過偽造來源 IP 位址向系統發送惡意資料包。&lt;/li>
+&lt;li>開啟 &lt;code>rp_filter&lt;/code> 可以增加一層安全性，確保接收到的資料包符合路由規則，從而防止這類攻擊。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>未來可能擴展到多網路介面&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>如果系統未來可能會增加更多網路介面，建議養成良好的安全習慣，提前配置 &lt;code>rp_filter&lt;/code>，以避免多介面時的安全漏洞。&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol></description></item><item><title>Iptables guide</title><link>https://chiehting.com/posts/iptables-guide/</link><pubDate>Tue, 04 May 2021 10:30:00 +0800</pubDate><guid>https://chiehting.com/posts/iptables-guide/</guid><description>
+&lt;p>iptables 被許多服務廣泛的運用著, 例如 Docker, Kubernetes 都是基於 iptables 來管理網路封包的處理, 所以此篇來研究 iptables 工具, 看看這些服務底層究竟在做些什麼事.&lt;/p>
+&lt;p>Linux 核心 &lt;a href="https://www.netfilter.org/">Netfilter&lt;/a> 模組提供了網路的框架, 用於管理 Linux 主機的封包, 包括了&lt;code>過濾封包&lt;/code>、&lt;code>NAT&lt;/code>、&lt;code>Port 轉發&lt;/code>. 而 Linux 系統上有許多軟體是基於 &lt;a href="https://www.netfilter.org/">Netfilter&lt;/a> 模組實作網路管理介面, 例如 firewalld、ntw、iptables、nftables.&lt;/p>
+&lt;p>iptables and ip6tables 分別為 IPv4 and IPv6, 組成包括了 &lt;code>Chain&lt;/code>、&lt;code>Target&lt;/code>、&lt;code>Table&lt;/code>、&lt;code>Match&lt;/code>, 而規則方面有 &lt;code>PREROUTING&lt;/code>、&lt;code>INPUT&lt;/code>、&lt;code>FORWARD&lt;/code>、&lt;code>OUTPUT&lt;/code>、&lt;code>POSTROUTIONG&lt;/code>.&lt;/p>
+&lt;h3 id="packet-flow">Packet flow&lt;/h3>
+&lt;p>引用 wiki &lt;a href="https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg">netfilter packet flow&lt;/a> 的圖, 可以看到封包在主機中的流量.&lt;/p>
+&lt;h3 id="tables-與-chain">Tables 與 chain&lt;/h3>
+&lt;p>下面列出 &lt;code>tables&lt;/code> 內建 &lt;code>chain&lt;/code> 關係&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;/th>
+&lt;th>PREROUTING&lt;/th>
+&lt;th>INPUT&lt;/th>
+&lt;th>FORWARD&lt;/th>
+&lt;th>OUTPUT&lt;/th>
+&lt;th>POSTROUTIONG&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>raw&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>mangle&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>nat&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>filter&lt;/td>
+&lt;td>x&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>o&lt;/td>
+&lt;td>x&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h4 id="tables">Tables&lt;/h4>
+&lt;p>優先層級為 &lt;code>raw&lt;/code> -&amp;gt; &lt;code>mangle&lt;/code> -&amp;gt; &lt;code>nat&lt;/code> -&amp;gt; &lt;code>filter&lt;/code>.&lt;/p>
+&lt;ul>
+&lt;li>raw: 於處理異常(優先層級最高).&lt;/li>
+&lt;li>mangle: 提供改寫封包的功能.&lt;/li>
+&lt;li>nat(network address translation): IP 轉發; port 轉發.&lt;/li>
+&lt;li>filter: 封包過濾 (此為預設表).&lt;/li>
+&lt;/ul>
+&lt;h4 id="chain">Chain&lt;/h4>
+&lt;ul>
+&lt;li>PREROUTING: 數據包進入路由表之前.&lt;/li>
+&lt;li>INPUT: 通過路由表後目的地為本機.&lt;/li>
+&lt;li>FORWARD: 通過路由表後, 目的地不為本機.&lt;/li>
+&lt;li>OUTPUT: 由本機產生, 向外轉發.&lt;/li>
+&lt;li>POSTROUTIONG: 發送到網卡接口之前.&lt;/li>
+&lt;/ul>
+&lt;h4 id="state">State&lt;/h4>
+&lt;ul>
+&lt;li>NEW: 一個新的連線封包 (建立新連線後的第一個封包).&lt;/li>
+&lt;li>ESTABLISHED: 成功建立的連線, 即建立追蹤連線後所有封包狀態 (跟在 NEW 封包後面的所有封包).&lt;/li>
+&lt;li>RELATED: 新建連線,由 ESTABLISHED session 所建立的新獨立連線 (ex. ftp-data 連線).&lt;/li>
+&lt;li>INVALID: 非法連線狀態的封包 (DROP 封包).&lt;/li>
+&lt;li>UNKOWN: 不明連線狀態的封包.&lt;/li>
+&lt;/ul>
+&lt;h4 id="policy-and-target">Policy and target&lt;/h4>
+&lt;ul>
+&lt;li>ACCEPT: 允許封包移動至目的地或另一個 chain.&lt;/li>
+&lt;li>DROP: 丟棄封包,不回應要求,不傳送失敗訊息.&lt;/li>
+&lt;li>REJECT: 拒絕封包,回應要求,傳送失敗訊息.&lt;/li>
+&lt;li>SNAT: 修改 Source Socket.&lt;/li>
+&lt;li>DNAT: 修改 Destination Socket.&lt;/li>
+&lt;li>MASQUERADE: 動態修改 Source Socket (無法指定 IP,取當時網卡的 IP),較方便但效率較差.&lt;/li>
+&lt;li>REDIRECT: 將連線導至本機行程 (Local Process).&lt;/li>
+&lt;li>RETURN: 結束自行定義的 Chain 然後返回原來的 Chain 繼續跑規則 (rules).&lt;/li>
+&lt;li>QUEUE: 封包排隊等待處理.&lt;/li>
+&lt;li>LOG: 記錄指定的規則封包 (/etc/syslog.conf , default /var/log/messges).&lt;/li>
+&lt;/ul>
+&lt;h3 id="iptables-輸出格式說明">iptables 輸出格式說明&lt;/h3>
+&lt;p>下面指令可以列出表 &lt;code>filter&lt;/code> 的規則清單, 可以看到有三條 &lt;code>Chain&lt;/code>, 有九個欄位, 說明如下:&lt;/p>
+&lt;ul>
+&lt;li>pkts: 總共通過的封包的數量&lt;/li>
+&lt;li>bytes: 總共通過的流量大小&lt;/li>
+&lt;li>target: 執行的動作, 例如 &lt;code>ACCEPT&lt;/code>、&lt;code>REJECT&lt;/code>、&lt;code>RETURN&lt;/code>、&lt;code>DROP&lt;/code>、&lt;code>LOG&lt;/code>,也可以參照到其他 &lt;code>Chain&lt;/code>.&lt;/li>
+&lt;li>port: 使用封包的協定, 例如 &lt;code>all&lt;/code>、&lt;code>tcp&lt;/code>、&lt;code>udp&lt;/code>、&lt;code>icmp&lt;/code>&lt;/li>
+&lt;li>opt: 額外的選項說明&lt;/li>
+&lt;li>in: 進入的網路介面&lt;/li>
+&lt;li>out: 出去的網路介面&lt;/li>
+&lt;li>source: 此規則是針對哪個來源進行限制,例如 &lt;code>0.0.0.0/0&lt;/code>&lt;/li>
+&lt;li>destination: 此規則是針對哪個目標進行限制,例如 &lt;code>0.0.0.0/0&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@server:~ iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">Chain INPUT &lt;span class="o">(&lt;/span>policy ACCEPT&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl"> pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">Chain FORWARD &lt;span class="o">(&lt;/span>policy ACCEPT&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl"> pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">Chain OUTPUT &lt;span class="o">(&lt;/span>policy ACCEPT&lt;span class="o">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">9&lt;/span>&lt;span class="cl"> pkts bytes target prot opt in out &lt;span class="nb">source&lt;/span> destination
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="iptables-應用">iptables 應用&lt;/h3>
+&lt;h4 id="參數說明">參數說明&lt;/h4>
+&lt;ul>
+&lt;li>-P chain target: 變更 chain 的預設政策.&lt;/li>
+&lt;li>-A chain: 加入規則至 chain 的最後.&lt;/li>
+&lt;li>-I chain [rulenum]: 插入規則至 chain.&lt;/li>
+&lt;li>-D chain [rulenum]: 刪除 chain 上的規則.&lt;/li>
+&lt;li>-R chain [rulenum]: 取代 chain 上的規則.&lt;/li>
+&lt;li>-L [chain [rulenum]]: 列出 chain 上的規則.&lt;/li>
+&lt;li>-F [chain]: 刪除 chain 上的所有規則.&lt;/li>
+&lt;li>-Z [chain [rulenum]]: 將計數器歸零.&lt;/li>
+&lt;li>-N chain: 建立使用者定義的 chain.&lt;/li>
+&lt;li>-X [chain]: 刪除使用者定義的 chain.&lt;/li>
+&lt;li>-E old-chain new-chain: 變更 chain 的名稱.&lt;/li>
+&lt;/ul>
+&lt;p>其中 rulenum 是從上至下順序執行，直至匹配的的規則為止，否則執行預設政策。&lt;/p>
+&lt;h4 id="狀況題">狀況題&lt;/h4>
+&lt;p>測試主機有網路介面有 &lt;code>lo&lt;/code> and &lt;code>eth0&lt;/code>.&lt;/p>
+&lt;h5 id="查看-table-filter-的規則">查看 table filter 的規則&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">root@server:~ iptables -L -n -v --line-numbers -t filter
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="修改-chain-的預設政策">修改 chain 的預設政策&lt;/h5>
+&lt;p>先將 22 port 打開, 以免被擋在家門外. INPUT 預設政策為 DROP.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># INPUT chain accept port 22&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@server:~ iptables -I INPUT -i eth0 -p tcp --dport &lt;span class="m">22&lt;/span> -m state --state NEW,ESTABLISHED -j ACCEPT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># OUTPUT chain accept port 22&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">root@server:~ iptables -I OUTPUT -o eth0 -p tcp --sport &lt;span class="m">22&lt;/span> -m state --state ESTABLISHED -j ACCEPT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># INPUT chain default drop&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">root@server:~ iptables -P INPUT DROP
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>還原&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">&lt;span class="c1"># INPUT chain default accept&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">root@server:~ iptables -P INPUT ACCEPT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">&lt;span class="c1"># Delete the INPUT chain first rule&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">root@server:~ iptables -D INPUT &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">6&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">7&lt;/span>&lt;span class="cl">&lt;span class="c1"># Delete the OUTPUT chain first rule&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">8&lt;/span>&lt;span class="cl">root@server:~ iptables -D OUTPUT &lt;span class="m">1&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="封鎖-input-chain-指定的-port">封鎖 INPUT chain 指定的 port&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">＃ 拒絕由網卡 eth0 進來的 tcp port &lt;span class="m">80&lt;/span> 所有封包
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">iptables -A INPUT -p tcp -dport &lt;span class="m">80&lt;/span> -i eth0 -j REJECT
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">4&lt;/span>&lt;span class="cl">＃ 拒絕由網卡 eth0 進來的 tcp port &lt;span class="m">7000&lt;/span> ~ &lt;span class="m">7005&lt;/span> 所有封包
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">5&lt;/span>&lt;span class="cl">iptables -A INPUT -p tcp -sport 7000:7005 -i eth0 -j REJECT
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="封鎖-input-chain-指定的-來源">封鎖 INPUT chain 指定的 來源&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iptables -I INPUT -p tcp --dport &lt;span class="m">80&lt;/span> -s 1.34.113.121/32 -m state --state ESTABLISHED -j REJECT
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h5 id="刪除-input-chain-所有的規則">刪除 INPUT chain 所有的規則&lt;/h5>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">iptables -F INPUT
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="rafances">Rafances&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="http://linux.vbird.org/linux_server/0250simple_firewall.php#netfilter_chain">iptables 的表格 (table) 與鏈 (chain)&lt;/a>&lt;/li>
+&lt;li>&lt;/li>
+&lt;/ul></description></item></channel></rss>

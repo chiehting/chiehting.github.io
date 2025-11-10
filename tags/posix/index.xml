@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>posix on Chiehting</title><link>https://chiehting.com/tags/posix/</link><description>Recent content in posix on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 16 Jul 2025 15:07:51 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/posix/index.xml" rel="self" type="application/rss+xml"/><item><title>Unix 訊號定義</title><link>https://chiehting.com/posts/unix-signals/</link><pubDate>Wed, 16 Jul 2025 15:07:51 +0800</pubDate><guid>https://chiehting.com/posts/unix-signals/</guid><description>
+&lt;p>在 unix 中的每個信號號都有對應的定義，決定了當進程接收到信號時的行為。下面表格中的 &lt;code>Action&lt;/code> 列條目指定了每個信號的默認處置。&lt;/p>
+&lt;ul>
+&lt;li>Ign：Default action is to ignore the signal.&lt;/li>
+&lt;li>Core：Default action is to terminate the process and dump core (see &lt;a href="https://man7.org/linux/man-pages/man5/core.5.html">core(5)&lt;/a>).&lt;/li>
+&lt;li>Stop：Default action is to stop the process.&lt;/li>
+&lt;li>Cont：Default action is to continue the process if it is currently stopped.&lt;/li>
+&lt;/ul>
+&lt;h3 id="refencers">Refencers&lt;/h3>
+&lt;p>&lt;a href="https://man7.org/linux/man-pages/man7/signal.7.html">https://man7.org/linux/man-pages/man7/signal.7.html&lt;/a>&lt;/p>
+&lt;h3 id="standard-signals">Standard signals&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Signal&lt;/th>
+&lt;th>Standard&lt;/th>
+&lt;th>Action&lt;/th>
+&lt;th>Comment&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>SIGABRT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Abort signal from abort(3)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGALRM&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Timer signal from alarm(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGBUS&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Bus error (bad memory access)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGCHLD&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>Child stopped or terminated&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGCLD&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>A synonym for SIGCHLD&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGCONT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Cont&lt;/td>
+&lt;td>Continue if stopped&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGEMT&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Emulator trap&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGFPE&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Erroneous arithmetic operation&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGHUP&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Hangup detected on controlling terminal&lt;br>or death of controlling process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGILL&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Illegal Instruction&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGINFO&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>&lt;/td>
+&lt;td>A synonym for SIGPWR&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGINT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Interrupt from keyboard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGIO&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>I/O now possible (4.2BSD)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGIOT&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>IOT trap. A synonym for SIGABRT&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGKILL&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Kill signal&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGLOST&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>File lock lost (unused)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPIPE&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Broken pipe: write to pipe with no&lt;br>readers; see pipe(7)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPOLL&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Pollable event (Sys V);&lt;br>synonym for SIGIO&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPROF&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Profiling timer expired&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGPWR&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Power failure (System V)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGQUIT&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Quit from keyboard&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSEGV&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Invalid memory reference&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSTKFLT&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Stack fault on coprocessor (unused)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSTOP&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Stop process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTSTP&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Stop typed at terminal&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGSYS&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Bad system call (SVr4);&lt;br>see also seccomp(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTERM&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Termination signal&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTRAP&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Trace/breakpoint trap&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTTIN&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Terminal input for background process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGTTOU&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Stop&lt;/td>
+&lt;td>Terminal output for background process&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGUNUSED&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>Synonymous with SIGSYS&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGURG&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>Urgent condition on socket (4.2BSD)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGUSR1&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>User-defined signal 1&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGUSR2&lt;/td>
+&lt;td>P1990&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>User-defined signal 2&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGVTALRM&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Term&lt;/td>
+&lt;td>Virtual alarm clock (4.2BSD)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGXCPU&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>CPU time limit exceeded (4.2BSD);&lt;br>see setrlimit(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGXFSZ&lt;/td>
+&lt;td>P2001&lt;/td>
+&lt;td>Core&lt;/td>
+&lt;td>File size limit exceeded (4.2BSD);&lt;br>see setrlimit(2)&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>SIGWINCH&lt;/td>
+&lt;td>-&lt;/td>
+&lt;td>Ign&lt;/td>
+&lt;td>Window resize signal (4.3BSD, Sun)&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table></description></item></channel></rss>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>vscode on Chiehting</title><link>https://chiehting.com/category/vscode/</link><description>Recent content in vscode on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Sat, 21 Nov 2020 14:28:50 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/vscode/index.xml" rel="self" type="application/rss+xml"/><item><title>Visual Studio Code 使用 Terminal 時, 隨機性的停頓問題</title><link>https://chiehting.com/posts/vscode-integrated-terminal-lags-intermittently/</link><pubDate>Sat, 21 Nov 2020 14:28:50 +0800</pubDate><guid>https://chiehting.com/posts/vscode-integrated-terminal-lags-intermittently/</guid><description>
+&lt;p>Visual Studio Code 使用 Terminal 時, 隨機性的停頓. 有相關 issue 回報狀況.&lt;/p>
+&lt;p>下面有兩張在 GitHub 上的 issue 在討論此件事.&lt;/p>
+&lt;p>&lt;a href="https://github.com/microsoft/vscode/issues/105446">vscode issues 105446&lt;/a>
+&lt;a href="https://github.com/microsoft/vscode/issues/108544">vscode issues 108544&lt;/a>&lt;/p>
+&lt;h4 id="workaround">workaround&lt;/h4>
+&lt;p>這個命令使用 &lt;code>codesign&lt;/code> 工具來從 Visual Studio Code 應用程式的特定檔案中移除數位簽名. 數位簽名是一種機制, 用於驗證應用程式的來源和完整性, 確保它來自合法的發行者並未被更改或損壞.&lt;/p>
+&lt;p>下面的命令是從 Visual Studio Code 應用程式內部的一個組件檔案「Code Helper (Renderer).app」中移除現有的數位簽名.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">codesign --remove-signature /Applications/Visual&lt;span class="se">\\&lt;/span> Studio&lt;span class="se">\\&lt;/span> Code.app/Contents/Frameworks/Code&lt;span class="se">\\&lt;/span> Helper&lt;span class="se">\\&lt;/span> &lt;span class="se">\\&lt;/span>&lt;span class="o">(&lt;/span>Renderer&lt;span class="se">\\&lt;/span>&lt;span class="o">)&lt;/span>.app
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>

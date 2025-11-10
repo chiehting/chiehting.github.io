@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>protocol on Chiehting</title><link>https://chiehting.com/tags/protocol/</link><description>Recent content in protocol on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Wed, 21 Jul 2021 13:55:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/protocol/index.xml" rel="self" type="application/rss+xml"/><item><title>什麼是 QUIC</title><link>https://chiehting.com/posts/quick-udp-internet-connections/</link><pubDate>Wed, 21 Jul 2021 13:55:00 +0800</pubDate><guid>https://chiehting.com/posts/quick-udp-internet-connections/</guid><description>
+&lt;p>QUIC(Quick UDP Internet Connections) 為 OSI model 中 &amp;quot;傳輸層&amp;quot; 和 &amp;quot;應用層&amp;quot; 之間的一個新的協議層. 是基於 UDP 之上的, 但它在傳輸層和應用層之間引入了自己的協議層, 用於處理連接、可靠性、流控制和安全性等問題. 所以 QUIC 不好用 OSI model 去區分, 而是稱為 &amp;quot;安全的通用傳輸協議(secure general-purpose transport protocol)&amp;quot;.&lt;/p>
+&lt;p>HTTP/3 是個新的 HTTP 版本，使用 QUIC 作為傳輸協議，與 HTTP/1.1、HTTP/2.0 使用的 TCP/IP 不同。相較於 TCP/IP 協議；QUIC 提高了網路效能。&lt;/p>
+&lt;p>HTTP 是網際網路上重要的網路協議之一，至今已經發行了多個版本。在 &lt;a href="http://www.http2demo.io/">demo&lt;/a> 中可以看到 HTTP/1.1 與 HTTP/2.0 的差異。&lt;/p>
+&lt;ul>
+&lt;li>HTTP/1.0&lt;/li>
+&lt;li>HTTP/1.1&lt;/li>
+&lt;li>HTTP/2.0&lt;/li>
+&lt;/ul>
+&lt;p>HTTP（Hypertext Transfer Protocol）協議是 application-level protocol (OSI model: layer 7)，在 RFC 2616 中描述 HTTP 傳輸層預設是使用 TCP/IP 作為連線，原因是因為要基於可靠的傳輸方式，但不排除 HTTP 也可以使用在其他協議上，前提是需要可靠的傳輸。&lt;/p>
+&lt;blockquote>
+&lt;p>HTTP communication usually takes place over TCP/IP connections. The
+default port is TCP 80 [19], but other ports can be used. This does
+not preclude HTTP from being implemented on top of any other protocol
+on the Internet, or on other networks. HTTP only presumes a reliable
+transport; any protocol that provides such guarantees can be used;
+the mapping of the HTTP/1.1 request and response structures onto the
+transport data units of the protocol in question is outside the scope
+of this specification.&lt;/p>
+&lt;/blockquote>
+&lt;p>HTTP/1.1 是使用多個 TCP 連接，一個連接的問題不會影響其他連接。&lt;/p>
+&lt;p>而 HTTP/2.0 也是基於 TCP/IP 協議之上，在單個 TCP 連接上實現了多個請求的並行傳輸（多路復用），也就是多個 stream 在同一個 TCP 上做封包的傳送，但基於 TCP/IP 的關鍵機制 Retransmission Timer（重傳計時器），只要某個 tcp package 遺失就會觸發重傳封包進而造成隊頭阻塞（head of line blocking），在未收到該 ack 之前，所有 stream 都須等待。&lt;/p>
+&lt;p>而在極端的網路環境之下，HTTP/2.0 可能比 HTTP/1.1 之效率來得差。&lt;/p>
+&lt;h3 id="quic">QUIC&lt;/h3>
+&lt;p>&lt;a href="https://www.chromium.org/quic/">QUIC, a multiplexed transport over UDP&lt;/a> 是由 Google 所提出的設計，後來演變為一個 IETF 標準化的協議（RFC 9000）。而這協議是在端點間建立數個 Multiplexing 的 UDP 連線。&lt;/p>
+&lt;blockquote>
+&lt;p>QUIC is a new multiplexed transport built on top of UDP. HTTP/3 is designed to take advantage of QUIC's features, including lack of Head-Of-Line blocking between streams.&lt;/p>
+&lt;/blockquote>
+&lt;p>而 QUIC 的優點：&lt;/p>
+&lt;ul>
+&lt;li>使用 UDP 連線，所以減少了三次握手的效能消耗&lt;/li>
+&lt;li>封包遺失只會影響到對應的 stream，&lt;/li>
+&lt;li>實現了 TCP 的可靠性，使用 Packet Number 來代替 TCP 的 sequence number&lt;/li>
+&lt;li>實現了 HTTP/2.0 的多路復用（multiplexed），但相較於 HTTP/2.0 協議 QUIC 每個 stream 間沒有依賴關係，也就是說大幅減少隊頭阻塞(lack of Head-Of-Line)&lt;/li>
+&lt;li>實現了 TLS 的安全性&lt;/li>
+&lt;/ul>
+&lt;h3 id="references">References&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a href="https://javascript.plainenglish.io/what-is-http-3-and-why-does-it-matter-cb7d7b4b600f">What is http/3&lt;/a>&lt;/li>
+&lt;li>&lt;a href="http://xiaorui.cc/archives/6117">技术分享之http2和quic的那些事儿&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://medium.com/@the.real.yushuf/benchmarking-quic-1fd043e944c7">benchmarking quic&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://datatracker.ietf.org/doc/html/rfc2616">Hypertext Transfer Protocol&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://www.chromium.org/quic">QUIC&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://datatracker.ietf.org/doc/html/rfc9000">IETF rfc9000&lt;/a>&lt;/li>
+&lt;/ul></description></item></channel></rss>

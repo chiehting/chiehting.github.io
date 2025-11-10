@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>oidc on Chiehting</title><link>https://chiehting.com/category/oidc/</link><description>Recent content in oidc on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Thu, 23 Oct 2025 13:48:45 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/oidc/index.xml" rel="self" type="application/rss+xml"/><item><title>OIDC 中的 acr</title><link>https://chiehting.com/posts/oidc-authentication-context-class/</link><pubDate>Thu, 23 Oct 2025 13:48:45 +0800</pubDate><guid>https://chiehting.com/posts/oidc-authentication-context-class/</guid><description>
+&lt;p>OIDC 中的 &lt;strong>Authentication Context Class Reference (ACR)&lt;/strong>，通常以請求參數 &lt;code>acr_values&lt;/code> 和 ID Token 中的 Claim &lt;code>acr&lt;/code> 呈現&lt;/p>
+&lt;p>它的作用是：&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>用來溝通和證明用戶在進行身份驗證時所採用的「認證強度」或「安全等級」。&lt;/strong>&lt;/p>
+&lt;/blockquote>
+&lt;p>簡單來說，ACR 是一種機制，讓您的應用程式可以&lt;strong>要求&lt;/strong>或&lt;strong>驗證&lt;/strong>用戶是以多高的安全標準登入的。&lt;/p>
+&lt;h3 id="oidc-acr-的作用">OIDC ACR 的作用&lt;/h3>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>參數/ Claim&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>存在位置&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>作用&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;strong>&lt;code>acr_values&lt;/code>&lt;/strong>&lt;/td>
+&lt;td>授權請求 (Request URL)&lt;/td>
+&lt;td>&lt;strong>請求&lt;/strong>：客戶端向 Keycloak 請求用戶必須以達到的認證強度。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>&lt;code>acr&lt;/code>&lt;/strong>&lt;/td>
+&lt;td>ID Token (Claim)&lt;/td>
+&lt;td>&lt;strong>證明&lt;/strong>：Keycloak 告知客戶端，用戶&lt;strong>實際&lt;/strong>完成認證的強度等級。&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="常見的-acr-範例">常見的 ACR 範例&lt;/h3>
+&lt;p>ACR 值本身沒有統一的全球標準（除了少數規範，如 NIST），通常是由 Identity Provider (IdP) 平台自行定義，但業界有通用的概念：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>範例 ACR 值 (Keycloak/業界常見)&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>認證強度/方法&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>說明&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;code>0&lt;/code> 或 &lt;code>unspecified&lt;/code>&lt;/td>
+&lt;td>最低強度&lt;/td>
+&lt;td>認證強度未特別聲明或僅使用基本密碼登入。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>1&lt;/code> 或 &lt;code>pwd&lt;/code>&lt;/td>
+&lt;td>密碼認證&lt;/td>
+&lt;td>證明用戶使用單一因素（密碼）登入。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>2&lt;/code> 或 &lt;code>2fa&lt;/code>&lt;/td>
+&lt;td>雙因素認證&lt;/td>
+&lt;td>證明用戶使用了兩種以上的認證因素（例如密碼 + OTP/FIDO）。&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;code>3&lt;/code> 或 &lt;code>biometric&lt;/code>&lt;/td>
+&lt;td>生物識別&lt;/td>
+&lt;td>證明用戶使用了指紋或面部識別等方式登入。&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table></description></item></channel></rss>

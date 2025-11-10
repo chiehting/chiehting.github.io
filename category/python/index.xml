@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>python on Chiehting</title><link>https://chiehting.com/category/python/</link><description>Recent content in python on Chiehting</description><generator>Hugo -- gohugo.io</generator><copyright>Copyright © 2008–2018, Steve Francia and the Hugo Authors; all rights reserved.</copyright><lastBuildDate>Tue, 04 Nov 2025 14:52:42 +0800</lastBuildDate><atom:link href="https://chiehting.com/category/python/index.xml" rel="self" type="application/rss+xml"/><item><title>使用 pipy proxy</title><link>https://chiehting.com/posts/pipy-proxy/</link><pubDate>Tue, 04 Nov 2025 14:52:42 +0800</pubDate><guid>https://chiehting.com/posts/pipy-proxy/</guid><description>
+&lt;p>&lt;code>pip&lt;/code> 配置參數對於使用私有或代理 PyPI 倉庫至關重要。它們控制著 &lt;code>pip&lt;/code> &lt;strong>在哪裡尋找套件&lt;/strong>以及&lt;strong>如何信任該來源&lt;/strong>。&lt;/p>
+&lt;h2 id="pip-設定參數作用解釋">&lt;code>pip&lt;/code> 設定參數作用解釋&lt;/h2>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;strong>參數&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>完整形式&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>作用&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>預期值&lt;/strong>&lt;/th>
+&lt;th>&lt;strong>我的配置 (PyPI 代理)&lt;/strong>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;strong>&lt;code>index-url&lt;/code>&lt;/strong>&lt;/td>
+&lt;td>&lt;code>global.index-url&lt;/code>&lt;/td>
+&lt;td>&lt;strong>核心&lt;/strong>：告訴 &lt;code>pip&lt;/code> &lt;strong>在哪裡&lt;/strong>尋找套件。這是指向簡單索引 API (&lt;code>/simple/&lt;/code>) 的 URL。&lt;/td>
+&lt;td>包含 &lt;code>/simple/&lt;/code> 的 URL&lt;/td>
+&lt;td>&lt;code>http://nexus.../py-proxy/simple/&lt;/code>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>&lt;code>index&lt;/code>&lt;/strong>&lt;/td>
+&lt;td>&lt;code>global.index&lt;/code>&lt;/td>
+&lt;td>&lt;strong>已過時/次要&lt;/strong>：舊版的 &lt;code>pip&lt;/code> 用來指向主索引頁面的 URL。在現代 &lt;code>pip&lt;/code> 中，通常被 &lt;code>index-url&lt;/code> 和 &lt;code>extra-index-url&lt;/code> 取代。&lt;/td>
+&lt;td>指向 HTML 主頁的 URL&lt;/td>
+&lt;td>&lt;code>http://nexus.../py-proxy/pypi/&lt;/code>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;strong>&lt;code>trusted-host&lt;/code>&lt;/strong>&lt;/td>
+&lt;td>&lt;code>global.trusted-host&lt;/code>&lt;/td>
+&lt;td>&lt;strong>安全性&lt;/strong>：告訴 &lt;code>pip&lt;/code> &lt;strong>信任&lt;/strong>該主機，即使它使用的是不安全的 &lt;code>http&lt;/code> 協議（而不是 &lt;code>https&lt;/code>）。&lt;/td>
+&lt;td>僅主機名或 IP 地址&lt;/td>
+&lt;td>&lt;code>192.168.2.8&lt;/code>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h3 id="配置範例">配置範例&lt;/h3>
+&lt;p>想要共用 Proxy 配置，所以配置中的 remote storage &lt;strong>不要&lt;/strong>包括路徑 &lt;code>simple&lt;/code> 跟 &lt;code>pypi&lt;/code>，因為 config set 有帶入。&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" class="chroma">&lt;code class="language-bash" data-lang="bash">&lt;span class="line">&lt;span class="ln">1&lt;/span>&lt;span class="cl">pip config &lt;span class="nb">set&lt;/span> global.index http://192.168.2.8/repository/py-proxy/pypi/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">2&lt;/span>&lt;span class="cl">pip config &lt;span class="nb">set&lt;/span> global.index-url http://192.168.2.8/repository/py-proxy/simple/
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="ln">3&lt;/span>&lt;span class="cl">pip config &lt;span class="nb">set&lt;/span> global.trusted-host 192.168.2.8
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
