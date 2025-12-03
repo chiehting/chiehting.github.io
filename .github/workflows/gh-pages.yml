@@ -9,23 +9,29 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-24.04
+    env:
+      DART_SASS_VERSION: 1.93.2
+      GO_VERSION: 1.25.3
+      HUGO_VERSION: 0.152.2
+      NODE_VERSION: 22.20.0
+      TZ: Asia/Taipei
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
-          submodules: true  # Fetch Hugo themes (true OR recursive)
-          fetch-depth: 10    # Fetch all history for .GitInfo and .Lastmod
-
+          submodules: recursive
+          fetch-depth: 0
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+        uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: '0.99.0'
+          hugo-version: '0.152.2'
           extended: true
 
       - name: Build
         run: hugo --minify
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

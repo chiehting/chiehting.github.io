@@ -23,6 +23,7 @@ Thumbs.db
 *.o
 *.so
 main
+.hugo_build.lock
 
 # Service
 0-work
