@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Abouts on Chiehting's Blog</title><link>https://chiehting.com/about/</link><description>Recent content in Abouts on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><atom:link href="https://chiehting.com/about/index.xml" rel="self" type="application/rss+xml"/><item><title>Chiehting website</title><link>https://chiehting.com/about/2017_about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://chiehting.com/about/2017_about/</guid><description>&lt;!DOCTYPE html&gt;
+ &lt;html&gt;
+ &lt;head&gt;
+ &lt;meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0"&gt;
+ &lt;meta charset="UTF-8"&gt;
+ &lt;script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"&gt;&lt;/script&gt;
+ &lt;link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"&gt;
+ &lt;title&gt;resume&lt;/title&gt;
+ &lt;script&gt;
+ $("document").ready(function(){
+ $("#head img").attr("src","https://storage.googleapis.com/chiehting.com/avatar.png");
+ $.each($(".star"), function(index, value) {
+ var star = $(value).html();
+ var tmp = '';
+ for(i = 0; i &lt; 5; i++) {
+ if((star-i)&gt;=1){
+ tmp += '&lt;i class="fa fa-star" aria-hidden="true"&gt;&lt;/i&gt;';
+ }else if((star-i)&gt;0 &amp;&amp; (star-i)&lt;1){
+ tmp += '&lt;i class="fa fa-star-half-o" aria-hidden="true"&gt;&lt;/i&gt;';
+ }else{
+ tmp += '&lt;i class="fa fa-star-o" aria-hidden="true"&gt;&lt;/i&gt;';
+ }
+ $(value).html(tmp);
+ }
+ });
+ });
+ &lt;/script&gt;
+
+ &lt;style&gt;
+ body{
+ background-color: #F2F4F5;
+ font-family: "Gotham SSm A","Gotham SSm B","PingFang TC","Microsoft JhengHei","PMingLiU",sans-serif;
+ line-height: 1.42857143;
+ color: #222222;
+ font-size: 16px;
+ }
+ hr{
+ border: none;
+ border-top: #979797 5px solid;
+ margin-top: 10px;
+ margin-bottom: 15px;
+ }
+ section{
+ padding: 20px;
+ }
+ h1{
+ font-size: 32px;
+ }
+ #content{
+ position: relative;
+ margin: auto;
+ max-width: 1024px;
+ border-radius: 2px;
+ background: white;
+ box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+ box-sizing: border-box;
+ }
+ .lfloat{float: left;}
+ .rfloat{float: right;}
+ .clear{clear:both; }
+ #head{
+ min-width: 200px;
+ height: 255px;
+ text-align: center;
+ margin: 35px 20px 0px 0px;
+ border-radius: 30px;
+ overflow: hidden;
+ }
+ #head img{
+ max-width: 200px;
+ }
+ #info{
+ width: 60%;
+ margin: 0px 0px 0px 10px;
+ }
+ #info a{
+ color: blue;
+ padding-right: 20px;
+ }
+ .title{
+ text-align: center;
+ font-size: 24px;
+ }
+ .part{
+ width: 49%;
+ padding-bottom: 5px;
+ }
+ .parant{
+ position: relative;
+ }
+ .bullet-content{
+ margin-left: 10%
+ }
+ .bullet{
+ width: 10%;
+ }
+ .bullet::before {
+ position:absolute;
+ top:13px;
+ left: 10px;
+ content: '';
+ width: 10px;
+ height: 10px;
+ border-radius: 50%;
+ display: inline-block;
+ background-color: #A8A8A8;
+ z-index: 1;
+ }
+ .bullet::after {
+ position:absolute;
+ top:18px;
+ left: 15px;
+ content: '';
+ width: 1px;
+ height: 100%;
+ background-color: #979797;
+ display: block;
+ z-index: 0;
+ }
+ .blue{
+ color: rgb(27, 131, 223);
+ }
+
+
+ @media only screen and (max-width: 768px) {
+ body {
+ margin: 15px 0px 0px 0px;
+ }
+ #head{
+ width: 200px;
+ height: 200px;
+ border-radius: 100px;
+ overflow: hidden;
+ position: relative;
+ top: 50%;
+ left: 50%;
+ margin-left: -100px;
+ }
+ #head img{
+ border-radius: 0%;
+ }
+ #info{
+ width: 90%;
+ position: relative;
+ left: 5%;
+ }
+ #info h1{
+ text-align: center;
+ }
+ #content{
+ width: 100%;
+ }
+ .part{
+ width: 100%;
+ }
+ }
+ &lt;/style&gt;
+ &lt;/head&gt;
+ &lt;body&gt;
+ &lt;div id="content"&gt;
+ &lt;header&gt;&lt;/header&gt;
+ &lt;nav&gt;&lt;/nav&gt;
+ &lt;section&gt;
+ &lt;div id="head" class="lfloat"&gt;
+ &lt;img src="https://storage.googleapis.com/chiehting.com/avatar.png"&gt;
+ &lt;/div&gt;
+ &lt;div id="info" class="lfloat"&gt;
+ &lt;h1&gt;李玠廷 Chieh-Ting Lee&lt;/h1&gt;
+ &lt;p&gt;我是一名程式人,喜歡著電腦科學,運用著不同的技術來創作與解決問題。&lt;br/&gt;
+ 擅長做規劃,並築起架構,最後實踐。對於程式設計著自己的看法,自覺程式除了可運行外,核心架構也是重點之一。
+ 曾擔任過MIS人員,有多年的程式開發經驗,熟悉虛擬化架構,包含VMS、Container,也善於Back-End/Front-End,對於Client–server model有著一定程度的了解。
+ &lt;br/&gt;&lt;br/&gt;
+ 實作紀錄會透過Blog、Google Drive、GitHub做分享,若想要互相交流的話,也可以透過Email連絡我歐&lt;i class="fa fa-smile-o" aria-hidden="true"&gt;&lt;/i&gt;
+ &lt;/p&gt;</description></item></channel></rss>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Posts on Chiehting's Blog</title><link>https://chiehting.com/posts/</link><description>Recent content in Posts on Chiehting's Blog</description><generator>Hugo -- 0.152.2</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Tue, 04 Nov 2025 14:52:42 +0800</lastBuildDate><atom:link href="https://chiehting.com/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>使用 pipy proxy</title><link>https://chiehting.com/posts/pipy-proxy/</link><pubDate>Tue, 04 Nov 2025 14:52:42 +0800</pubDate><guid>https://chiehting.com/posts/pipy-proxy/</guid><description>&amp;lt;no value&amp;gt;</description><content type="text/html" mode="escaped"><![CDATA[<p><code>pip</code> 配置參數對於使用私有或代理 PyPI 倉庫至關重要。它們控制著 <code>pip</code> <strong>在哪裡尋找套件</strong>以及<strong>如何信任該來源</strong>。</p>
+<h2 id="pip-設定參數作用解釋"><code>pip</code> 設定參數作用解釋<a href="#pip-%e8%a8%ad%e5%ae%9a%e5%8f%83%e6%95%b8%e4%bd%9c%e7%94%a8%e8%a7%a3%e9%87%8b" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h2>
+<table>
+  <thead>
+      <tr>
+          <th><strong>參數</strong></th>
+          <th><strong>完整形式</strong></th>
+          <th><strong>作用</strong></th>
+          <th><strong>預期值</strong></th>
+          <th><strong>我的配置 (PyPI 代理)</strong></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong><code>index-url</code></strong></td>
+          <td><code>global.index-url</code></td>
+          <td><strong>核心</strong>：告訴 <code>pip</code> <strong>在哪裡</strong>尋找套件。這是指向簡單索引 API (<code>/simple/</code>) 的 URL。</td>
+          <td>包含 <code>/simple/</code> 的 URL</td>
+          <td><code>http://nexus.../py-proxy/simple/</code></td>
+      </tr>
+      <tr>
+          <td><strong><code>index</code></strong></td>
+          <td><code>global.index</code></td>
+          <td><strong>已過時/次要</strong>：舊版的 <code>pip</code> 用來指向主索引頁面的 URL。在現代 <code>pip</code> 中，通常被 <code>index-url</code> 和 <code>extra-index-url</code> 取代。</td>
+          <td>指向 HTML 主頁的 URL</td>
+          <td><code>http://nexus.../py-proxy/pypi/</code></td>
+      </tr>
+      <tr>
+          <td><strong><code>trusted-host</code></strong></td>
+          <td><code>global.trusted-host</code></td>
+          <td><strong>安全性</strong>：告訴 <code>pip</code> <strong>信任</strong>該主機，即使它使用的是不安全的 <code>http</code> 協議（而不是 <code>https</code>）。</td>
+          <td>僅主機名或 IP 地址</td>
+          <td><code>192.168.2.8</code></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="配置範例">配置範例<a href="#%e9%85%8d%e7%bd%ae%e7%af%84%e4%be%8b" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<p>想要共用 Proxy 配置，所以配置中的 remote storage <strong>不要</strong>包括路徑 <code>simple</code> 跟 <code>pypi</code>，因為 config set 有帶入。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">pip config <span class="nb">set</span> global.index http://192.168.2.8/repository/py-proxy/pypi/
+</span></span><span class="line"><span class="cl">pip config <span class="nb">set</span> global.index-url http://192.168.2.8/repository/py-proxy/simple/
+</span></span><span class="line"><span class="cl">pip config <span class="nb">set</span> global.trusted-host 192.168.2.8
+</span></span></code></pre></div>]]></content></item></channel></rss>

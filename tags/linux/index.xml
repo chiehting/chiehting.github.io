@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Linux on Chiehting's Blog</title><link>https://chiehting.com/tags/linux/</link><description>Recent content in Linux on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Mon, 12 May 2025 22:34:05 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/linux/index.xml" rel="self" type="application/rss+xml"/><item><title>File system of Linux</title><link>https://chiehting.com/posts/file-system/</link><pubDate>Mon, 12 May 2025 22:34:05 +0800</pubDate><guid>https://chiehting.com/posts/file-system/</guid><description>&lt;h3 id="file-system-type"&gt;File system type&lt;a href="#file-system-type" class="anchor" aria-hidden="true"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+ stroke-linecap="round" stroke-linejoin="round"&gt;
+ &lt;path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"&gt;&lt;/path&gt;
+ &lt;line x1="8" y1="12" x2="16" y2="12"&gt;&lt;/line&gt;
+ &lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;在 Linux 系統中，&lt;code&gt;shm&lt;/code&gt; 和 &lt;code&gt;tmpfs&lt;/code&gt; 是兩種特殊的檔案系統，代表不同的用途：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;shm（共享內存）：&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;shm&lt;/code&gt; 是共享內存（Shared Memory）的縮寫，它是一種允許不同進程之間共享內存區域的機制。在 Linux 中，&lt;code&gt;/dev/shm&lt;/code&gt; 目錄用於掛載共享內存文件系統。這裡的檔案系統不是真正的硬碟，而是一個存在於記憶體中的虛擬檔案系統，用於進程之間的快速通信。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;tmpfs（臨時文件系統）：&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;tmpfs&lt;/code&gt; 是一種基於記憶體的臨時文件系統，它允許將一部分系統內存用作檔案系統。它通常被用於存儲臨時文件和資料，而不是實際的硬碟。&lt;code&gt;/tmp&lt;/code&gt; 目錄通常是 &lt;code&gt;tmpfs&lt;/code&gt; 的一個例子，但也可以在其他地方創建 &lt;code&gt;tmpfs&lt;/code&gt; 檔案系統。這個臨時文件系統在系統重新啟動時通常會被清除。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;總之，&lt;code&gt;shm&lt;/code&gt; 是用於實現進程間共享內存的文件系統，而 &lt;code&gt;tmpfs&lt;/code&gt; 是一種臨時文件系統，通常用於存儲臨時文件和資料。&lt;/p&gt;</description></item></channel></rss>

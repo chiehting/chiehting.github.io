@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Sla on Chiehting's Blog</title><link>https://chiehting.com/tags/sla/</link><description>Recent content in Sla on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Mon, 10 Jul 2023 18:02:11 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/sla/index.xml" rel="self" type="application/rss+xml"/><item><title>Service Level Agreement</title><link>https://chiehting.com/posts/service-level-agreement/</link><pubDate>Mon, 10 Jul 2023 18:02:11 +0800</pubDate><guid>https://chiehting.com/posts/service-level-agreement/</guid><description>&lt;h3 id="evergreen-note"&gt;Evergreen Note&lt;a href="#evergreen-note" class="anchor" aria-hidden="true"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+ stroke-linecap="round" stroke-linejoin="round"&gt;
+ &lt;path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"&gt;&lt;/path&gt;
+ &lt;line x1="8" y1="12" x2="16" y2="12"&gt;&lt;/line&gt;
+ &lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Question :: 為什麼 SLA 這麼重要?&lt;/p&gt;
+&lt;p&gt;Answer :: 身為 SRE, 要確保系統的可靠性, 並且滿足客戶的期待. 所以訂定協議可以增加客戶與
+對服務的信任; 也可以讓 IT 團隊知道系統穩定的目標在哪, 達到客戶與 IT 團隊擁有共識. 並且可以設立 error budget 來應對意外狀況, 讓用戶了解系統碰到異常, 並知道在多少時間內可修復; 讓團隊有排除系統異常的空間, 並了解要在多少時間內修復完畢.&lt;/p&gt;</description></item></channel></rss>

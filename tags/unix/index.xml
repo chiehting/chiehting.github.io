@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Unix on Chiehting's Blog</title><link>https://chiehting.com/tags/unix/</link><description>Recent content in Unix on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Wed, 16 Jul 2025 15:07:51 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/unix/index.xml" rel="self" type="application/rss+xml"/><item><title>Unix 訊號定義</title><link>https://chiehting.com/posts/unix-signals/</link><pubDate>Wed, 16 Jul 2025 15:07:51 +0800</pubDate><guid>https://chiehting.com/posts/unix-signals/</guid><description>&lt;p&gt;在 unix 中的每個信號號都有對應的定義，決定了當進程接收到信號時的行為。下面表格中的 &lt;code&gt;Action&lt;/code&gt; 列條目指定了每個信號的默認處置。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Ign：Default action is to ignore the signal.&lt;/li&gt;
+&lt;li&gt;Core：Default action is to terminate the process and dump core (see &lt;a href="https://man7.org/linux/man-pages/man5/core.5.html"&gt;core(5)&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;Stop：Default action is to stop the process.&lt;/li&gt;
+&lt;li&gt;Cont：Default action is to continue the process if it is currently stopped.&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>
