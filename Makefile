@@ -6,7 +6,7 @@ help:
 
 .PHONY: update-posts
 update-posts: ## 更新文章
-	@find "./content/posts" -type f -d 1 -exec rm -f {} \;
+	@find "./content/posts" -type f -exec rm -f {} \;
 	@# @find "${HOME}/obsidian" -type f -name '*.md' | grep para | grep -v weeklist | xargs -I '{}' cp -f "{}" ./content/posts/
 	@rg 'post: true' "${HOME}/obsidian" -l | grep para | grep -v weeklist | xargs -I '{}' cp -f "{}" ./content/posts/
 
