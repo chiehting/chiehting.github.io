@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Posts on Chiehting's Blog</title><link>https://chiehting.com/posts/</link><description>Recent content in Posts on Chiehting's Blog</description><generator>Hugo -- 0.152.2</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Fri, 09 Jan 2026 18:02:00 +0800</lastBuildDate><atom:link href="https://chiehting.com/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Rclone + Google Drive + Obsidian 同步筆記</title><link>https://chiehting.com/posts/obsidian-sync-to-google-drive/</link><pubDate>Fri, 09 Jan 2026 18:02:00 +0800</pubDate><guid>https://chiehting.com/posts/obsidian-sync-to-google-drive/</guid><description>&amp;lt;no value&amp;gt;</description><content type="text/html" mode="escaped"><![CDATA[<p>使用 rclone 同步 Obsidian 到 Google Drive，包含遇到的錯誤、原因及解決方案。</p>
+<p>原本期望做即時同步，但是因為問題造成 Obsidian 有點卡，所以最終改用非同步的方式進行將文件上傳到  Google Drive。</p>
+<h2 id="步驟">步驟<a href="#%e6%ad%a5%e9%a9%9f" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h2>
+<h3 id="安裝最新版的-rclone-工具">安裝最新版的 rclone 工具<a href="#%e5%ae%89%e8%a3%9d%e6%9c%80%e6%96%b0%e7%89%88%e7%9a%84-rclone-%e5%b7%a5%e5%85%b7" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">sudo curl https://rclone.org/install.sh <span class="p">|</span> sudo bash
+</span></span></code></pre></div><h3 id="配置-rclone-remote-config">配置 rclone remote config<a href="#%e9%85%8d%e7%bd%ae-rclone-remote-config" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<p>因為碰到空間配額錯誤，所以使用個人帳號，配置使用 default。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rclone config
+</span></span></code></pre></div><h3 id="做第一次的初始化同步">做第一次的初始化同步<a href="#%e5%81%9a%e7%ac%ac%e4%b8%80%e6%ac%a1%e7%9a%84%e5%88%9d%e5%a7%8b%e5%8c%96%e5%90%8c%e6%ad%a5" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1"># 刪除舊的同步紀錄快取 (安全操作)</span>
+</span></span><span class="line"><span class="cl">rm -rf ~/.cache/rclone/bisync/*
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 重新建立基準</span>
+</span></span><span class="line"><span class="cl">rclone bisync gdrive:<span class="s2">&#34;obsidian&#34;</span> ~/obsidian --resync --verbose
+</span></span></code></pre></div><h3 id="測試檔案更新">測試檔案更新<a href="#%e6%b8%ac%e8%a9%a6%e6%aa%94%e6%a1%88%e6%9b%b4%e6%96%b0" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">rclone bisync gdrive:<span class="s2">&#34;obsidian&#34;</span> ~/obsidian --conflict-resolve newer --compare size,modtime --create-empty-src-dirs --verbose
+</span></span></code></pre></div><h3 id="建立-systemctl-daemons">建立 systemctl daemons<a href="#%e5%bb%ba%e7%ab%8b-systemctl-daemons" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat ~/.config/systemd/user/obsidian-bisync.service
+</span></span><span class="line"><span class="cl"><span class="o">[</span>Unit<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">Description</span><span class="o">=</span>Hourly Obsidian Bi-sync
+</span></span><span class="line"><span class="cl"><span class="nv">After</span><span class="o">=</span>network-online.target
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>Service<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">Type</span><span class="o">=</span>oneshot
+</span></span><span class="line"><span class="cl"><span class="c1"># 注意：這裡要把路徑寫死，不要用 ~/</span>
+</span></span><span class="line"><span class="cl"><span class="nv">ExecStart</span><span class="o">=</span>/usr/bin/rclone bisync gdrive:<span class="s2">&#34;obsidian&#34;</span> /home/justin/obsidian --conflict-resolve newer --compare size,modtime --create-empty-src-dirs --verbose
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cat ~/.config/systemd/user/obsidian-bisync.timer
+</span></span><span class="line"><span class="cl"><span class="o">[</span>Unit<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">Description</span><span class="o">=</span>Run Obsidian Bi-sync every hour
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>Timer<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># 開機後 5 分鐘第一次執行</span>
+</span></span><span class="line"><span class="cl"><span class="nv">OnBootSec</span><span class="o">=</span>5min
+</span></span><span class="line"><span class="cl"><span class="c1"># 之後每隔一個小時執行一次</span>
+</span></span><span class="line"><span class="cl"><span class="nv">OnUnitActiveSec</span><span class="o">=</span>1h
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">[</span>Install<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="nv">WantedBy</span><span class="o">=</span>timers.target
+</span></span></code></pre></div><h3 id="啟動-systemctl">啟動 systemctl<a href="#%e5%95%9f%e5%8b%95-systemctl" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">systemctl --user daemon-reload
+</span></span><span class="line"><span class="cl">systemctl --user <span class="nb">enable</span> --now obsidian-bisync.timer
+</span></span></code></pre></div><h2 id="問題與原因分析-troubleshooting">問題與原因分析 (Troubleshooting)<a href="#%e5%95%8f%e9%a1%8c%e8%88%87%e5%8e%9f%e5%9b%a0%e5%88%86%e6%9e%90-troubleshooting" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h2>
+<h3 id="空間配額錯誤-403-storage-quota-exceeded">空間配額錯誤 (403 Storage Quota Exceeded)<a href="#%e7%a9%ba%e9%96%93%e9%85%8d%e9%a1%8d%e9%8c%af%e8%aa%a4-403-storage-quota-exceeded" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<ul>
+<li>
+<p><strong>問題描述</strong>：使用 Service Account (SA) 進行掛載時，無法寫入檔案（例如 Obsidian 的 <code>touch.md</code>），出現 <code>Error 403: Service Accounts do not have storage quota</code>。</p>
+</li>
+<li>
+<p><strong>原因分析</strong>：Service Account 雖然可以讀取分享給它的資料夾，但它本身的空間配額 (Quota) 是 <strong>0</strong>。在 Google Drive 的規則下，「誰上傳就扣誰的空間」，因此機器人帳號無法寫入個人硬碟空間。</p>
+</li>
+<li>
+<p><strong>解決方案</strong>：</p>
+<ul>
+<li><strong>放棄 SA，改用個人帳號 (OAuth)</strong>：執行 <code>rclone config</code> 重新建立遠端，不填寫 Service Account 欄位，透過瀏覽器授權登入個人帳號。</li>
+</ul>
+</li>
+</ul>
+<h3 id="api-速率限制與卡頓">API 速率限制與卡頓<a href="#api-%e9%80%9f%e7%8e%87%e9%99%90%e5%88%b6%e8%88%87%e5%8d%a1%e9%a0%93" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<ul>
+<li>
+<p><strong>問題描述</strong>：掛載後的資料夾讀取緩慢，Obsidian 索引檔案時轉圈圈。</p>
+</li>
+<li>
+<p><strong>原因分析</strong>：預設使用 rclone 共用的 <code>client_id</code>。全球使用者共用同一組 API 請求額度，容易觸發 Google 的速率限制 (Rate Limiting)。</p>
+</li>
+<li>
+<p><strong>解決方案</strong>：</p>
+<ul>
+<li><strong>申請私人 Client ID</strong>：在 <a href="https://console.cloud.google.com/">Google Cloud Console</a> 建立專屬專案，取得私人的 <code>client_id</code> 與 <code>client_secret</code> 並配置到 rclone。</li>
+</ul>
+</li>
+</ul>
+<h3 id="指令參數錯誤-unknown-flag">指令參數錯誤 (Unknown Flag)<a href="#%e6%8c%87%e4%bb%a4%e5%8f%83%e6%95%b8%e9%8c%af%e8%aa%a4-unknown-flag" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<ul>
+<li>
+<p><strong>問題描述</strong>：執行 <code>bisync</code> 指令時出現 <code>unknown flag: --resolve</code> 或 <code>unknown flag: --daemon</code>。</p>
+</li>
+<li>
+<p><strong>原因分析</strong>：Ubuntu 內建的 rclone 版本過舊（例如 v1.5x 或更早）。<code>bisync</code> 是較新的實驗性功能，許多進階參數在舊版並不存在。</p>
+</li>
+<li>
+<p><strong>解決方案</strong>：</p>
+<ul>
+<li>
+<p><strong>升級 Rclone</strong>：執行官方指令 <code>sudo curl https://rclone.org/install.sh | sudo bash</code> 更新至最新版 (如 v1.72.1)。</p>
+</li>
+<li>
+<p><strong>參數修正</strong>：新版本中參數已改名，例如 <code>--resolve newer</code> 需改為 <strong><code>--conflict-resolve newer</code></strong>。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-自動化同步方案-bisync-vs-mount">4. 自動化同步方案 (Bisync vs Mount)<a href="#4-%e8%87%aa%e5%8b%95%e5%8c%96%e5%90%8c%e6%ad%a5%e6%96%b9%e6%a1%88-bisync-vs-mount" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<ul>
+<li>
+<p><strong>問題描述</strong>：如何讓 Obsidian 在 Linux 上運作得最順暢？</p>
+</li>
+<li>
+<p><strong>方案選擇</strong>：</p>
+<ul>
+<li>
+<p><strong>掛載 (Mount)</strong>：不佔硬碟空間，但受限於網路延遲，Obsidian 索引時容易卡頓。</p>
+</li>
+<li>
+<p><strong>雙向同步 (Bisync)</strong>：將雲端檔案抓到本地，Obsidian 讀取本地 SSD。速度最快、支援離線編輯。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>最終配置 (Systemd + Bisync)</strong>：</p>
+<ul>
+<li>
+<p><strong>初始化</strong>：<code>rclone bisync gdrive:RemotePath ~/LocalPath --resync</code> (建立第一次基準，<strong>務必只執行一次</strong>)。</p>
+</li>
+<li>
+<p><strong>定時任務</strong>：設定 Systemd Timer 每小時執行一次 <code>rclone bisync ... --conflict-resolve newer</code>。</p>
+</li>
+<li>
+<p><strong>注意</strong>：空目錄同步需加上 <code>--create-empty-src-dirs</code>。</p>
+</li>
+</ul>
+</li>
+</ul>]]></content></item></channel></rss>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Sre on Chiehting's Blog</title><link>https://chiehting.com/tags/sre/</link><description>Recent content in Sre on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Thu, 13 Jul 2023 15:45:24 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/sre/index.xml" rel="self" type="application/rss+xml"/><item><title>Service Level Indicator</title><link>https://chiehting.com/posts/service-level-indicator/</link><pubDate>Thu, 13 Jul 2023 15:45:24 +0800</pubDate><guid>https://chiehting.com/posts/service-level-indicator/</guid><description>&lt;h3 id="evergreen-note"&gt;Evergreen Note&lt;a href="#evergreen-note" class="anchor" aria-hidden="true"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+ stroke-linecap="round" stroke-linejoin="round"&gt;
+ &lt;path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"&gt;&lt;/path&gt;
+ &lt;line x1="8" y1="12" x2="16" y2="12"&gt;&lt;/line&gt;
+ &lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Question :: 什麼是 SLI?&lt;/p&gt;
+&lt;p&gt;Answer :: SLI 為 SLO 的指標數據, SLI 為 IT 團隊跟系統間的狀態確認. 但與以往的監控不同, SLO 的目標是以用戶體驗為導向. SLI 在擷取的過程中, 要保持單純與精確, 可以參考文章的 SLI 分類.&lt;/p&gt;</description></item></channel></rss>

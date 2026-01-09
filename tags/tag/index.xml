@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tag on Chiehting's Blog</title><link>https://chiehting.com/tags/tag/</link><description>Recent content in Tag on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Mon, 12 May 2025 21:35:47 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/tag/index.xml" rel="self" type="application/rss+xml"/><item><title>top 工具</title><link>https://chiehting.com/posts/linux-top/</link><pubDate>Mon, 12 May 2025 21:35:47 +0800</pubDate><guid>https://chiehting.com/posts/linux-top/</guid><description>&lt;p&gt;&lt;code&gt;top&lt;/code&gt; 是一個在類 Unix 系統（包括 macOS 和 Linux）中常用的工具，用於即時監控系統的行程（processes）和資源使用情況。&lt;/p&gt;
+&lt;h3 id="processes行程和執行緒總覽"&gt;Processes，行程和執行緒總覽&lt;a href="#processes%e8%a1%8c%e7%a8%8b%e5%92%8c%e5%9f%b7%e8%a1%8c%e7%b7%92%e7%b8%bd%e8%a6%bd" class="anchor" aria-hidden="true"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+ stroke-linecap="round" stroke-linejoin="round"&gt;
+ &lt;path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"&gt;&lt;/path&gt;
+ &lt;line x1="8" y1="12" x2="16" y2="12"&gt;&lt;/line&gt;
+ &lt;/svg&gt;&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Processes: 491 total, 5 running, 486 sleeping, 3862 threads&lt;/p&gt;</description></item></channel></rss>
