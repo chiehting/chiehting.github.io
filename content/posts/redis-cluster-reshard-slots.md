@@ -1,6 +1,6 @@
 ---
 date: 2019-04-07T00:49:24+0800
-updated: 2025-05-12T00:26:37+08:00
+updated: 2025-11-10T12:18:43+08:00
 title: Redis cluster reshard slots
 category: redis
 tags:
