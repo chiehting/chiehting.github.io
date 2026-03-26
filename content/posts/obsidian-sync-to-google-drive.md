@@ -1,6 +1,6 @@
 ---
 date: 2026-01-09T18:02:00+08:00
-updated: 2026-01-09T22:55:09+08:00
+updated: 2026-03-06T22:05:52+08:00
 title: Rclone + Google Drive + Obsidian 同步筆記
 category: ubuntu
 tags:
@@ -10,7 +10,7 @@ type: note
 post: true
 ---
 
-使用 rclone 同步 Obsidian 到 Google Drive，包含遇到的錯誤、原因及解決方案。
+使用 rclone 同步 Obsidian 筆記到 Google Drive，包含遇到的錯誤、原因及解決方案。
 
 <!--more-->
 
@@ -39,16 +39,20 @@ rclone config
 rm -rf ~/.cache/rclone/bisync/*
 
 # 重新建立基準
-rclone bisync gdrive:"obsidian" ~/obsidian --resync --verbose
+/usr/bin/rclone bisync gdrive:/obsidian /home/justin/obsidian --conflict-resolve newer --compare size,modtime --create-empty-src-dirs --bwlimit 512k --resync --verbose
 ```
 
 ### 測試檔案更新
 
 ```bash
-rclone bisync gdrive:"obsidian" ~/obsidian --conflict-resolve newer --compare size,modtime --create-empty-src-dirs --verbose
+/usr/bin/rclone bisync gdrive:/obsidian /home/justin/obsidian --conflict-resolve newer --compare size,modtime --create-empty-src-dirs --bwlimit 512k --verbose
 ```
 
 ### 建立 systemctl daemons
+
+```bash
+mkdir -p ~/.config/systemd/user/
+```
 
 ```bash
 cat ~/.config/systemd/user/obsidian-bisync.service
@@ -59,7 +63,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 # 注意：這裡要把路徑寫死，不要用 ~/
-ExecStart=/usr/bin/rclone bisync gdrive:"obsidian" /home/justin/obsidian --conflict-resolve newer --compare size,modtime --create-empty-src-dirs --verbose
+ExecStart=/usr/bin/rclone bisync gdrive:/obsidian /home/justin/obsidian --conflict-resolve newer --compare size,modtime --create-empty-src-dirs --bwlimit 512k --verbose
 ```
 
 ```bash
@@ -70,8 +74,8 @@ Description=Run Obsidian Bi-sync every hour
 [Timer]
 # 開機後 5 分鐘第一次執行
 OnBootSec=5min
-# 之後每隔一個小時執行一次
-OnUnitActiveSec=1h
+# 之後每隔六個小時執行一次
+OnUnitActiveSec=6h
 
 [Install]
 WantedBy=timers.target
@@ -82,6 +86,10 @@ WantedBy=timers.target
 ```bash
 systemctl --user daemon-reload
 systemctl --user enable --now obsidian-bisync.timer
+# 測試
+q
+# status
+systemctl --user status obsidian-bisync.service
 ```
 
 
@@ -97,7 +105,6 @@ systemctl --user enable --now obsidian-bisync.timer
     
     - **放棄 SA，改用個人帳號 (OAuth)**：執行 `rclone config` 重新建立遠端，不填寫 Service Account 欄位，透過瀏覽器授權登入個人帳號。
         
-
 ### API 速率限制與卡頓
 
 - **問題描述**：掛載後的資料夾讀取緩慢，Obsidian 索引檔案時轉圈圈。

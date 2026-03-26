@@ -1,6 +1,6 @@
 ---
 date: 2025-05-14T00:12:11+08:00
-updated: 2025-11-10T12:18:30+08:00
+updated: 2026-03-26T16:54:48+08:00
 title: Microsoft MarkItDown 工具摘要與使用範例
 category: software
 tags:
@@ -52,7 +52,7 @@ markitdown 1_PDFsam_pool_charlie.pdf -o 1_PDFsam_pool_charlie.md
 
 ### MarkItDown 將 YouTube 轉換成 Markdown 的範例
 
-沒什麼作用，因為只是提取了字幕文本，但沒任何 Markdown 語法元素，就結果來說只是個純文本。
+下面程式提取了字幕文本，但沒任何 Markdown 語法元素，就結果來說只是個純文本。
 
 ```python
 from markitdown import MarkItDown

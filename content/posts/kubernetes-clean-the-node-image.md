@@ -1,6 +1,6 @@
 ---
 date: 2024-05-28T13:01:00+08:00
-updated: 2025-07-19T22:00:33+08:00
+updated: 2026-03-27T00:14:14+08:00
 title: 清理 Kubernetes node 上的映像檔
 category: kubernetes
 tags:
@@ -11,12 +11,14 @@ post: true
 
 Kubernetes 自有 Garbage Collection 機制，也可以手動提前清理，步驟如下。
 
+<!--more-->
+
 ### 創建節點除錯器 alpine
 
 建立一個 alpine 容器，並且裝上 crictl 命令。
 
 ```shell
-kubectl debug node/ip-10-2-1-49.ec2.internal -it --image=alpine -- sh
+kubectl debug node/ip-10-2-3-204.ec2.internal --profile=general -it --image=alpine -- sh
 $ VERSION="v1.26.0"
 $ wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
 $ tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
