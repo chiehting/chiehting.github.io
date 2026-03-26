@@ -1,6 +1,6 @@
 ---
-date: 2026-01-13T24:52:40+08:00
-updated: 2026-01-13T11:01:32+08:00
+date: 2026-01-13T00:52:40+08:00
+updated: 2026-03-27T00:40:41+08:00
 title: NetworkManager WiFi Power Saving
 category: ubuntu
 tags:
