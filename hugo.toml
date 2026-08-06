@@ -41,6 +41,11 @@ rssLimit = 1
 copyright = "Copyright © 2025 Chiehting Lee. All rights reserved."
 enableEmoji = true
 
+# content/about/*.html are hand-written standalone pages. Hugo 0.158+ blocks
+# text/html content files by default (security.allowContent), so allow them back.
+[security]
+  allowContent = ['.*']
+
 [services]
 #  [services.disqus]
 #    shortname = ''
