@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cpu on Chiehting's Blog</title><link>https://chiehting.com/tags/cpu/</link><description>Recent content in Cpu on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Mon, 12 May 2025 18:04:29 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/cpu/index.xml" rel="self" type="application/rss+xml"/><item><title>Linux</title><link>https://chiehting.com/posts/linux-cpu/</link><pubDate>Mon, 12 May 2025 18:04:29 +0800</pubDate><guid>https://chiehting.com/posts/linux-cpu/</guid><description>&lt;p&gt;在 Linux 中，&lt;code&gt;top&lt;/code&gt; 或 &lt;code&gt;vmstat&lt;/code&gt; 等系統性能工具通常會顯示 CPU 使用情況，其中包括了不同的 CPU 狀態。以下是各種 CPU 狀態的意義：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;idle（閒置）：&lt;/strong&gt; 這表示 CPU 完全空閒，沒有在執行任何任務。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;iowait（I/O 等待）：&lt;/strong&gt; 表示 CPU 正在等待I/O操作（例如磁盤讀寫）完成。當系統中的I/O操作比較繁忙時，這個值可能會上升。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;irq（硬中斷）：&lt;/strong&gt; 這表示 CPU 正在處理硬中斷。硬中斷通常來自硬體設備，例如網卡、鍵盤等。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;nice（優先級）：&lt;/strong&gt; 這表示 CPU 正在執行“優先級”比較高的進程，這通常是由使用者明確指定的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;softirq（軟中斷）：&lt;/strong&gt; 類似於硬中斷，但是軟中斷通常是由內核中的軟體事件觸發的，而不是硬體設備觸發的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;steal（虛擬機器搶奪）：&lt;/strong&gt; 在虛擬化環境中，如果主機上的其他虛擬機器需要 CPU 資源，則可能會有 steal 時間，表示虛擬機器正在失去 CPU 資源。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;system（系統）：&lt;/strong&gt; 表示 CPU 正在執行內核空間的代碼，例如系統呼叫。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;user（使用者）：&lt;/strong&gt; 表示 CPU 正在執行用戶空間的代碼，例如應用程式。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;這些狀態是根據 Linux 中的 /proc/stat 文件中的數據生成的，可以使用 &lt;code&gt;cat /proc/stat&lt;/code&gt; 查看實時 CPU 相關信息。&lt;/p&gt;</description></item></channel></rss>
