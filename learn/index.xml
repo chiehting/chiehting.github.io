@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Learns on Chiehting's Blog</title><link>https://chiehting.com/learn/</link><description>Recent content in Learns on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><atom:link href="https://chiehting.com/learn/index.xml" rel="self" type="application/rss+xml"/><item><title>Chiehting website</title><link>https://chiehting.com/sre/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://chiehting.com/sre/</guid><description>&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-Hant"&gt;
+&lt;head&gt;
+&lt;meta charset="UTF-8"&gt;
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+&lt;title&gt;SRE 學習路線圖 | Site Reliability Engineering Learning Path&lt;/title&gt;
+&lt;style&gt;
+:root{
+ --bg:#0f1115; --bg-elev:#161a21; --bg-elev2:#1d222b;
+ --fg:#e6e8ec; --fg-dim:#9aa3b2; --fg-faint:#6b7383;
+ --accent:#4f8cff; --accent-dim:#2d5cad;
+ --ok:#3fb950; --warn:#d29922; --err:#f85149; --info:#58a6ff;
+ --border:#262c36; --border-soft:#1e232b;
+ --code-bg:#12161c;
+ --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+ --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+ --maxw:860px;
+}
+html[data-theme="light"]{
+ --bg:#ffffff; --bg-elev:#f6f7f9; --bg-elev2:#eceef2;
+ --fg:#1a1d23; --fg-dim:#565d6b; --fg-faint:#858c99;
+ --accent:#0f62fe; --accent-dim:#8ab4ff;
+ --ok:#1a7f37; --warn:#9a6700; --err:#cf222e; --info:#0969da;
+ --border:#d8dce3; --border-soft:#e6e9ee;
+ --code-bg:#f4f5f7;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth; scroll-padding-top:24px;}
+body{
+ margin:0; background:var(--bg); color:var(--fg);
+ font-family:var(--sans); font-size:16px; line-height:1.75;
+ -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- Layout ---------- */
+.layout{display:grid; grid-template-columns:290px minmax(0,1fr); min-height:100vh;}
+.sidebar{
+ position:sticky; top:0; height:100vh; overflow-y:auto;
+ background:var(--bg-elev); border-right:1px solid var(--border);
+ padding:22px 0 60px;
+}
+.sidebar::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+.brand{padding:0 22px 16px; border-bottom:1px solid var(--border-soft); margin-bottom:14px;}
+.brand h1{font-size:17px; margin:0 0 4px; letter-spacing:-.01em;}
+.brand p{margin:0; font-size:12px; color:var(--fg-faint); font-family:var(--mono);}
+nav ol{list-style:none; margin:0; padding:0;}
+nav a{
+ display:block; padding:6px 22px 6px 22px; color:var(--fg-dim);
+ text-decoration:none; font-size:13.5px; border-left:2px solid transparent;
+ transition:.12s;
+}
+nav a:hover{color:var(--fg); background:var(--bg-elev2);}
+nav a.active{color:var(--accent); border-left-color:var(--accent); background:var(--bg-elev2);}
+nav .lvl0{font-weight:600; color:var(--fg); margin-top:12px; font-size:12px;
+ letter-spacing:.08em; text-transform:uppercase; padding:6px 22px 4px; color:var(--fg-faint);}
+nav a.lvl2{padding-left:36px; font-size:12.5px; color:var(--fg-faint);}
+
+main{padding:52px 44px 140px; max-width:calc(var(--maxw) + 88px); margin:0 auto; width:100%;}
+
+/* ---------- Typography ---------- */
+h2{
+ font-size:26px; margin:64px 0 6px; letter-spacing:-.02em; line-height:1.3;
+ padding-top:8px;
+}
+h2:first-of-type{margin-top:0;}
+h2 .en{display:block; font-size:13px; font-weight:400; color:var(--fg-faint);
+ font-family:var(--mono); letter-spacing:0; margin-top:4px;}
+h3{font-size:18.5px; margin:38px 0 10px; letter-spacing:-.01em;}
+h4{font-size:15px; margin:26px 0 8px; color:var(--fg-dim); letter-spacing:.01em;}
+p{margin:0 0 14px;}
+ul,ol{margin:0 0 16px; padding-left:22px;}
+li{margin:5px 0;}
+li&gt;ul,li&gt;ol{margin:6px 0;}
+a{color:var(--accent);}
+strong{color:var(--fg); font-weight:650;}
+hr{border:0; border-top:1px solid var(--border-soft); margin:44px 0;}
+
+code{
+ font-family:var(--mono); font-size:.87em; background:var(--code-bg);
+ padding:.14em .38em; border-radius:4px; border:1px solid var(--border-soft);
+}
+pre{
+ background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+ padding:14px 16px; overflow-x:auto; font-size:13px; line-height:1.6; margin:0 0 18px;
+}
+pre code{background:none; border:0; padding:0; font-size:inherit;}
+
+/* ---------- Components ---------- */
+.hero{
+ border:1px solid var(--border); border-radius:14px; padding:34px 34px 30px;
+ background:linear-gradient(160deg,var(--bg-elev) 0%,var(--bg) 90%); margin-bottom:12px;
+}
+.hero h2{margin:0 0 10px; font-size:32px;}
+.hero .sub{color:var(--fg-dim); font-size:15px; margin:0;}
+.meta-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px;}
+.chip{
+ font-family:var(--mono); font-size:11.5px; padding:4px 10px; border-radius:999px;
+ border:1px solid var(--border); color:var(--fg-dim); background:var(--bg-elev2);
+}
+
+.callout{
+ border:1px solid var(--border); border-left:3px solid var(--accent);
+ background:var(--bg-elev); border-radius:0 8px 8px 0;
+ padding:14px 18px; margin:0 0 18px; font-size:14.5px;
+}
+.callout .t{font-weight:650; font-size:13px; letter-spacing:.03em;
+ text-transform:uppercase; color:var(--accent); margin-bottom:6px; font-family:var(--mono);}
+.callout p:last-child{margin-bottom:0;}
+.callout.warn{border-left-color:var(--warn);} .callout.warn .t{color:var(--warn);}
+.callout.ok{border-left-color:var(--ok);} .callout.ok .t{color:var(--ok);}
+.callout.err{border-left-color:var(--err);} .callout.err .t{color:var(--err);}
+
+table{
+ width:100%; border-collapse:collapse; margin:0 0 20px; font-size:14px;
+ border:1px solid var(--border); border-radius:8px; overflow:hidden;
+}
+th,td{padding:9px 13px; text-align:left; border-bottom:1px solid var(--border-soft); vertical-align:top;}
+th{background:var(--bg-elev2); font-size:12.5px; letter-spacing:.03em;
+ text-transform:uppercase; color:var(--fg-dim); font-weight:600;}
+tr:last-child td{border-bottom:0;}
+tbody tr:hover{background:var(--bg-elev);}
+td code{white-space:nowrap;}
+
+.term{
+ display:inline-block; border-bottom:1px dotted var(--fg-faint); cursor:help;
+}
+.en-inline{color:var(--fg-faint); font-family:var(--mono); font-size:.86em;}
+
+.stage{
+ display:flex; gap:14px; align-items:baseline; margin:0 0 4px;
+}
+.stage .num{
+ font-family:var(--mono); font-size:12px; color:var(--bg); background:var(--accent);
+ width:26px; height:26px; border-radius:6px; display:grid; place-items:center;
+ flex:0 0 26px; font-weight:700;
+}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; margin-bottom:20px;}
+.card{
+ border:1px solid var(--border); border-radius:10px; padding:16px 18px;
+ background:var(--bg-elev);
+}
+.card h4{margin:0 0 8px; color:var(--fg); font-size:14.5px;}
+.card ul{margin:0; padding-left:18px; font-size:13.5px; color:var(--fg-dim);}
+.card p{font-size:13.5px; color:var(--fg-dim); margin:0;}
+
+.toolbar{
+ position:fixed; top:14px; right:18px; display:flex; gap:8px; z-index:50;
+}
+.toolbar button{
+ background:var(--bg-elev2); color:var(--fg-dim); border:1px solid var(--border);
+ border-radius:8px; padding:6px 12px; font-size:12px; cursor:pointer;
+ font-family:var(--mono); transition:.12s;
+}
+.toolbar button:hover{color:var(--fg); border-color:var(--accent);}
+
+.progress{position:fixed; top:0; left:0; height:2px; background:var(--accent); z-index:60; width:0;}
+
+.footnote{font-size:13px; color:var(--fg-faint); border-top:1px solid var(--border-soft);
+ padding-top:18px; margin-top:50px;}
+.footnote a{color:var(--fg-dim);}
+
+.ascii{
+ font-family:var(--mono); font-size:12.5px; line-height:1.45; white-space:pre;
+ background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+ padding:16px 18px; overflow-x:auto; margin:0 0 18px; color:var(--fg-dim);
+}
+
+.menu-btn{display:none;}
+@media (max-width:960px){
+ .layout{grid-template-columns:1fr;}
+ .sidebar{position:fixed; z-index:40; width:290px; transform:translateX(-100%); transition:.2s;}
+ .sidebar.open{transform:none;}
+ .menu-btn{display:block;}
+ main{padding:64px 20px 100px;}
+ .hero{padding:24px 20px;}
+}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class="progress" id="progress"&gt;&lt;/div&gt;
+&lt;div class="toolbar"&gt;
+ &lt;button class="menu-btn" id="menuBtn"&gt;☰ 目錄&lt;/button&gt;
+ &lt;button id="themeBtn"&gt;◐ 主題&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;div class="layout"&gt;
+&lt;aside class="sidebar" id="sidebar"&gt;
+ &lt;div class="brand"&gt;
+ &lt;h1&gt;SRE 學習路線圖&lt;/h1&gt;
+ &lt;p&gt;Site Reliability Engineering&lt;/p&gt;</description></item></channel></rss>

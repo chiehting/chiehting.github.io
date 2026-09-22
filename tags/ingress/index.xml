@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Ingress on Chiehting's Blog</title><link>https://chiehting.com/tags/ingress/</link><description>Recent content in Ingress on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Fri, 20 Mar 2026 12:00:29 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/ingress/index.xml" rel="self" type="application/rss+xml"/><item><title>Ingress NGINX retirement</title><link>https://chiehting.com/posts/ingress-nginx-retirement/</link><pubDate>Fri, 20 Mar 2026 12:00:29 +0800</pubDate><guid>https://chiehting.com/posts/ingress-nginx-retirement/</guid><description>&lt;p&gt;這邊文章在說明 &lt;a href="https://www.tbs.tech/nginx-ingress-eol-migration/"&gt;Ingress NGINX Controller 2026 中止維護。替代方案和架構&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Ingress NGINX 停止維護後造成下面影響&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;停止 CVE 修復，造成安全性問題&lt;/li&gt;
+&lt;li&gt;Kubernetes 版本迭代，造成相容性問題&lt;/li&gt;
+&lt;li&gt;Nginx 的配置會變得不好維護，技術債問題&lt;/li&gt;
+&lt;/ol&gt;</description></item></channel></rss>

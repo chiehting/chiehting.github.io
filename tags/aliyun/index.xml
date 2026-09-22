@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Aliyun on Chiehting's Blog</title><link>https://chiehting.com/tags/aliyun/</link><description>Recent content in Aliyun on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Fri, 28 Jun 2024 23:53:03 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/aliyun/index.xml" rel="self" type="application/rss+xml"/><item><title>阿里雲技術文章-多租戶架構</title><link>https://chiehting.com/posts/multi-tenancy-architecture/</link><pubDate>Fri, 28 Jun 2024 23:53:03 +0800</pubDate><guid>https://chiehting.com/posts/multi-tenancy-architecture/</guid><description>&lt;p&gt;&lt;a href="https://developer.aliyun.com/article/1142510?spm=5176.26934562.main.11.5a37510bSLvY8d"&gt;阿里雲文章&lt;/a&gt;，說明多種多租戶架構的方式&lt;/p&gt;
+&lt;h4 id="獨享資源模式"&gt;獨享資源模式&lt;a href="#%e7%8d%a8%e4%ba%ab%e8%b3%87%e6%ba%90%e6%a8%a1%e5%bc%8f" class="anchor" aria-hidden="true"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+ stroke-linecap="round" stroke-linejoin="round"&gt;
+ &lt;path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"&gt;&lt;/path&gt;
+ &lt;line x1="8" y1="12" x2="16" y2="12"&gt;&lt;/line&gt;
+ &lt;/svg&gt;&lt;/a&gt;&lt;/h4&gt;
+&lt;p&gt;每個租入的 web、application、database 各自獨立。
+用戶完全隔離，優點是用戶不互相影響、資料完全隔離，缺點是硬體成本較高&lt;/p&gt;</description></item></channel></rss>

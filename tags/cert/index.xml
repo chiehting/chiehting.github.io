@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Cert on Chiehting's Blog</title><link>https://chiehting.com/tags/cert/</link><description>Recent content in Cert on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Sun, 07 Jul 2024 15:37:56 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/cert/index.xml" rel="self" type="application/rss+xml"/><item><title>Create the locally trusted development certificates</title><link>https://chiehting.com/posts/mkcert-tool-create-local-cert/</link><pubDate>Sun, 07 Jul 2024 15:37:56 +0800</pubDate><guid>https://chiehting.com/posts/mkcert-tool-create-local-cert/</guid><description>&lt;p&gt;開源專案 &lt;a href="https://github.com/FiloSottile/mkcert"&gt;mkcert&lt;/a&gt;，建立本機信任憑證供開發時使用。&lt;/p&gt;
+&lt;p&gt;透過 brew 安裝 mkcert 命令。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;brew install mkcert
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;brew install nss &lt;span class="c1"&gt;# if you use Firefox&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;建立 local CA。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Warning&lt;/strong&gt;: the &lt;code&gt;rootCA-key.pem&lt;/code&gt; file that mkcert automatically generates gives complete power to intercept secure requests from your machine. Do not share it.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" class="chroma"&gt;&lt;code class="language-shell" data-lang="shell"&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;mkcert -install
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;Created a new &lt;span class="nb"&gt;local&lt;/span&gt; CA 💥
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;The &lt;span class="nb"&gt;local&lt;/span&gt; CA is now installed in the system trust store! ⚡️
+&lt;/span&gt;&lt;/span&gt;&lt;span class="line"&gt;&lt;span class="cl"&gt;The &lt;span class="nb"&gt;local&lt;/span&gt; CA is now installed in the Firefox trust store &lt;span class="o"&gt;(&lt;/span&gt;requires browser restart&lt;span class="o"&gt;)&lt;/span&gt;! 🦊
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;建立憑證範例。&lt;/p&gt;</description></item></channel></rss>
