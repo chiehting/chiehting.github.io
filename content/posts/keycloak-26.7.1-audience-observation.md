@@ -1,10 +1,10 @@
 ---
 title: Keycloak 26.7.1 Evaluate 的 Access Token aud 狀態
-source: keycloak_實測
+source: notes
 author:
   - chiehting
-published: 2026-08-11
-created: 2026-08-11
+updated: 2026-09-24T13:52:38+08:00
+created: 2026-08-11T00:00:00+08:00
 description: Keycloak Evaluate 的 audience 驗證行為與實際 token 的 aud 組成
 tags:
   - keycloak

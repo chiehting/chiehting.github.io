@@ -1,14 +1,15 @@
 ---
-date: 2026-02-04T12:35:48+08:00
-updated: 2026-02-04T13:23:08+08:00
-title: 解決 Fcitx5-McBopomofo 編譯錯誤
-category:
+title: 排除 Conda 環境造成 Fcitx5-McBopomofo 編譯錯誤
+source: notes
+author:
+  - chiehting
+updated: 2026-09-26T23:58:39+08:00
+created: 2026-02-04T12:35:48+08:00
+description:
 tags:
   - linux
   - fcitx5
   - conda
-type: note
-post: true
 ---
 
 在 Conda 環境下編譯 fcitx5-mcbopomofo 時，常因 libfmt 版本或 ABI 不相容導致 `undefined reference` 錯誤。本文記錄了如何透過 `FMT_HEADER_ONLY` 參數排除問題，並深入分析 Conda 環境對 C++ 編譯鏈的影響，是解決 Linux 輸入法編譯依賴衝突的實戰指南。
@@ -19,15 +20,11 @@ post: true
 
 安裝過程中有碰到錯誤，紀錄排除的過程
 
-
-## 問題
+## 問題錯誤
 
 執行編譯時碰到下面錯誤 `undefined reference to fmt::v9::vformat[abi:cxx11]`
 
-```
- [ 42%] Building CXX object src/CMakeFiles/McBopomofoLib.dir/TimestampedPath.cpp.o
-[ 43%] Building CXX object src/CMakeFiles/McBopomofoLib.dir/NumberInputHelper.cpp.o
-[ 45%] Linking CXX static library libMcBopomofoLib.a
+```shell
 [ 45%] Built target McBopomofoLib
 [ 46%] Building CXX object src/CMakeFiles/mcbopomofo.dir/McBopomofo.cpp.o
 [ 47%] Linking CXX shared module mcbopomofo.so
@@ -43,7 +40,7 @@ gmake: *** [Makefile:146: all] Error 2
 
 ## 排除方法
 
-調整編譯命令，加上 `FMT_HEADER_ONLY`
+調整編譯命令加上 `FMT_HEADER_ONLY`，不使用 Conda 安裝好的動態庫/靜態庫路徑配置。
 
 ```
 cmake -B build -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-DFMT_HEADER_ONLY"
@@ -85,7 +82,7 @@ attempt to open /lib/x86_64-linux-gnu/libfmt.so succeeded
 
 ### 為什麼 GCC 版本相同， 依賴庫連結正確，但結果卻不同？
 
-即便 `gcc --version` 顯示一致，但 **編譯器路徑相同不代表連結環境相同**。Conda 會透過 `CPATH` 與 `LIBRARY_PATH` 隱性地修改搜尋順序。所以歸咎於 Conda 對環境的「深度侵入」：
+即便 `gcc --version` 顯示一致，但 **編譯器路徑相同不代表連結環境相同**。Conda 的編譯器啟動腳本可能設定了 `CXXFLAGS`（如 `-D_GLIBCXX_USE_CXX11_ABI=0`），或是 PATH 順序讓實際呼叫到的是 Conda 自帶的 gcc/sysroot。所以研究 Conda 對環境的「深度侵入」：
 
 1. Conda 的 `libstdc++.so`：
 
@@ -95,10 +92,10 @@ Conda 環境為了保證其安裝的工具能跑，通常會自帶一套比系�
 
 Conda 通常會將其內部的 `lib` 路徑置於搜尋順序的最前端。即便 `ld` 顯示它找到了系統的 `libfmt.so`，但在編譯過程中，CMake 或 Linker 可能會因為 Conda 環境變數的干擾，引用了 Conda 自帶的標準庫（如 `libstdc++.so`）。
 
-2. `_GLIBCXX_USE_CXX11_ABI` 的定義：
+3. `_GLIBCXX_USE_CXX11_ABI` 的定義：
 
-雖然 `gcc` 是同一個執行檔，但 `libfmt` 這種 C++ 函式庫對 ABI 非常敏感。如果 `conda` 環境中設定了某些全域的 C++ 編譯旗標（例如透過 `CPATH` 或 `LIBRARY_PATH`），可能會導致編譯器在處理 `fmt::v9` 的符號名稱時，產生了微小的差異。
+如果 `conda` 環境的啟動腳本設定了某些全域的 C++ 編譯旗標（例如 `CXXFLAGS` 裡的 `-D_GLIBCXX_USE_CXX11_ABI=0`），就會導致編譯器在處理 `fmt::v9` 的符號名稱時產生差異。
 
-3. 標頭檔 (Headers) 的混淆：
+4. 標頭檔 (Headers) 的混淆：
 
 在 Conda 環境下，`gcc` 搜尋標頭檔的優先順序會改變。如果 Conda 的環境中（或是某個依賴項）包含了另一個版本的 `fmt` 標頭檔，即使版本號看起來一樣，內部的 `inline namespace` 定義可能略有不同。

@@ -1,20 +1,22 @@
 ---
-date: 2025-06-14T13:24:19+08:00
-updated: 2025-07-16T13:17:30+08:00
-title: 建立支持 IPv6 的 權限給 EKS
-category: cloud
+title: 建立支持 IPv6 的 CNI 給 EKS
+source: notes
+author:
+  - chiehting
+updated: 2026-09-24T13:51:56+08:00
+created: 2025-06-14T13:24:19+08:00
+description: 記錄在 EKS 叢集啟用 IPv6 時，如何透過 IRSA（IAM Role for Service Account）設定 Amazon VPC CNI 外掛程式權限的完整操作步驟：建立具備 IPv6 相關權限的 IAM policy、設定 trust relationship 建立對應 role、將 role 附掛到 policy、annotate kube-system 的 aws-node service account，最後重啟 aws-node pod 套用新權限。
 tags:
-  - cloud
   - aws
   - eks
   - ipv6
-type: note
-post: true
 ---
+
+##  EKS 使用 `IPv6` 地址
 
 [了解叢集、Pod 和 服務的 IPv6 地址](https://docs.aws.amazon.com/zh_tw/eks/latest/userguide/cni-ipv6.html)
 
-EKS 中的配置 Cluster IP address family 選擇 IPv6 時，需要[設定 Amazon VPC CNI 外掛程式以使用 IRSA](https://docs.aws.amazon.com/zh_tw/eks/latest/userguide/cni-iam-role.html#cni-iam-role-create-ipv6-policy)。
+EKS 中的配置 Cluster IP address family 選擇 IPv6 時，需要[設定 Amazon VPC CNI 外掛程式以使用 IRSA](https://docs.aws.amazon.com/eks/latest/userguide/cni-iam-role.html#cni-iam-role-create-ipv6-policy)。
 
 <!--more-->
 
@@ -55,7 +57,8 @@ https://oidc.eks.region-code.amazonaws.com/id/EXAMPLED539D4633E53DE1B71EXAMPLE
         "ec2:DescribeInstances",
         "ec2:DescribeTags",
         "ec2:DescribeNetworkInterfaces",
-        "ec2:DescribeInstanceTypes"
+        "ec2:DescribeInstanceTypes",
+        "ec2:DescribeSubnets"
       ],
       "Resource": "*"
     },
@@ -123,3 +126,7 @@ kubectl annotate serviceaccount \
 ```
 
 ## 重新部署 aws-node 所有 pod 使其可以使用到新的 service account 權限
+
+```shell
+kubectl delete pods -n kube-system -l k8s-app=aws-node
+```
