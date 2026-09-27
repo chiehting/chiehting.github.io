@@ -53,9 +53,9 @@ enableEmoji = true
     id = 'G-G1C48BPHVP'
 
 [frontmatter]
-date = ["date", "publishDate", "updated"]
-updated = ["updated", ":git", "date", "publishDate"]
-publishDate = ["publishDate", "date"]
+date = ["created", "publishDate", "updated"]
+updated = ["updated", ":git", "created", "publishDate"]
+publishDate = ["publishDate", "created"]
 expiryDate = ["expiryDate"]
 
 [blackfriday]
