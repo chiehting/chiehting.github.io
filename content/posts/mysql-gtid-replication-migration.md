@@ -3,7 +3,7 @@ title: GTID Replication 遷移步驟:MySQL 8.0 → 8.4
 source: notes
 author:
   - chiehting
-updated: 2026-09-27T22:39:09+08:00
+updated: 2026-09-28T11:52:31+08:00
 created: 2026-09-20T00:00:00+08:00
 description: 本地實測 MySQL 8.0 遷移至 8.4 步驟紀錄
 tags:

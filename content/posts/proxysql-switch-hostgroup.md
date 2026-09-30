@@ -3,7 +3,7 @@ title: MySQL host address 優雅切換
 source: notes
 author:
   - chiehting
-updated: 2026-09-27T15:04:26+08:00
+updated: 2026-09-29T10:07:29+08:00
 created: 2026-09-22T21:58:46+08:00
 description: 使用 proxysql 的 offline_soft 機制，優雅的做 host address 切換。
 tags:
@@ -77,7 +77,9 @@ SAVE MYSQL SERVERS TO DISK;
 觀察一下 MySQL 8.0 節點的連線數是否已經降到 0，ConnUsed 應該是 0。
 
 ```sql
-select * from mysql_servers; SELECT hostgroup, srv_host, ConnUsed, ConnFree FROM stats_mysql_connection_pool;
+select * from mysql_servers;
+SELECT hostgroup, srv_host, ConnUsed, ConnFree FROM stats_mysql_connection_pool;
+SELECT hostgroup_id, hostname, status FROM runtime_mysql_servers;
 ```
 
 查看有沒有顯示錯誤
