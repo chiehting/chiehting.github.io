@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Proxysql on Chiehting's Blog</title><link>https://chiehting.com/tags/proxysql/</link><description>Recent content in Proxysql on Chiehting's Blog</description><generator>Hugo</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Tue, 22 Sep 2026 21:58:46 +0800</lastBuildDate><atom:link href="https://chiehting.com/tags/proxysql/index.xml" rel="self" type="application/rss+xml"/><item><title>MySQL host address 優雅切換</title><link>https://chiehting.com/posts/proxysql-switch-hostgroup/</link><pubDate>Tue, 22 Sep 2026 21:58:46 +0800</pubDate><guid>https://chiehting.com/posts/proxysql-switch-hostgroup/</guid><description>&lt;p&gt;在執行 MySQL 8.0 到 MySQL 8.4 作業中，需要做資料庫的 host address 切換。可以透過 proxysql OFFLINE_SOFT 模式，優雅的切換連線。&lt;/p&gt;
+&lt;h2 id="狀態"&gt;狀態&lt;a href="#%e7%8b%80%e6%85%8b" class="anchor" aria-hidden="true"&gt;&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+ stroke-linecap="round" stroke-linejoin="round"&gt;
+ &lt;path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"&gt;&lt;/path&gt;
+ &lt;line x1="8" y1="12" x2="16" y2="12"&gt;&lt;/line&gt;
+ &lt;/svg&gt;&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;下面列出 MySQL 8.0 資料庫的地址跟 MySQL 8.4 資料庫的地址。&lt;/p&gt;</description></item></channel></rss>

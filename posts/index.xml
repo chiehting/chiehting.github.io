@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>Posts on Chiehting's Blog</title><link>https://chiehting.com/posts/</link><description>Recent content in Posts on Chiehting's Blog</description><generator>Hugo -- 0.152.2</generator><language>en-us</language><copyright>Copyright © 2025 Chiehting Lee. All rights reserved.</copyright><lastBuildDate>Tue, 29 Sep 2026 10:08:34 +0800</lastBuildDate><atom:link href="https://chiehting.com/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>AWS 跟華為雲物件上傳後發送請求架構</title><link>https://chiehting.com/posts/aws-and-huawei-send-request-after-object-created/</link><pubDate>Tue, 29 Sep 2026 10:08:34 +0800</pubDate><author>[chiehting]</author><guid>https://chiehting.com/posts/aws-and-huawei-send-request-after-object-created/</guid><description>當用戶上傳物件後，要發送通知給後端。研究不同雲的架構要怎麼實踐通知請求。</description><content type="text/html" mode="escaped"><![CDATA[<p>AWS 跟 Huawei Cloud 都有物件事件通知，兩朵雲上可以使用類似的服務來通知後端，讓後端做接下來業務邏輯。</p>
+<h2 id="事件通知服務對照">事件通知服務對照<a href="#%e4%ba%8b%e4%bb%b6%e9%80%9a%e7%9f%a5%e6%9c%8d%e5%8b%99%e5%b0%8d%e7%85%a7" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h2>
+<table>
+  <thead>
+      <tr>
+          <th>項目</th>
+          <th>AWS</th>
+          <th>華為雲</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>物件儲存</td>
+          <td>S3</td>
+          <td>OBS</td>
+      </tr>
+      <tr>
+          <td>訊息服務</td>
+          <td>SNS</td>
+          <td>SMN</td>
+      </tr>
+      <tr>
+          <td>HTTP 訂閱</td>
+          <td>SNS HTTP/HTTPS subscription</td>
+          <td>SMN HTTP/HTTPS 訂閱</td>
+      </tr>
+      <tr>
+          <td>函數運算</td>
+          <td>Lambda</td>
+          <td>FunctionGraph</td>
+      </tr>
+      <tr>
+          <td>事件總線</td>
+          <td>EventBridge（可用 API Destination 直接打 HTTP）</td>
+          <td>EventGrid（EG）</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="架構考量">架構考量<a href="#%e6%9e%b6%e6%a7%8b%e8%80%83%e9%87%8f" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h2>
+<p>如果後端有使用 SNS 的情況下，就會考慮使用 SNS 直接做接入。</p>
+<p>但目前並沒有 SNS 的服務，所以考慮使用 Lambda 做 payload 加認證 header 往後端送資料。
+這樣的好處是後端一套邏輯可以服務多套雲。</p>
+<pre class="mermaid">flowchart LR
+    subgraph aws[AWS]
+        S3 --> Lambda
+        Lambda
+    end
+    subgraph huawei[Huawei]
+        OBS --> FunctionGraph
+        FunctionGraph
+    end
+    Lambda--> logic
+    FunctionGraph--> logic
+    logic{header/payload logic} --> | POST /internal/upload-hook | Server
+</pre><h2 id="aws-實做">AWS 實做<a href="#aws-%e5%af%a6%e5%81%9a" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h2>
+<h3 id="secrets-manager">Secrets Manager<a href="#secrets-manager" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<p>建立一組 secrets object/upload/hook/hmac 做 HMAC 使用</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span><span class="nt">&#34;upload-hook/hmac&#34;</span><span class="p">:</span><span class="s2">&#34;Celsc27uXfSDwka2iK46hHizIYUPDtWF29aIEeudtC8wu58qISfGq3VyrKzPzrDp&#34;</span><span class="p">}</span>
+</span></span></code></pre></div><h3 id="lambda">Lambda<a href="#lambda" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<p>要取得 secrets 需要加入 lambda 的權限</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;Version&#34;</span><span class="p">:</span> <span class="s2">&#34;2012-10-17&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;Statement&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="s2">&#34;logs:CreateLogGroup&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="s2">&#34;arn:aws:logs:us-east-1:123456789087:*&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;logs:CreateLogStream&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;logs:PutLogEvents&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">],</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;arn:aws:logs:us-east-1:123456789087:log-group:/aws/lambda/object-notification-upload-hook:*&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Effect&#34;</span><span class="p">:</span> <span class="s2">&#34;Allow&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Action&#34;</span><span class="p">:</span> <span class="s2">&#34;secretsmanager:GetSecretValue&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Resource&#34;</span><span class="p">:</span> <span class="s2">&#34;arn:aws:secretsmanager:us-east-1:123456789087:secret:dev/object/upload/hook-*&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>程式碼</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">hashlib</span><span class="o">,</span> <span class="nn">hmac</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">urllib.parse</span><span class="o">,</span> <span class="nn">urllib.request</span>
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">boto3</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">HOOK_URL</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;HOOK_URL&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="n">SECRET_ID</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&#34;SECRET_ID&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">_secret</span> <span class="o">=</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_secret</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">global</span> <span class="n">_secret</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">_secret</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># 快取，避免每次呼叫都讀 Secrets Manager</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sm</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&#34;secretsmanager&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">_secret</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">get_secret_value</span><span class="p">(</span><span class="n">SecretId</span><span class="o">=</span><span class="n">SECRET_ID</span><span class="p">)[</span><span class="s2">&#34;SecretString&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">_secret</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">event</span><span class="p">[</span><span class="s2">&#34;Records&#34;</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">obj</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;s3&#34;</span><span class="p">][</span><span class="s2">&#34;object&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">bucket</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;s3&#34;</span><span class="p">][</span><span class="s2">&#34;bucket&#34;</span><span class="p">][</span><span class="s2">&#34;name&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">key</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote_plus</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&#34;key&#34;</span><span class="p">])</span>  <span class="c1"># key 是 URL encoded</span>
+</span></span><span class="line"><span class="cl">        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;eventName&#34;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;eventName&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;provider&#34;</span><span class="p">:</span> <span class="s2">&#34;aws&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;region&#34;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;awsRegion&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;bucket&#34;</span><span class="p">:</span> <span class="n">bucket</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;key&#34;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;size&#34;</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;size&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;etag&#34;</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;eTag&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;event_time&#34;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;eventTime&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;event_id&#34;</span><span class="p">:</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">bucket</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;sequencer&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&#34;,&#34;</span><span class="p">,</span> <span class="s2">&#34;:&#34;</span><span class="p">))</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ts</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sig</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">get_secret</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                       <span class="n">ts</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&#34;.&#34;</span> <span class="o">+</span> <span class="n">body</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                       <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">HOOK_URL</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">body</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&#34;POST&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;Content-Type&#34;</span><span class="p">:</span> <span class="s2">&#34;application/json&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                     <span class="s2">&#34;X-Timestamp&#34;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                     <span class="s2">&#34;X-Signature&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;sha256=</span><span class="si">{</span><span class="n">sig</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">&gt;=</span> <span class="mi">300</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;hook failed: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><h3 id="s3">S3<a href="#s3" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<ol>
+<li>
+<p>建立設定 Event notifications</p>
+</li>
+<li>
+<p>S3 事件通知的資料結構:</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;Records&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;eventVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;2.0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;eventSource&#34;</span><span class="p">:</span> <span class="s2">&#34;aws:s3&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;awsRegion&#34;</span><span class="p">:</span> <span class="s2">&#34;us-east-1&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;1970-01-01T00:00:00.000Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;eventName&#34;</span><span class="p">:</span> <span class="s2">&#34;ObjectCreated:Put&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;userIdentity&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;principalId&#34;</span><span class="p">:</span> <span class="s2">&#34;EXAMPLE&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;requestParameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;sourceIPAddress&#34;</span><span class="p">:</span> <span class="s2">&#34;127.0.0.1&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;responseElements&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;x-amz-request-id&#34;</span><span class="p">:</span> <span class="s2">&#34;EXAMPLE123456789&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;x-amz-id-2&#34;</span><span class="p">:</span> <span class="s2">&#34;EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;s3&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;s3SchemaVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;configurationId&#34;</span><span class="p">:</span> <span class="s2">&#34;testConfigRule&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;bucket&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;example-bucket&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;ownerIdentity&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="nt">&#34;principalId&#34;</span><span class="p">:</span> <span class="s2">&#34;EXAMPLE&#34;</span>
+</span></span><span class="line"><span class="cl">          <span class="p">},</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;arn&#34;</span><span class="p">:</span> <span class="s2">&#34;arn:aws:s3:::example-bucket&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;object&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;test%2Fkey&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;eTag&#34;</span><span class="p">:</span> <span class="s2">&#34;0123456789abcdef0123456789abcdef&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;sequencer&#34;</span><span class="p">:</span> <span class="s2">&#34;0A1B2C3D4E5F678901&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="後端服務-log">後端服務 log<a href="#%e5%be%8c%e7%ab%af%e6%9c%8d%e5%8b%99-log" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">## Header
+</span></span></span><span class="line"><span class="cl"><span class="err">INFO:root:POST request,
+</span></span></span><span class="line"><span class="cl"><span class="err">Path: /
+</span></span></span><span class="line"><span class="cl"><span class="err">Headers:
+</span></span></span><span class="line"><span class="cl"><span class="err">Host: test-server.example.com
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Request-ID: c43aa38838002609c38669e7c11ff164
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Real-IP: 107.23.59.222
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-For: 107.23.59.222
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Host: test-server.example.com
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Port: 80
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Proto: http
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Scheme: http
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Scheme: http
+</span></span></span><span class="line"><span class="cl"><span class="err">Content-Length: 286
+</span></span></span><span class="line"><span class="cl"><span class="err">Accept-Encoding: identity
+</span></span></span><span class="line"><span class="cl"><span class="err">User-Agent: Python-urllib/3.14
+</span></span></span><span class="line"><span class="cl"><span class="err">Content-Type: application/json
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Timestamp: 1790751958
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Signature: sha256=2b0e2c1d2309decc6f3bae2657226d23b9227cd0e985ecfdb40d6d5f0fe2464a
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">## Body
+</span></span></span><span class="line"><span class="cl"><span class="err">{&#34;eventName&#34;:&#34;ObjectCreated:Put&#34;,&#34;provider&#34;:&#34;aws&#34;,&#34;region&#34;:&#34;us-east-1&#34;,&#34;bucket&#34;:&#34;example-bucket&#34;,&#34;key&#34;:&#34;test/key&#34;,&#34;size&#34;:1024,&#34;etag&#34;:&#34;0123456789abcdef0123456789abcdef&#34;,&#34;event_time&#34;:&#34;1970-01-01T00:00:00.000Z&#34;,&#34;event_id&#34;:&#34;83225672c31de8f59b15949bf248a6d04cc3173f43bfdf1d93f23345e00591e9&#34;}
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">## Response
+</span></span></span><span class="line"><span class="cl"><span class="err">10.2.3.208 - - [30/Sep/2026 07:05:58] &#34;POST / HTTP/1.1&#34; 200 -
+</span></span></span></code></pre></div><h2 id="huawei-實做">Huawei 實做<a href="#huawei-%e5%af%a6%e5%81%9a" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h2>
+<h3 id="functiongraph">FunctionGraph<a href="#functiongraph" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<p>在設置中配置環境變數 HMAC_SECRET 做 HMAC 使用，加密参数要開啟。</p>
+<pre tabindex="0"><code>HMAC_SECRET={&#34;upload-hook/hmac&#34;:&#34;Celsc27uXfSDwka2iK46hHizIYUPDtWF29aIEeudtC8wu58qISfGq3VyrKzPzrDp&#34;}
+</code></pre><p>程式碼</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">hashlib</span><span class="o">,</span> <span class="nn">hmac</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">urllib.parse</span><span class="o">,</span> <span class="nn">urllib.request</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hook_url</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">getUserData</span><span class="p">(</span><span class="s2">&#34;HOOK_URL&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">secret</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">getUserData</span><span class="p">(</span><span class="s2">&#34;HMAC_SECRET&#34;</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">data</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&#34;data&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">records</span> <span class="o">=</span> <span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">obs</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;obs&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">obj</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&#34;object&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">bucket</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="s2">&#34;bucket&#34;</span><span class="p">][</span><span class="s2">&#34;bucket&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">key</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote_plus</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&#34;key&#34;</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;eventName&#34;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;eventName&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;provider&#34;</span><span class="p">:</span> <span class="s2">&#34;huawei&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;region&#34;</span><span class="p">:</span> <span class="n">r</span><span class="p">[</span><span class="s2">&#34;eventRegion&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;bucket&#34;</span><span class="p">:</span> <span class="n">bucket</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;key&#34;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;size&#34;</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;size&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;etag&#34;</span><span class="p">:</span> <span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;eTag&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;event_time&#34;</span><span class="p">:</span> <span class="n">event</span><span class="p">[</span><span class="s2">&#34;time&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">            <span class="s2">&#34;event_id&#34;</span><span class="p">:</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">bucket</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;sequencer&#34;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;eTag&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">            <span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">body</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">payload</span><span class="p">,</span> <span class="n">separators</span><span class="o">=</span><span class="p">(</span><span class="s2">&#34;,&#34;</span><span class="p">,</span> <span class="s2">&#34;:&#34;</span><span class="p">))</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ts</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sig</span> <span class="o">=</span> <span class="n">hmac</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">secret</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&#34;.&#34;</span> <span class="o">+</span> <span class="n">body</span><span class="p">,</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">Request</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">            <span class="n">hook_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">body</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&#34;POST&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;Content-Type&#34;</span><span class="p">:</span> <span class="s2">&#34;application/json&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                     <span class="s2">&#34;X-Timestamp&#34;</span><span class="p">:</span> <span class="n">ts</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                     <span class="s2">&#34;X-Signature&#34;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&#34;sha256=</span><span class="si">{</span><span class="n">sig</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="k">as</span> <span class="n">resp</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">resp</span><span class="o">.</span><span class="n">status</span> <span class="o">&gt;=</span> <span class="mi">300</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;hook failed: </span><span class="si">{</span><span class="n">resp</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><h3 id="obs">OBS<a href="#obs" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<ol>
+<li>
+<p>建立事件通知 &gt; EG 通知</p>
+</li>
+<li>
+<p>OBS 事件通知的資料結構:</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;datacontenttype&#34;</span><span class="p">:</span> <span class="s2">&#34;application/json&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;data&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;obs&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;bucket&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;bucket&#34;</span><span class="p">:</span> <span class="s2">&#34;developer-test-example&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;developer-test-example&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;arn&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;ownerIdentity&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">          <span class="nt">&#34;ID&#34;</span><span class="p">:</span> <span class="s2">&#34;28a7528d52e5417cb9a0ac2dbb59ea05&#34;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;Version&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;configurationId&#34;</span><span class="p">:</span> <span class="s2">&#34;5d1b530b-be59-4fdc-adf7-f808cf06f8c9&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;object&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;versionId&#34;</span><span class="p">:</span> <span class="s2">&#34;G00101A0F057D2A5FFFFCB8700806592null&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;oldpsxpth&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;size&#34;</span><span class="p">:</span> <span class="mi">112</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;eTag&#34;</span><span class="p">:</span> <span class="s2">&#34;6f9433fb110632de417e2e697dcb1b5f&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;key&#34;</span><span class="p">:</span> <span class="s2">&#34;test.tar&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="nt">&#34;sequencer&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span>
+</span></span><span class="line"><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;eventVersion&#34;</span><span class="p">:</span> <span class="s2">&#34;3.0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;responseElements&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;x-obs-id-2&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;x-obs-request-id&#34;</span><span class="p">:</span> <span class="s2">&#34;b27e6cbff1f6865c83111f130a982f56&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;x-amz-request-id&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;x-amz-id-2&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;eventSource&#34;</span><span class="p">:</span> <span class="s2">&#34;OBS&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;eventTime&#34;</span><span class="p">:</span> <span class="s2">&#34;2026-09-30T11:24:42.533Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;requestParameters&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;sourceIPAddress&#34;</span><span class="p">:</span> <span class="s2">&#34;10.147.244.52&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;eventName&#34;</span><span class="p">:</span> <span class="s2">&#34;ObjectCreated:Put&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;eventRegion&#34;</span><span class="p">:</span> <span class="s2">&#34;cn-east-3&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="nt">&#34;userIdentity&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nt">&#34;ID&#34;</span><span class="p">:</span> <span class="s2">&#34;28a7528d52e5417cb9a0ac2dbb59ea05&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  <span class="p">},</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;subject&#34;</span><span class="p">:</span> <span class="s2">&#34;test.tar&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;specversion&#34;</span><span class="p">:</span> <span class="s2">&#34;1.0&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;b27e6cbff1f6865c83111f130a982f56&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="s2">&#34;HC.OBS.DWR&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;time&#34;</span><span class="p">:</span> <span class="s2">&#34;2026-09-30T03:24:43.167931174Z&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;OBS:DWR:ObjectCreated:PUT&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;ttl&#34;</span><span class="p">:</span> <span class="s2">&#34;4000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;dataschema&#34;</span><span class="p">:</span> <span class="s2">&#34;&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="後端服務-log-1">後端服務 log<a href="#%e5%be%8c%e7%ab%af%e6%9c%8d%e5%8b%99-log-1" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path>
+      <line x1="8" y1="12" x2="16" y2="12"></line>
+   </svg></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-http" data-lang="http"><span class="line"><span class="cl"><span class="err">## Header
+</span></span></span><span class="line"><span class="cl"><span class="err">INFO:root:POST request,
+</span></span></span><span class="line"><span class="cl"><span class="err">Path: /
+</span></span></span><span class="line"><span class="cl"><span class="err">Headers:
+</span></span></span><span class="line"><span class="cl"><span class="err">Host: test-server.example.com
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Request-ID: ab97ce131762e36eddb0bb84f9a0224a
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Real-IP: 124.70.188.94
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-For: 124.70.188.94
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Host: test-server.example.com
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Port: 80
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Proto: http
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Forwarded-Scheme: http
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Scheme: http
+</span></span></span><span class="line"><span class="cl"><span class="err">Content-Length: 302
+</span></span></span><span class="line"><span class="cl"><span class="err">Accept-Encoding: identity
+</span></span></span><span class="line"><span class="cl"><span class="err">User-Agent: Python-urllib/3.9
+</span></span></span><span class="line"><span class="cl"><span class="err">Content-Type: application/json
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Timestamp: 1790752223
+</span></span></span><span class="line"><span class="cl"><span class="err">X-Signature: sha256=be7f7e2a0110f892623df4eb5527e39fb75fa60c40a90c3a0ea24c38f3f8d478
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">## Body
+</span></span></span><span class="line"><span class="cl"><span class="err">{&#34;eventName&#34;:&#34;ObjectCreated:Put&#34;,&#34;provider&#34;:&#34;huawei&#34;,&#34;region&#34;:&#34;cn-east-3&#34;,&#34;bucket&#34;:&#34;developer-test-example&#34;,&#34;key&#34;:&#34;test.tar&#34;,&#34;size&#34;:112,&#34;etag&#34;:&#34;6f9433fb110632de417e2e697dcb1b5f&#34;,&#34;event_time&#34;:&#34;2026-09-30T03:24:43.167931174Z&#34;,&#34;event_id&#34;:&#34;3cd62445e85a61e5063d28596bd07b37b0a66bc2c2202da5cf049988c9c9caa2&#34;}
+</span></span></span><span class="line"><span class="cl"><span class="err">
+</span></span></span><span class="line"><span class="cl"><span class="err">## Response
+</span></span></span><span class="line"><span class="cl"><span class="err">10.2.1.158 - - [30/Sep/2026 07:10:23] &#34;POST / HTTP/1.1&#34; 200 -
+</span></span></span></code></pre></div>]]></content></item></channel></rss>
